@@ -1,0 +1,7 @@
+# Shell scripts and Dockerfiles must keep LF endings even when checked out on
+# Windows -- a CRLF shebang makes a container entrypoint fail to execute.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.conf text eol=lf
+docker-compose.yml text eol=lf
+*.sql text eol=lf

@@ -1,0 +1,60 @@
+<!doctype html>
+<!--
+  PLACEHOLDER frontend for Joshua's microservice.
+
+  The team's frontend framework is still being confirmed with the tutor
+  (see CLAUDE.md). This is deliberately plain HTML + fetch so it can be
+  replaced wholesale once that decision is made, without the container,
+  the nginx proxy or the compose wiring needing to change.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio — Joshua</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; }
+    th { background: #f4f4f4; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .gain { color: #0a7a28; }
+    .loss { color: #b00020; }
+    .status { padding: 0.5rem; background: #f4f4f4; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Portfolio</h1>
+  <p class="status" id="status">Loading…</p>
+  <table id="table" hidden>
+    <thead>
+      <tr><th>Asset class</th><th class="num">Market value</th><th class="num">% of total</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    const money = n => '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    fetch('/api/allocation')
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(data => {
+        const p = data.portfolio;
+        const cls = p.total_gain_loss >= 0 ? 'gain' : 'loss';
+        document.getElementById('status').innerHTML =
+          `Total market value <strong>${money(p.total_market_value)}</strong> · ` +
+          `gain/loss <strong class="${cls}">${money(p.total_gain_loss)}</strong>`;
+
+        document.getElementById('rows').innerHTML = p.asset_class_allocation
+          .map(a => `<tr><td>${a.asset_class}</td>` +
+                    `<td class="num">${money(a.market_value)}</td>` +
+                    `<td class="num">${a.percent_of_total.toFixed(2)}%</td></tr>`)
+          .join('');
+        document.getElementById('table').hidden = false;
+      })
+      .catch(err => {
+        document.getElementById('status').textContent = 'Could not load allocation: ' + err.message;
+      });
+  </script>
+</body>
+</html>
