@@ -1,7 +1,25 @@
-# Shell scripts and Dockerfiles must keep LF endings even when checked out on
-# Windows -- a CRLF shebang makes a container entrypoint fail to execute.
+# Baseline: let Git decide what is text, normalise it to LF in the repository,
+# and check it out as LF on every platform including Windows. This keeps the
+# repo free of CRLF churn when the same file is edited on Windows and Linux,
+# and means CI runners see exactly what was committed.
+* text=auto eol=lf
+
+# Explicit LF rules, kept from before the baseline was added. These are already
+# implied by the line above, but they are the cases where a CRLF ending breaks
+# something outright rather than merely creating diff noise, so they stay
+# written down: a CRLF shebang makes a container entrypoint fail to execute
+# (joshua/database/entrypoint.sh is covered by *.sh).
 *.sh text eol=lf
 Dockerfile text eol=lf
 *.conf text eol=lf
 docker-compose.yml text eol=lf
 *.sql text eol=lf
+
+# Genuinely binary: never run end-of-line conversion over these, and do not try
+# to diff them as text. Without this, text=auto's heuristic is all that stands
+# between a byte sequence that looks textual and a corrupted file.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.pdf binary

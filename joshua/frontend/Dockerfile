@@ -1,9 +1,30 @@
-# Joshua's frontend microservice.
-# Static placeholder pending the tutor's framework decision -- swapping the
-# contents of /usr/share/nginx/html is all that should be needed later.
+# Joshua's frontend microservice -- React (Vite) built to static assets and
+# served by nginx.
+#
+# Two stages so Node and the dependency tree never reach the runtime image:
+# the final image is nginx plus the contents of dist/, nothing else.
+
+# ---------------------------------------------------------------------------
+# Stage 1 -- build the static assets.
+# ---------------------------------------------------------------------------
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+# Copy the manifests first so `npm ci` is only re-run when dependencies
+# actually change, not on every source edit.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# ---------------------------------------------------------------------------
+# Stage 2 -- serve them.
+# ---------------------------------------------------------------------------
 FROM nginx:1.27-alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html /usr/share/nginx/html/index.html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
