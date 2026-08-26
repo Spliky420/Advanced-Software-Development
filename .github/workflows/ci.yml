@@ -9,17 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      ollama:
-        image: ollama/ollama:latest
-        ports: [11434:11434]
-        # Give Ollama time to start
-        options: >-
-          --health-cmd="curl -f http://localhost:11434/api/tags || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,11 +23,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # Install test dependencies
           pip install pytest
 
-      - name: Wait for Ollama to be ready
+      - name: Start all services (Ollama, backend, frontend)
         run: |
+          docker compose up -d
+          # Wait for Ollama to be ready (up to 30 seconds)
           for i in {1..30}; do
             if curl -s http://localhost:11434/api/tags > /dev/null; then
               echo "Ollama is ready"
@@ -50,9 +40,21 @@ jobs:
 
       - name: Pull Ollama model (qwen2.5:0.5b)
         run: |
-          curl -X POST http://localhost:11434/api/pull -d '{"model":"qwen2.5:0.5b"}'
-          # Wait a bit for pull to finish
+          curl -s -X POST http://localhost:11434/api/pull -d '{"model":"qwen2.5:0.5b"}' > /dev/null
+          echo "Ollama model pull initiated"
+          # Give it a moment to start pulling; actual pull may continue in background
           sleep 10
+
+      - name: Wait for backend to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8021/api/glossary > /dev/null; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 2
+          done
 
       - name: Run backend tests
         working-directory: ./Maxwell/backend
@@ -69,20 +71,10 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Build Docker images (frontend & backend)
-        run: |
-          docker compose build maxwell-frontend maxwell-backend
-
-      - name: Start containers for integration test
-        run: |
-          docker compose up -d ollama maxwell-backend maxwell-frontend
-          # Wait for services to be ready
-          sleep 15
-
       - name: Run simple integration test (check frontend serves)
         run: |
           # Wait a bit more for frontend
-          sleep 10
+          sleep 5
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8020/)
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "Frontend is serving correctly"
@@ -90,7 +82,7 @@ jobs:
             echo "Frontend returned HTTP $HTTP_CODE"
             exit 1
           fi
-          # Check backend API
+          # Check backend API again
           API_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8021/api/glossary)
           if [ "$API_CODE" -eq 200 ]; then
             echo "Backend API is responding"
