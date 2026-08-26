@@ -2,10 +2,12 @@ import unittest
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
-from app import app
+from app import app, init_db
 
 class GlossaryTestCase(unittest.TestCase):
     def setUp(self):
+        # Initialize the database (creates table if not exists)
+        init_db()
         self.app = app.test_client()
         self.app.testing = True
 
