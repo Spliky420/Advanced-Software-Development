@@ -1,0 +1,44 @@
+version: '3.8'
+
+# Port ranges:
+# Maxwell: 8020-8029
+
+services:
+  # Ollama service provides LLM access for all backends
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+
+  # Maxwell frontend serves the static UI
+  maxwell-frontend:
+    build:
+      context: .
+      dockerfile: Maxwell/frontend/Dockerfile
+    container_name: maxwell-frontend
+    ports:
+      - "8020:80"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: unless-stopped
+    depends_on:
+      - ollama
+
+  # Maxwell backend provides API for glossary terms (SQLite + Ollama)
+  maxwell-backend:
+    build: ./Maxwell/backend
+    container_name: maxwell-backend
+    ports:
+      - "8021:5000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: unless-stopped
+    depends_on:
+      - ollama
+
+volumes:
+  ollama-models:
