@@ -9,14 +9,13 @@ class GlossaryTestCase(unittest.TestCase):
         # Set environment variables for Ollama before importing the app
         os.environ['OLLAMA_HOST'] = 'http://localhost:11434'
         os.environ['OLLAMA_MODEL'] = 'qwen2.5:0.5b'
-        # Now import the app and init_db
-        from app import app, init_db
+        from app import app
         cls.app = app
-        cls.init_db = init_db
 
     def setUp(self):
         # Initialize the database (creates table if not exists)
-        self.init_db()
+        from app import init_db
+        init_db()
         self.client = self.app.test_client()
         self.client.testing = True
 

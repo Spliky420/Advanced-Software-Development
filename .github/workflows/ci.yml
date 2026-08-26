@@ -1,4 +1,4 @@
-name: CI
+name: mawell-ci
 
 on:
   push:
