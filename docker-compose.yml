@@ -8,7 +8,7 @@
 #
 # Host port ranges (keep these non-overlapping; claim yours in CLAUDE.md):
 #   Joshua     8010-8019   CLAIMED
-#   <student2> 8020-8029   free
+#   Maxwell    8020-8029   CLAIMED
 #   <student3> 8030-8039   free
 #   <student4> 8040-8049   free
 #   <student5> 8050-8059   free
@@ -108,6 +108,33 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  # =========================================================================
+  # MAXWELL -- ports 8020-8029
+  # =========================================================================
+  maxwell-frontend:
+    build:
+      context: .
+      dockerfile: Maxwell/frontend/Dockerfile
+    container_name: maxwell-frontend
+    restart: unless-stopped
+    ports:
+      - "8020:80"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+
+  maxwell-backend:
+    build: ./Maxwell/backend
+    container_name: maxwell-backend
+    restart: unless-stopped
+    ports:
+      - "8021:5000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
 
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.

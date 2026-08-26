@@ -92,7 +92,7 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 | Range     | Owner      | In use                                             |
 | --------- | ---------- | -------------------------------------------------- |
 | 8010–8019 | **Joshua** | 8010 frontend, 8011 backend (database has no port) |
-| 8020–8029 | free       |                                                    |
+| 8020–8029 | **Maxwell**| 8020 frontend, 8021 backend (database has no port) |
 | 8030–8039 | free       |                                                    |
 | 8040–8049 | free       |                                                    |
 | 8050–8059 | free       |                                                    |
@@ -300,3 +300,54 @@ framework decision. It currently renders the asset-class allocation table only.
 **The model must be pulled into the container.** Covered in step 3 above — a
 host-side `ollama pull` does not count, and the LLM endpoints return 503 until
 you do it.
+
+---
+
+## Maxwell — Financial Glossary
+
+### What it does
+
+A financial glossary: look up a term and get its definition. Definitions are
+**shared reference data** — a term means the same thing regardless of who is
+looking it up, so there is no user scoping (Release 0 specification).
+
+When a requested term is not already in the database, the backend generates a
+definition via Ollama (AI-Mode). Terms are validated as financial before that
+happens, so non-financial input is rejected with a clear error instead of
+being sent to the model.
+
+Full CRUD is supported from the frontend: add a term (with an
+Ollama-generated definition where the term is financial), edit an existing
+definition, and delete a term.
+
+### Services and ports
+
+| Service            | Host port | Purpose                                     |
+| ------------------ | --------- | ------------------------------------------- |
+| `maxwell-frontend` | 8020      | Static HTML/JavaScript client               |
+| `maxwell-backend`  | 8021      | Python Flask API (SQLite + Ollama)          |
+| database           | —         | SQLite file inside the backend service      |
+
+Open <http://localhost:8020> for the glossary UI.
+
+### API endpoints
+
+| Method | Path                     | Purpose                                  |
+| ------ | ------------------------ | ---------------------------------------- |
+| GET    | `/api/glossary`          | List all glossary terms                  |
+| GET    | `/api/glossary/<term>`   | Fetch one term, generating it if missing |
+
+The frontend also drives create, update and delete against these routes.
+
+### Running just these services
+
+```bash
+docker compose up --build maxwell-frontend maxwell-backend ollama
+```
+
+### Known limitations
+
+- Financial-term validation is a gate in front of the model, not a guarantee
+  about the model's output quality.
+- All LLM access goes through the shared `ollama` service at
+  `http://ollama:11434` — never a hardcoded model name or a host install.

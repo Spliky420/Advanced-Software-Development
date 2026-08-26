@@ -1,0 +1,236 @@
+/* Shared asset – changes must be made via a pull request. */
+/* Token-based stylesheet: design tokens in :root, semantic classes, utilities. */
+:root {
+  --color-primary: #1976d2;
+  --color-primary-dark: #1565c0;
+  --color-secondary: #d32f2f;
+  --color-secondary-dark: #b71c1c;
+  --color-tertiary: #757575;
+  --color-tertiary-dark: #616161;
+  --color-background: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-text-primary: #212121;
+  --color-text-secondary: #757575;
+  --color-border: #e0e0e0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --font-sans: 'Arial', sans-serif;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --transition-fast: 0.2s ease;
+}
+
+/* Reset and base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+}
+body {
+  line-height: 1.5;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+h1 {
+  margin-top: 0;
+  font-size: var(--font-size-lg);
+}
+
+/* Form styles */
+#add-term-section {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+#add-term-section h2 {
+  margin-top: 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+}
+#add-term-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+#add-term-form input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+}
+#add-term-form button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  transition: background-color var(--transition-fast);
+}
+#add-term-form button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Glossary list */
+#glossary-list {
+  margin-top: var(--spacing-lg);
+}
+.term-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  position: relative;
+}
+.term-content {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+.term-content strong {
+  color: var(--color-primary);
+  min-width: 100px;
+  font-size: var(--font-size-base);
+}
+.term-definition {
+  flex: 1;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+.edit-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  box-sizing: border-box;
+}
+.term-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+.term-actions button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-fast);
+}
+.edit-btn, .save-btn {
+  background-color: var(--color-primary);
+  color: white;
+}
+.edit-btn:hover, .save-btn:hover {
+  background-color: var(--color-primary-dark);
+}
+.delete-btn {
+  background-color: var(--color-secondary);
+  color: white;
+}
+.delete-btn:hover {
+  background-color: var(--color-secondary-dark);
+}
+.cancel-btn {
+  background-color: var(--color-tertiary);
+  color: white;
+}
+.cancel-btn:hover {
+  background-color: var(--color-tertiary-dark);
+}
+
+/* Status message */
+#form-status {
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+#form-status.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+#form-status.error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+#form-status.info {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+/* Focus outline */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
+.u-text-center {
+  text-align: center;
+}
+.u-mt-sm {
+  margin-top: var(--spacing-sm);
+}
+.u-mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+.u-mt-md {
+  margin-top: var(--spacing-md);
+}
+.u-mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  #add-term-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #add-term-form input[type="text"] {
+    min-width: 100%;
+  }
+  .term-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .term-content strong {
+    min-width: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+  .edit-textarea {
+    min-height: 80px;
+  }
+}
