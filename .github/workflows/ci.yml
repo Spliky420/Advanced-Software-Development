@@ -57,12 +57,9 @@ jobs:
           done
 
       - name: Run backend tests
-        working-directory: ./Maxwell/backend
-        env:
-          OLLAMA_HOST: http://localhost:11434
-          OLLAMA_MODEL: qwen2.5:0.5b
+        working-directory: ./Maxwell
         run: |
-          pytest test_glossary.py -v
+          pytest tests/test_glossary.py -v
 
       - name: Lint Python files (optional)
         working-directory: ./Maxwell/backend
