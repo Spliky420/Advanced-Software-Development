@@ -1,44 +1,172 @@
-version: '3.8'
+# ASD 2026 -- shared orchestration for all five students' microservices.
+#
+# SHARED FILE: change only via pull request (see CLAUDE.md).
+#
+# Layout: shared infrastructure first, then one clearly delimited block per
+# student. Add your block by copying the template comment at the bottom --
+# nothing above your own block should need to change.
+#
+# Host port ranges (keep these non-overlapping; claim yours in CLAUDE.md):
+#   Joshua     8010-8019   CLAIMED
+#   Maxwell    8020-8029   CLAIMED
+#   <student3> 8030-8039   free
+#   <student4> 8040-8049   free
+#   <student5> 8050-8059   free
+#   shared     11434       ollama
+#
+# Model selection lives in .env (copy .env.example to .env). The :- defaults
+# below mean the stack still comes up if .env is missing.
 
-# Port ranges:
-# Maxwell: 8020-8029
+name: asd2026
 
 services:
-  # Ollama service provides LLM access for all backends
+
+  # =========================================================================
+  # SHARED INFRASTRUCTURE -- used by every student's backend.
+  # =========================================================================
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama
+    container_name: asd-ollama
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
+      # Named volume so pulled models survive `docker compose down` and
+      # restarts. Models are NOT shared with a host Ollama install.
       - ollama-models:/root/.ollama
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
-  # Maxwell frontend serves the static UI
+  # =========================================================================
+  # JOSHUA -- ports 8010-8019
+  # =========================================================================
+  joshua-database:
+    build: ./joshua/database
+    container_name: joshua-database
+    restart: unless-stopped
+    volumes:
+      - joshua-db-data:/data
+    environment:
+      DB_FILE: /data/portfolio.db
+    healthcheck:
+      # Also proves the schema exists, not merely that the file does.
+      test: ["CMD", "sqlite3", "/data/portfolio.db", "SELECT COUNT(*) FROM holdings;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  joshua-backend:
+    build: ./joshua/backend
+    container_name: joshua-backend
+    restart: unless-stopped
+    ports:
+      - "8011:5000"
+    environment:
+      DB_PATH: /data/portfolio.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
+    volumes:
+      # Same volume as joshua-database: that service creates and seeds the
+      # file, this one reads and writes it.
+      - joshua-db-data:/data
+    depends_on:
+      joshua-database:
+        condition: service_healthy
+      ollama:
+        # service_started, not service_healthy: the API is useful before a
+        # model has been pulled, and /api/insights returns a clean 503 until
+        # one is.
+        condition: service_started
+    healthcheck:
+      # /health returns 503 when the database is unreachable; urlopen raises
+      # on a non-2xx status, so the check fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  joshua-frontend:
+    build: ./joshua/frontend
+    container_name: joshua-frontend
+    restart: unless-stopped
+    ports:
+      - "8010:80"
+    depends_on:
+      joshua-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # MAXWELL -- ports 8020-8029
+  # =========================================================================
   maxwell-frontend:
     build:
       context: .
       dockerfile: Maxwell/frontend/Dockerfile
     container_name: maxwell-frontend
+    restart: unless-stopped
     ports:
       - "8020:80"
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    restart: unless-stopped
     depends_on:
       - ollama
 
-  # Maxwell backend provides API for glossary terms (SQLite + Ollama)
   maxwell-backend:
     build: ./Maxwell/backend
     container_name: maxwell-backend
+    restart: unless-stopped
     ports:
       - "8021:5000"
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    restart: unless-stopped
     depends_on:
       - ollama
 
+  # =========================================================================
+  # TEMPLATE -- copy this block, replace <name>, claim a port range above.
+  #
+  #   <name>-database:
+  #     build: ./<name>/database
+  #     volumes:
+  #       - <name>-db-data:/data
+  #
+  #   <name>-backend:
+  #     build: ./<name>/backend
+  #     ports:
+  #       - "80X1:5000"
+  #     environment:
+  #       OLLAMA_BASE_URL: http://ollama:11434
+  #       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+  #     volumes:
+  #       - <name>-db-data:/data
+  #     depends_on:
+  #       <name>-database:
+  #         condition: service_healthy
+  #
+  #   <name>-frontend:
+  #     build: ./<name>/frontend
+  #     ports:
+  #       - "80X0:80"
+  #
+  # ...and add <name>-db-data to the volumes block below.
+  # =========================================================================
+
 volumes:
+  # Shared
   ollama-models:
+  # Joshua
+  joshua-db-data:

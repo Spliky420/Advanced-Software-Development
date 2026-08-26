@@ -55,18 +55,28 @@ Agentic AI application.
 ### Known limitation — small models misread correctly-supplied figures
 
 A small model can get the *interpretation* of a correct figure wrong even
-though every number it was handed is right — comparing two supplied figures
-incorrectly, for instance, despite neither being invented. This is precisely
-why all arithmetic happens in Python and the LLM is given finished values:
-the architecture guarantees **the model cannot introduce a figure of its
-own**, but it does not, and cannot, guarantee the model reasons about
-supplied numbers well. A test that asserts every number in a response traces
-back to the computation layer (not the model) is worth writing for any
-feature that hands the LLM numeric data.
+though every number it was handed is right. Observed with `qwen2.5:0.5b` on
+`/api/insights`: asked to name the largest asset class, it named Australian
+equities at 11.66% when ETFs at 24.30% was plainly larger. Both figures were
+supplied correctly; the model simply compared them badly.
 
-`llama3.1:8b` is the demo model for this reason — it reads supplied figures
-more reliably than the 0.5b model. Develop against `qwen2.5:0.5b` for speed,
-demo on `llama3.1:8b`.
+This is precisely why all arithmetic happens in Python and the LLM is given
+finished values. The guarantee the architecture provides is that **the model
+cannot introduce a figure of its own** — every number in a response traces back
+to `allocation.build_portfolio_report` or to the drift pipeline built on it.
+It does not, and cannot, guarantee the model reasons about those numbers well.
+`joshua/tests/test_no_invented_figures.py` locks in the guarantee that holds;
+interpretation quality is a model-choice question, not a code one.
+
+`llama3.1:8b` is the demo model for this reason — it reads the supplied figures
+reliably where the 0.5b model does not. Develop against `qwen2.5:0.5b` for
+speed, demo on `llama3.1:8b`.
+
+One caveat on that test: the model's prose is returned to clients verbatim
+(`response_text` on `/api/insights`, `adapt.summary` on `/api/drift-review`)
+and nothing at runtime filters a number out of it. The test asserts the
+property against a compliant stand-in model, so it catches a regression in
+what Python sends and reports — not a misbehaving model in production.
 
 ## Host port ranges — one block per student
 
@@ -115,6 +125,17 @@ every service at once.
   of the constant, not a rewrite.
 - Features with no ownership concept — shared reference data that means the
   same thing regardless of who's looking it up — don't need `user_id` at all.
+
+### Joshua's backend (`joshua/backend/`) — Portfolio Holdings
+
+- Deliberately single-user for this release: every query is scoped to one
+  `DEFAULT_USER_ID` constant (defined once in `db.py`), holdings and targets
+  endpoints never take a `user_id` from the client, and created/updated rows
+  are stamped with it server-side.
+- `user_id` stays in the schema and every query layer function still takes it
+  as an explicit parameter.
+- The seed data's `user_id = 1` matches `DEFAULT_USER_ID`; keep them in sync
+  if either changes.
 
 ### Maxwell's backend (`Maxwell/backend/`) — Financial Glossary
 
