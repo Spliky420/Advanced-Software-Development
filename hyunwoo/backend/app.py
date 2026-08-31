@@ -8,6 +8,7 @@ import db
 
 app = Flask(__name__)
 
+# Values accepted by the bill form and API.
 FREQUENCIES = {
     "weekly",
     "fortnightly",
@@ -23,6 +24,7 @@ STATUSES = {
 }
 
 
+# Allow the frontend container to call this API.
 @app.after_request
 def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
@@ -31,6 +33,7 @@ def add_cors_headers(response):
     return response
 
 
+# Check dates and keep them in YYYY-MM-DD format.
 def validate_date(value, field_name, errors, required=True):
     if value in (None, ""):
         if required:
@@ -44,6 +47,7 @@ def validate_date(value, field_name, errors, required=True):
         return None
 
 
+# Clean and check data before saving it.
 def validate_bill(data):
     if not isinstance(data, dict):
         return None, {"request": "A JSON object is required."}
@@ -126,6 +130,7 @@ def validate_bill(data):
     return cleaned, None
 
 
+# Confirm that the database can be reached.
 @app.get("/health")
 def health():
     try:
@@ -145,11 +150,13 @@ def health():
         }), 503
 
 
+# Return every saved bill.
 @app.get("/api/bills")
 def get_bills():
     return jsonify(db.list_bills())
 
 
+# Return one bill or a not-found response.
 @app.get("/api/bills/<int:bill_id>")
 def get_bill(bill_id):
     bill = db.get_bill(bill_id)
@@ -160,6 +167,7 @@ def get_bill(bill_id):
     return jsonify(bill)
 
 
+# Validate and create a new bill.
 @app.post("/api/bills")
 def create_bill():
     cleaned, errors = validate_bill(request.get_json(silent=True))
@@ -177,6 +185,7 @@ def create_bill():
     return jsonify(bill), 201
 
 
+# Validate and update an existing bill.
 @app.put("/api/bills/<int:bill_id>")
 def update_bill(bill_id):
     cleaned, errors = validate_bill(request.get_json(silent=True))
@@ -197,6 +206,7 @@ def update_bill(bill_id):
     return jsonify(bill)
 
 
+# Delete an existing bill.
 @app.delete("/api/bills/<int:bill_id>")
 def delete_bill(bill_id):
     if not db.delete_bill(bill_id):

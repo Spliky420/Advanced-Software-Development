@@ -14,6 +14,7 @@ DB_PATH = os.environ.get(
 )
 
 
+# Open the database and return rows by column name.
 def connect():
     connection = sqlite3.connect(
         f"file:{DB_PATH}?mode=rw",
@@ -23,6 +24,7 @@ def connect():
     return connection
 
 
+# Return all bills in due-date order.
 def list_bills():
     with connect() as connection:
         rows = connection.execute(
@@ -36,6 +38,7 @@ def list_bills():
     return [dict(row) for row in rows]
 
 
+# Find one bill by its ID.
 def get_bill(bill_id):
     with connect() as connection:
         row = connection.execute(
@@ -46,6 +49,7 @@ def get_bill(bill_id):
     return dict(row) if row else None
 
 
+# Add a bill and return the saved record.
 def create_bill(data):
     with connect() as connection:
         cursor = connection.execute(
@@ -87,6 +91,7 @@ def create_bill(data):
     return dict(row)
 
 
+# Replace the details of an existing bill.
 def update_bill(bill_id, data):
     with connect() as connection:
         cursor = connection.execute(
@@ -132,6 +137,7 @@ def update_bill(bill_id, data):
     return dict(row)
 
 
+# Delete a bill and report whether it was found.
 def delete_bill(bill_id):
     with connect() as connection:
         cursor = connection.execute(
