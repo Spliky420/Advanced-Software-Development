@@ -112,36 +112,6 @@ services:
   # =========================================================================
   # MAXWELL -- ports 8020-8029
   # =========================================================================
-  maxwell-database:
-    build: ./Maxwell/database
-    container_name: maxwell-database
-    restart: unless-stopped
-    volumes:
-      - maxwell-db-data:/data
-    healthcheck:
-      test: ["CMD", "sqlite3", "/data/glossary.sqlite", "SELECT COUNT(*) FROM terms;"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  maxwell-backend:
-    build: ./Maxwell/backend
-    container_name: maxwell-backend
-    restart: unless-stopped
-    ports:
-      - "8021:5000"
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-      - DATABASE=/data/glossary.sqlite
-    volumes:
-      - maxwell-db-data:/data
-    depends_on:
-      maxwell-database:
-        condition: service_healthy
-      ollama:
-        condition: service_started
-
   maxwell-frontend:
     build:
       context: .
@@ -153,7 +123,18 @@ services:
     environment:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
-      - maxwell-backend
+      - ollama
+
+  maxwell-backend:
+    build: ./Maxwell/backend
+    container_name: maxwell-backend
+    restart: unless-stopped
+    ports:
+      - "8021:5000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
 
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
@@ -189,5 +170,3 @@ volumes:
   ollama-models:
   # Joshua
   joshua-db-data:
-  # Maxwell
-  maxwell-db-data:

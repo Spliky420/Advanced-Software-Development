@@ -127,7 +127,7 @@ def is_financial_term(term):
     return True
 
 # Database configuration
-DATABASE = os.path.join(os.path.dirname(__file__), '..', 'database', 'glossary.sqlite')
+DATABASE = os.environ.get('DATABASE', os.path.join(os.path.dirname(__file__), '..', 'database', 'glossary.sqlite'))
 OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://ollama:11434')
 OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
 
