@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-BACKEND_URL = "http://backend:5001"
+BACKEND_URL = "http://localhost:5001"
 
 
 @app.route("/")
