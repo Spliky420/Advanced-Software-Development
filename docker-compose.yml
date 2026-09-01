@@ -7,9 +7,10 @@
 # nothing above your own block should need to change.
 #
 # Host port ranges (keep these non-overlapping; claim yours in CLAUDE.md):
+#   Shared home 8000        unified landing page
 #   Joshua     8010-8019   CLAIMED
 #   Maxwell    8020-8029   CLAIMED
-#   <student3> 8030-8039   free
+#   HyunWoo    8030-8039   CLAIMED
 #   <student4> 8040-8049   free
 #   <student5> 8050-8059   free
 #   shared     11434       ollama
@@ -40,6 +41,19 @@ services:
       timeout: 5s
       retries: 12
       start_period: 30s
+
+  shared-frontend:
+    build: ./shared
+    container_name: shared-frontend
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # =========================================================================
   # JOSHUA -- ports 8010-8019
@@ -137,6 +151,65 @@ services:
       - ollama
 
   # =========================================================================
+  # HYUNWOO -- ports 8030-8039
+  # =========================================================================
+  hyunwoo-database:
+    build: ./hyunwoo/database
+    container_name: hyunwoo-database
+    restart: unless-stopped
+    volumes:
+      - hyunwoo-db-data:/data
+    environment:
+      DB_FILE: /data/bills.db
+    healthcheck:
+      test: ["CMD", "sqlite3", "/data/bills.db", "SELECT COUNT(*) FROM bills;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  hyunwoo-backend:
+    build: ./hyunwoo/backend
+    container_name: hyunwoo-backend
+    restart: unless-stopped
+    ports:
+      - "8031:5000"
+    environment:
+      DB_PATH: /data/bills.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+    volumes:
+      - hyunwoo-db-data:/data
+    depends_on:
+      hyunwoo-database:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  hyunwoo-frontend:
+    build: ./hyunwoo/frontend
+    container_name: hyunwoo-frontend
+    restart: unless-stopped
+    ports:
+      - "8030:80"
+    depends_on:
+      hyunwoo-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
   #
   #   <name>-database:
@@ -170,3 +243,6 @@ volumes:
   ollama-models:
   # Joshua
   joshua-db-data:
+  # HyunWoo
+  hyunwoo-db-data:
+    name: hyunwoo-db-data
