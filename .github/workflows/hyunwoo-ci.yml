@@ -1,0 +1,83 @@
+# Builds and tests HyunWoo's three services.
+name: hyunwoo-ci
+
+on:
+  push:
+    branches:
+      - HyunWoo-Bills-Subscriptions
+    paths:
+      - 'hyunwoo/**'
+      - '.github/workflows/hyunwoo-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'hyunwoo/**'
+      - '.github/workflows/hyunwoo-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hyunwoo-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-tests:
+    name: Backend tests
+    runs-on: ubuntu-24.04
+    env:
+      # Tests replace the model response and do not use the network.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            hyunwoo/backend/requirements.txt
+            hyunwoo/tests/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r hyunwoo/backend/requirements.txt
+          pip install -r hyunwoo/tests/requirements.txt
+
+      - name: Run tests
+        run: pytest hyunwoo/tests -v
+
+  frontend-checks:
+    name: Frontend checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: '22'
+
+      - name: Check JavaScript
+        run: node --check hyunwoo/frontend/app.js
+
+  docker-images:
+    name: Docker image builds
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build database image
+        run: docker build -t hyunwoo-database:ci hyunwoo/database
+
+      - name: Build backend image
+        run: docker build -t hyunwoo-backend:ci hyunwoo/backend
+
+      - name: Build frontend image
+        run: docker build -t hyunwoo-frontend:ci hyunwoo/frontend

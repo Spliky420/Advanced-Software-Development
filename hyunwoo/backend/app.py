@@ -138,7 +138,8 @@ def health():
     try:
         with db.connect() as connection:
             count = connection.execute(
-                "SELECT COUNT(*) FROM bills"
+                "SELECT COUNT(*) FROM bills WHERE user_id = ?",
+                (db.DEFAULT_USER_ID,),
             ).fetchone()[0]
 
         return jsonify({
@@ -155,13 +156,13 @@ def health():
 # Return every saved bill.
 @app.get("/api/bills")
 def get_bills():
-    return jsonify(db.list_bills())
+    return jsonify(db.list_bills(db.DEFAULT_USER_ID))
 
 
 # Return one bill or a not-found response.
 @app.get("/api/bills/<int:bill_id>")
 def get_bill(bill_id):
-    bill = db.get_bill(bill_id)
+    bill = db.get_bill(bill_id, db.DEFAULT_USER_ID)
 
     if bill is None:
         return jsonify({"error": "Bill not found"}), 404
@@ -178,7 +179,7 @@ def create_bill():
         return jsonify({"errors": errors}), 400
 
     try:
-        bill = db.create_bill(cleaned)
+        bill = db.create_bill(cleaned, db.DEFAULT_USER_ID)
     except sqlite3.IntegrityError:
         return jsonify({
             "error": "A bill with this name and provider already exists."
@@ -196,7 +197,7 @@ def update_bill(bill_id):
         return jsonify({"errors": errors}), 400
 
     try:
-        bill = db.update_bill(bill_id, cleaned)
+        bill = db.update_bill(bill_id, cleaned, db.DEFAULT_USER_ID)
     except sqlite3.IntegrityError:
         return jsonify({
             "error": "A bill with this name and provider already exists."
@@ -211,7 +212,7 @@ def update_bill(bill_id):
 # Delete an existing bill.
 @app.delete("/api/bills/<int:bill_id>")
 def delete_bill(bill_id):
-    if not db.delete_bill(bill_id):
+    if not db.delete_bill(bill_id, db.DEFAULT_USER_ID):
         return jsonify({"error": "Bill not found"}), 404
 
     return "", 204
@@ -220,7 +221,7 @@ def delete_bill(bill_id):
 # Return the combined cost of all active bills.
 @app.get("/api/summary")
 def get_summary():
-    bills = db.list_bills()
+    bills = db.list_bills(db.DEFAULT_USER_ID)
     return jsonify(calculations.build_cost_summary(bills))
 
 
@@ -237,7 +238,7 @@ def review_bills():
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
 
-    bills = db.list_bills()
+    bills = db.list_bills(db.DEFAULT_USER_ID)
     act_result = review.act(bills, plan_result)
     observe_result = review.observe(act_result, plan_result)
 

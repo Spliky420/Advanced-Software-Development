@@ -3,6 +3,9 @@ CREATE TABLE IF NOT EXISTS bills (
     -- Unique record number.
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
+    -- Release 0 uses one local user.
+    user_id INTEGER NOT NULL DEFAULT 1,
+
     -- Main bill details.
     name TEXT NOT NULL,
     provider TEXT NOT NULL,
@@ -40,5 +43,11 @@ CREATE TABLE IF NOT EXISTS bills (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Prevent duplicate bills.
-    UNIQUE (name, provider)
+    UNIQUE (user_id, name, provider)
 );
+
+-- Speeds up each user's due-date list.
+CREATE INDEX IF NOT EXISTS idx_bills_user_due
+ON bills (user_id, next_due_date, name);
+
+PRAGMA optimize;

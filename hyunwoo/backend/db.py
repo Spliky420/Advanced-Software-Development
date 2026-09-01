@@ -2,6 +2,9 @@ import os
 import sqlite3
 
 
+DEFAULT_USER_ID = 1
+
+
 # Database file shared with the database container.
 DB_PATH = os.environ.get(
     "DB_PATH",
@@ -24,37 +27,40 @@ def connect():
     return connection
 
 
-# Return all bills in due-date order.
-def list_bills():
+# Return one user's bills in due-date order.
+def list_bills(user_id):
     with connect() as connection:
         rows = connection.execute(
             """
             SELECT *
             FROM bills
+            WHERE user_id = ?
             ORDER BY next_due_date, name
-            """
+            """,
+            (user_id,),
         ).fetchall()
 
     return [dict(row) for row in rows]
 
 
-# Find one bill by its ID.
-def get_bill(bill_id):
+# Find one bill owned by the user.
+def get_bill(bill_id, user_id):
     with connect() as connection:
         row = connection.execute(
-            "SELECT * FROM bills WHERE id = ?",
-            (bill_id,),
+            "SELECT * FROM bills WHERE id = ? AND user_id = ?",
+            (bill_id, user_id),
         ).fetchone()
 
     return dict(row) if row else None
 
 
-# Add a bill and return the saved record.
-def create_bill(data):
+# Add a bill for the user.
+def create_bill(data, user_id):
     with connect() as connection:
         cursor = connection.execute(
             """
             INSERT INTO bills (
+                user_id,
                 name,
                 provider,
                 category,
@@ -66,9 +72,10 @@ def create_bill(data):
                 status,
                 notes
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
+                user_id,
                 data["name"],
                 data["provider"],
                 data["category"],
@@ -84,15 +91,15 @@ def create_bill(data):
         connection.commit()
 
         row = connection.execute(
-            "SELECT * FROM bills WHERE id = ?",
-            (cursor.lastrowid,),
+            "SELECT * FROM bills WHERE id = ? AND user_id = ?",
+            (cursor.lastrowid, user_id),
         ).fetchone()
 
     return dict(row)
 
 
-# Replace the details of an existing bill.
-def update_bill(bill_id, data):
+# Replace one of the user's bills.
+def update_bill(bill_id, data, user_id):
     with connect() as connection:
         cursor = connection.execute(
             """
@@ -107,7 +114,7 @@ def update_bill(bill_id, data):
                 trial_end_date = ?,
                 status = ?,
                 notes = ?
-            WHERE id = ?
+            WHERE id = ? AND user_id = ?
             """,
             (
                 data["name"],
@@ -121,6 +128,7 @@ def update_bill(bill_id, data):
                 data["status"],
                 data["notes"],
                 bill_id,
+                user_id,
             ),
         )
 
@@ -130,19 +138,19 @@ def update_bill(bill_id, data):
         connection.commit()
 
         row = connection.execute(
-            "SELECT * FROM bills WHERE id = ?",
-            (bill_id,),
+            "SELECT * FROM bills WHERE id = ? AND user_id = ?",
+            (bill_id, user_id),
         ).fetchone()
 
     return dict(row)
 
 
-# Delete a bill and report whether it was found.
-def delete_bill(bill_id):
+# Delete one of the user's bills.
+def delete_bill(bill_id, user_id):
     with connect() as connection:
         cursor = connection.execute(
-            "DELETE FROM bills WHERE id = ?",
-            (bill_id,),
+            "DELETE FROM bills WHERE id = ? AND user_id = ?",
+            (bill_id, user_id),
         )
         connection.commit()
 
