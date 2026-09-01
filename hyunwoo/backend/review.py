@@ -1,0 +1,144 @@
+from datetime import date, timedelta
+
+import calculations
+
+
+DEFAULT_WINDOW_DAYS = 30
+DUE_SOON_DAYS = 7
+
+
+# PLAN: choose the date range to review.
+def plan(review_date=None, window_days=DEFAULT_WINDOW_DAYS):
+    try:
+        review_day = (
+            date.today()
+            if review_date in (None, "")
+            else date.fromisoformat(review_date)
+        )
+    except (TypeError, ValueError) as error:
+        raise ValueError("Review date must use YYYY-MM-DD format.") from error
+
+    try:
+        window_days = int(window_days)
+    except (TypeError, ValueError) as error:
+        raise ValueError("Window days must be a number.") from error
+
+    if not 1 <= window_days <= 90:
+        raise ValueError("Window days must be between 1 and 90.")
+
+    review_end = review_day + timedelta(days=window_days)
+
+    return {
+        "phase": "plan",
+        "description": "Review active bills, renewals and trials in the selected period.",
+        "review_date": review_day.isoformat(),
+        "window_days": window_days,
+        "review_end_date": review_end.isoformat(),
+    }
+
+
+# ACT: calculate costs and important dates.
+def act(bills, plan_result):
+    review_day = date.fromisoformat(plan_result["review_date"])
+    active_bills = []
+
+    for bill in bills:
+        if bill["status"] != "active":
+            continue
+
+        due_date = date.fromisoformat(bill["next_due_date"])
+        monthly_cost = calculations.monthly_cost(
+            bill["amount"],
+            bill["billing_frequency"],
+        )
+
+        active_bills.append({
+            "id": bill["id"],
+            "name": bill["name"],
+            "provider": bill["provider"],
+            "category": bill["category"],
+            "amount": bill["amount"],
+            "billing_frequency": bill["billing_frequency"],
+            "monthly_cost": round(monthly_cost, 2),
+            "annual_cost": round(monthly_cost * 12, 2),
+            "next_due_date": bill["next_due_date"],
+            "days_until_due": (due_date - review_day).days,
+            "auto_renew": bool(bill["auto_renew"]),
+            "trial_end_date": bill["trial_end_date"],
+        })
+
+    active_bills.sort(
+        key=lambda bill: (bill["days_until_due"], bill["name"])
+    )
+
+    summary = calculations.build_cost_summary(bills)
+
+    return {
+        "phase": "act",
+        "description": "Calculate recurring costs and days until each payment.",
+        "active_bill_count": len(active_bills),
+        "monthly_cost": summary["monthly_cost"],
+        "annual_cost": summary["annual_cost"],
+        "bills": active_bills,
+    }
+
+
+def _alert_bill(bill):
+    return {
+        "id": bill["id"],
+        "name": bill["name"],
+        "provider": bill["provider"],
+        "next_due_date": bill["next_due_date"],
+        "days_until_due": bill["days_until_due"],
+        "monthly_cost": bill["monthly_cost"],
+    }
+
+
+# OBSERVE: flag items that need attention.
+def observe(act_result, plan_result):
+    review_day = date.fromisoformat(plan_result["review_date"])
+    window_days = plan_result["window_days"]
+
+    overdue = []
+    due_soon = []
+    upcoming_auto_renewals = []
+    expiring_trials = []
+    attention_ids = set()
+
+    for bill in act_result["bills"]:
+        days_until_due = bill["days_until_due"]
+
+        if days_until_due < 0:
+            overdue.append(_alert_bill(bill))
+            attention_ids.add(bill["id"])
+        elif days_until_due <= DUE_SOON_DAYS:
+            due_soon.append(_alert_bill(bill))
+            attention_ids.add(bill["id"])
+
+        if bill["auto_renew"] and 0 <= days_until_due <= window_days:
+            upcoming_auto_renewals.append(_alert_bill(bill))
+            attention_ids.add(bill["id"])
+
+        if bill["trial_end_date"]:
+            trial_end = date.fromisoformat(bill["trial_end_date"])
+            days_until_trial_end = (trial_end - review_day).days
+
+            if 0 <= days_until_trial_end <= window_days:
+                expiring_trials.append({
+                    "id": bill["id"],
+                    "name": bill["name"],
+                    "provider": bill["provider"],
+                    "trial_end_date": bill["trial_end_date"],
+                    "days_until_trial_end": days_until_trial_end,
+                })
+                attention_ids.add(bill["id"])
+
+    return {
+        "phase": "observe",
+        "description": "Flag overdue bills, near-term payments, renewals and trials.",
+        "attention_count": len(attention_ids),
+        "overdue": overdue,
+        "due_soon": due_soon,
+        "upcoming_auto_renewals": upcoming_auto_renewals,
+        "expiring_trials": expiring_trials,
+    }

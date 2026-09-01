@@ -3,8 +3,9 @@ from datetime import date
 
 from flask import Flask, jsonify, request
 
-import db
 import calculations
+import db
+import review
 
 app = Flask(__name__)
 
@@ -220,6 +221,30 @@ def delete_bill(bill_id):
 def get_summary():
     bills = db.list_bills()
     return jsonify(calculations.build_cost_summary(bills))
+
+
+# Run the first three agentic review phases.
+@app.post("/api/bills/review")
+def review_bills():
+    data = request.get_json(silent=True) or {}
+
+    try:
+        plan_result = review.plan(
+            review_date=data.get("review_date"),
+            window_days=data.get("window_days", review.DEFAULT_WINDOW_DAYS),
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+
+    bills = db.list_bills()
+    act_result = review.act(bills, plan_result)
+    observe_result = review.observe(act_result, plan_result)
+
+    return jsonify({
+        "plan": plan_result,
+        "act": act_result,
+        "observe": observe_result,
+    })
 
 
 if __name__ == "__main__":
