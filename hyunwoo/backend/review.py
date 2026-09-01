@@ -220,6 +220,7 @@ def build_actions(observe_result):
     return actions
 
 
+# Pick the first item using the planned order.
 def choose_priority(observe_result):
     if observe_result["overdue"]:
         bill = observe_result["overdue"][0]

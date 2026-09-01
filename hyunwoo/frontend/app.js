@@ -1,5 +1,7 @@
+// Backend address used by the browser.
 const API_BASE = `${window.location.protocol}//${window.location.hostname}:8031/api`;
 
+// Page elements updated by JavaScript.
 const elements = {
     connectionStatus: document.querySelector("#connection-status"),
     monthlyCost: document.querySelector("#monthly-cost"),
@@ -71,6 +73,7 @@ async function apiFetch(path, options = {}) {
     return body;
 }
 
+// Show whether the backend is available.
 function setConnection(connected) {
     elements.connectionStatus.classList.toggle("connected", connected);
     elements.connectionStatus.classList.toggle("disconnected", !connected);
@@ -79,6 +82,7 @@ function setConnection(connected) {
         : "Backend unavailable";
 }
 
+// Show a short success or error message.
 function showToast(message, type = "success") {
     window.clearTimeout(toastTimer);
     elements.toast.textContent = message;
@@ -90,6 +94,7 @@ function showToast(message, type = "success") {
     }, 3600);
 }
 
+// Fill the summary cards.
 function renderSummary(summary) {
     elements.monthlyCost.textContent = formatMoney(summary.monthly_cost);
     elements.annualCost.textContent = formatMoney(summary.annual_cost);
@@ -97,6 +102,7 @@ function renderSummary(summary) {
     elements.renewalCount.textContent = summary.auto_renew_count;
 }
 
+// Fill the table with saved bills.
 function renderBills() {
     if (!bills.length) {
         elements.billRows.innerHTML = '<tr><td colspan="7" class="table-message">No bills have been added.</td></tr>';
@@ -126,6 +132,7 @@ function renderBills() {
     `).join("");
 }
 
+// Load the bills and summary together.
 async function loadDashboard() {
     try {
         const [billData, summary] = await Promise.all([
@@ -144,6 +151,7 @@ async function loadDashboard() {
     }
 }
 
+// Return the form to add mode.
 function resetForm() {
     elements.billForm.reset();
     document.querySelector("#bill-id").value = "";
@@ -155,6 +163,7 @@ function resetForm() {
     elements.cancelEdit.hidden = true;
 }
 
+// Fill the form with an existing bill.
 function editBill(billId) {
     const bill = bills.find((item) => item.id === billId);
     if (!bill) return;
@@ -178,6 +187,7 @@ function editBill(billId) {
     document.querySelector("#bill-editor").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+// Read the current bill form values.
 function getFormPayload() {
     return {
         name: document.querySelector("#name").value,
@@ -193,6 +203,7 @@ function getFormPayload() {
     };
 }
 
+// Add a bill or save changes to one.
 async function saveBill(event) {
     event.preventDefault();
     const billId = document.querySelector("#bill-id").value;
@@ -216,6 +227,7 @@ async function saveBill(event) {
     }
 }
 
+// Remove a bill after confirmation.
 async function deleteBill(billId) {
     const bill = bills.find((item) => item.id === billId);
     if (!bill || !window.confirm(`Delete ${bill.name}?`)) return;
@@ -230,6 +242,7 @@ async function deleteBill(billId) {
     }
 }
 
+// Replace one phase card with its result.
 function setPhaseContent(id, html) {
     const card = document.querySelector(id);
     card.classList.add("complete");
@@ -237,6 +250,7 @@ function setPhaseContent(id, html) {
     card.insertAdjacentHTML("beforeend", `<div class="phase-content">${html}</div>`);
 }
 
+// Show the results from all four phases.
 function renderReview(review) {
     const priorities = review.plan.priority_order
         .map((priority) => escapeHtml(priority))
@@ -303,6 +317,7 @@ function renderReview(review) {
     `);
 }
 
+// Ask the backend to run the full review.
 async function runReview() {
     elements.runReview.disabled = true;
     elements.runReview.textContent = "Running review…";
@@ -327,6 +342,7 @@ async function runReview() {
     }
 }
 
+// Connect the page buttons and forms.
 elements.billForm.addEventListener("submit", saveBill);
 elements.cancelEdit.addEventListener("click", resetForm);
 elements.runReview.addEventListener("click", runReview);
@@ -344,6 +360,7 @@ elements.billRows.addEventListener("click", (event) => {
     if (button.dataset.action === "delete") deleteBill(billId);
 });
 
+// Load the first dashboard view.
 elements.reviewDate.value = new Date().toISOString().slice(0, 10);
 resetForm();
 loadDashboard();

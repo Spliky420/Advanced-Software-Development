@@ -1,3 +1,4 @@
+/* Shared colours and spacing. */
 :root {
     --color-primary: #1976d2;
     --color-primary-dark: #125ca8;
@@ -59,6 +60,7 @@ textarea:focus-visible {
     outline-offset: 2px;
 }
 
+/* Page heading and connection status. */
 .site-header {
     display: flex;
     align-items: flex-end;
@@ -118,6 +120,7 @@ textarea:focus-visible {
     background: #f97066;
 }
 
+/* Main dashboard layout. */
 .page-shell {
     width: min(1480px, 100%);
     margin: 0 auto;
@@ -273,6 +276,7 @@ textarea {
     color: #344054;
 }
 
+/* Plan, Act, Observe and Adapt cards. */
 .phase-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -363,6 +367,7 @@ textarea {
     color: var(--color-primary-dark);
 }
 
+/* Bill form. */
 .form-panel form {
     display: grid;
     gap: 16px;
@@ -396,6 +401,7 @@ textarea {
     margin-top: 20px;
 }
 
+/* Saved bills table. */
 .table-wrap {
     overflow-x: auto;
     margin-top: 18px;
@@ -503,6 +509,7 @@ tbody tr:hover {
     border: 0;
 }
 
+/* Tablet and mobile layouts. */
 @media (max-width: 1120px) {
     .summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
