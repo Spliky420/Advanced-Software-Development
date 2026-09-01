@@ -4,7 +4,7 @@ from datetime import date
 from flask import Flask, jsonify, request
 
 import db
-
+import calculations
 
 app = Flask(__name__)
 
@@ -213,6 +213,13 @@ def delete_bill(bill_id):
         return jsonify({"error": "Bill not found"}), 404
 
     return "", 204
+
+
+# Return the combined cost of all active bills.
+@app.get("/api/summary")
+def get_summary():
+    bills = db.list_bills()
+    return jsonify(calculations.build_cost_summary(bills))
 
 
 if __name__ == "__main__":

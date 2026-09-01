@@ -7,7 +7,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Flask application.
-COPY app.py db.py ./
+COPY app.py db.py calculations.py ./
 
 ENV DB_PATH=/data/bills.db
 ENV PYTHONDONTWRITEBYTECODE=1
