@@ -9,7 +9,7 @@
 # Host port ranges (keep these non-overlapping; claim yours in CLAUDE.md):
 #   Joshua     8010-8019   CLAIMED
 #   Maxwell    8020-8029   CLAIMED
-#   <student3> 8030-8039   free
+#   Enerel     8030-8039   CLAIMED
 #   <student4> 8040-8049   free
 #   <student5> 8050-8059   free
 #   shared     11434       ollama
@@ -137,6 +137,74 @@ services:
       - ollama
 
   # =========================================================================
+  # ENEREL -- ports 8030-8039 -- Research Library
+  # =========================================================================
+  enerel-database:
+    build: ./Enerel/database
+    container_name: enerel-database
+    restart: unless-stopped
+    volumes:
+      - enerel-db-data:/data
+    environment:
+      DB_FILE: /data/library.db
+    healthcheck:
+      # Also proves the schema exists, not merely that the file does.
+      test: ["CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  enerel-backend:
+    build: ./Enerel/backend
+    container_name: enerel-backend
+    restart: unless-stopped
+    ports:
+      - "8031:5000"
+    environment:
+      DB_PATH: /data/library.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+    volumes:
+      # Same volume as enerel-database: that service creates and seeds the
+      # file, this one reads and writes it.
+      - enerel-db-data:/data
+    depends_on:
+      enerel-database:
+        condition: service_healthy
+      ollama:
+        # service_started, not service_healthy: the API is useful before a
+        # model has been pulled, and /summarize or /search return a clean 503
+        # until one is.
+        condition: service_started
+    healthcheck:
+      # /health returns 503 when the database is unreachable; urlopen raises
+      # on a non-2xx status, so the check fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  enerel-frontend:
+    build: ./Enerel/frontend
+    container_name: enerel-frontend
+    restart: unless-stopped
+    ports:
+      - "8030:80"
+    depends_on:
+      enerel-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
   #
   #   <name>-database:
@@ -170,3 +238,5 @@ volumes:
   ollama-models:
   # Joshua
   joshua-db-data:
+  # Enerel
+  enerel-db-data:
