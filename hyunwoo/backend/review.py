@@ -13,7 +13,7 @@ INTRODUCTIONS = {
 }
 
 
-# PLAN: choose the date range to review.
+# PLAN: choose the review scope and priorities.
 def plan(review_date=None, window_days=DEFAULT_WINDOW_DAYS):
     try:
         review_day = (
@@ -40,6 +40,13 @@ def plan(review_date=None, window_days=DEFAULT_WINDOW_DAYS):
         "review_date": review_day.isoformat(),
         "window_days": window_days,
         "review_end_date": review_end.isoformat(),
+        "due_soon_days": DUE_SOON_DAYS,
+        "priority_order": [
+            "overdue bills",
+            "trials ending soon",
+            "payments due soon",
+            "automatic renewals",
+        ],
     }
 
 
@@ -161,6 +168,11 @@ def _future_label(days):
     return f"in {days} {_day_label(days)}"
 
 
+def _count_label(count, singular):
+    label = singular if count == 1 else f"{singular}s"
+    return f"{count} {label}"
+
+
 # Build exact actions from the calculated alerts.
 def build_actions(observe_result):
     actions = []
@@ -169,8 +181,8 @@ def build_actions(observe_result):
     for bill in observe_result["overdue"]:
         overdue_days = abs(bill["days_until_due"])
         actions.append(
-            f"{bill['name']} from {bill['provider']} was due on "
-            f"{bill['next_due_date']} and is {overdue_days} "
+            f"Review or pay {bill['name']} from {bill['provider']}. It was due "
+            f"on {bill['next_due_date']} and is {overdue_days} "
             f"{_day_label(overdue_days)} overdue."
         )
         added_ids.add(bill["id"])
@@ -178,7 +190,8 @@ def build_actions(observe_result):
     for trial in observe_result["expiring_trials"]:
         days = trial["days_until_trial_end"]
         actions.append(
-            f"The trial for {trial['name']} from {trial['provider']} ends on "
+            f"Decide whether to keep or cancel {trial['name']} from "
+            f"{trial['provider']} before its trial ends on "
             f"{trial['trial_end_date']} {_future_label(days)}."
         )
         added_ids.add(trial["id"])
@@ -188,8 +201,8 @@ def build_actions(observe_result):
             continue
 
         actions.append(
-            f"{bill['name']} from {bill['provider']} is due on "
-            f"{bill['next_due_date']} {_future_label(bill['days_until_due'])}."
+            f"Prepare for {bill['name']} from {bill['provider']}, which is due "
+            f"on {bill['next_due_date']} {_future_label(bill['days_until_due'])}."
         )
         added_ids.add(bill["id"])
 
@@ -198,18 +211,60 @@ def build_actions(observe_result):
             continue
 
         actions.append(
-            f"{bill['name']} from {bill['provider']} will automatically renew on "
-            f"{bill['next_due_date']} {_future_label(bill['days_until_due'])}."
+            f"Review whether to keep {bill['name']} from {bill['provider']} "
+            f"before it renews automatically on {bill['next_due_date']} "
+            f"{_future_label(bill['days_until_due'])}."
         )
         added_ids.add(bill["id"])
 
     return actions
 
 
-# Ask Ollama to choose an introduction style.
-def build_adapt_prompt():
+def choose_priority(observe_result):
+    if observe_result["overdue"]:
+        bill = observe_result["overdue"][0]
+        return {
+            "type": "overdue",
+            "reason": f"{bill['name']} is overdue and should be reviewed first.",
+        }
+
+    if observe_result["expiring_trials"]:
+        trial = observe_result["expiring_trials"][0]
+        return {
+            "type": "trial",
+            "reason": f"The {trial['name']} trial ends soon and needs a decision.",
+        }
+
+    if observe_result["due_soon"]:
+        bill = observe_result["due_soon"][0]
+        return {
+            "type": "due_soon",
+            "reason": f"{bill['name']} is due soon and should be prepared for.",
+        }
+
+    if observe_result["upcoming_auto_renewals"]:
+        bill = observe_result["upcoming_auto_renewals"][0]
+        return {
+            "type": "renewal",
+            "reason": f"{bill['name']} will renew automatically and should be reviewed.",
+        }
+
+    return {
+        "type": "clear",
+        "reason": "No bills or subscriptions need attention in this period.",
+    }
+
+
+# Ask Ollama to choose a tone from the review results.
+def build_adapt_prompt(act_result, observe_result, priority):
     return (
         "Choose a tone for introducing a bills and subscriptions action list. "
+        f"The monthly cost is ${act_result['monthly_cost']:.2f}. "
+        f"There are {_count_label(len(observe_result['overdue']), 'overdue bill')}, "
+        f"{_count_label(len(observe_result['due_soon']), 'payment')} due soon, "
+        f"{_count_label(len(observe_result['upcoming_auto_renewals']), 'renewal')} "
+        f"and {_count_label(len(observe_result['expiring_trials']), 'trial')} ending. "
+        f"The main priority is {priority['type']}. "
         "Reply with exactly one word: neutral, direct, or supportive. "
         "Do not include any other text."
     )
@@ -218,6 +273,7 @@ def build_adapt_prompt():
 # ADAPT: explain the calculated alerts in plain language.
 def adapt(act_result, observe_result, generate_fn, model_name):
     actions = build_actions(observe_result)
+    priority = choose_priority(observe_result)
 
     if observe_result["attention_count"] == 0:
         return {
@@ -227,11 +283,14 @@ def adapt(act_result, observe_result, generate_fn, model_name):
             "model_name": model_name,
             "summary": "No bills or subscriptions need attention in this period.",
             "summary_tone": "neutral",
+            "priority": priority,
             "actions": [],
             "summary_fallback_used": False,
         }
 
-    summary_tone = generate_fn(build_adapt_prompt()).strip().lower()
+    summary_tone = generate_fn(
+        build_adapt_prompt(act_result, observe_result, priority)
+    ).strip().lower()
     summary_fallback_used = summary_tone not in INTRODUCTIONS
 
     if summary_fallback_used:
@@ -246,6 +305,7 @@ def adapt(act_result, observe_result, generate_fn, model_name):
         "model_name": model_name,
         "summary": summary,
         "summary_tone": summary_tone,
+        "priority": priority,
         "actions": actions,
         "summary_fallback_used": summary_fallback_used,
     }

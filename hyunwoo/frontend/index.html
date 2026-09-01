@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track recurring bills, subscriptions, renewals and trials.">
+    <title>Bills &amp; Subscriptions</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div>
+            <p class="eyebrow">Personal finance workspace</p>
+            <h1>Bills &amp; Subscriptions</h1>
+            <p class="header-copy">Keep recurring costs, due dates and renewals in one clear view.</p>
+        </div>
+        <div class="connection-status" id="connection-status" role="status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span>Connecting to backend</span>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="summary-grid" aria-label="Cost summary">
+            <article class="summary-card summary-card-primary">
+                <span>Monthly recurring cost</span>
+                <strong id="monthly-cost">—</strong>
+                <small>Normalised across billing periods</small>
+            </article>
+            <article class="summary-card">
+                <span>Annual recurring cost</span>
+                <strong id="annual-cost">—</strong>
+                <small>Estimated from active records</small>
+            </article>
+            <article class="summary-card">
+                <span>Active bills</span>
+                <strong id="active-count">—</strong>
+                <small>Currently included in totals</small>
+            </article>
+            <article class="summary-card">
+                <span>Automatic renewals</span>
+                <strong id="renewal-count">—</strong>
+                <small>Active recurring commitments</small>
+            </article>
+        </section>
+
+        <div class="workspace-grid">
+            <section class="panel review-panel" aria-labelledby="review-heading">
+                <div class="panel-heading review-heading-row">
+                    <div>
+                        <p class="section-kicker">Agentic AI review</p>
+                        <h2 id="review-heading">Plan, Act, Observe, Adapt</h2>
+                    </div>
+                    <div class="review-controls">
+                        <label>
+                            Review date
+                            <input type="date" id="review-date">
+                        </label>
+                        <label>
+                            Days
+                            <input type="number" id="window-days" min="1" max="90" value="30">
+                        </label>
+                        <button class="button button-primary" id="run-review" type="button">
+                            Run AI review
+                        </button>
+                    </div>
+                </div>
+
+                <div class="phase-grid" id="phase-grid" aria-live="polite">
+                    <article class="phase-card" id="phase-plan">
+                        <span class="phase-number">01</span>
+                        <h3>Plan</h3>
+                        <div class="phase-content">
+                            <ul>
+                                <li>Review every active bill in the selected period.</li>
+                                <li>Prioritise overdue and near-term payments.</li>
+                                <li>Check upcoming renewals and trial endings.</li>
+                            </ul>
+                        </div>
+                    </article>
+                    <article class="phase-card" id="phase-act">
+                        <span class="phase-number">02</span>
+                        <h3>Act</h3>
+                        <div class="phase-content">
+                            <ul>
+                                <li>Load the active bills and subscriptions.</li>
+                                <li>Calculate comparable monthly and annual costs.</li>
+                                <li>Sort each payment by urgency.</li>
+                            </ul>
+                        </div>
+                    </article>
+                    <article class="phase-card" id="phase-observe">
+                        <span class="phase-number">03</span>
+                        <h3>Observe</h3>
+                        <div class="phase-content">
+                            <ul>
+                                <li>Identify overdue and soon-due payments.</li>
+                                <li>Detect automatic renewals.</li>
+                                <li>Find trials ending inside the review period.</li>
+                            </ul>
+                        </div>
+                    </article>
+                    <article class="phase-card" id="phase-adapt">
+                        <span class="phase-number">04</span>
+                        <h3>Adapt</h3>
+                        <div class="phase-content">
+                            <ul>
+                                <li>Prioritise the items needing attention.</li>
+                                <li>Create clear next steps from the findings.</li>
+                                <li>Use Ollama to adjust the summary tone.</li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <aside class="panel form-panel" id="bill-editor" aria-labelledby="form-heading">
+                <div class="panel-heading">
+                    <p class="section-kicker">Bill editor</p>
+                    <h2 id="form-heading">Add a bill</h2>
+                    <p id="form-description">Create a recurring payment or subscription.</p>
+                </div>
+
+                <form id="bill-form">
+                    <input type="hidden" id="bill-id">
+
+                    <div class="form-grid">
+                        <label>
+                            Name
+                            <input type="text" id="name" maxlength="80" required>
+                        </label>
+                        <label>
+                            Provider
+                            <input type="text" id="provider" maxlength="80" required>
+                        </label>
+                        <label>
+                            Category
+                            <select id="category" required>
+                                <option value="">Choose a category</option>
+                                <option>Entertainment</option>
+                                <option>Health</option>
+                                <option>Insurance</option>
+                                <option>Software</option>
+                                <option>Technology</option>
+                                <option>Telecommunications</option>
+                                <option>Utilities</option>
+                                <option>Other</option>
+                            </select>
+                        </label>
+                        <label>
+                            Amount (AUD)
+                            <input type="number" id="amount" min="0.01" step="0.01" required>
+                        </label>
+                        <label>
+                            Billing frequency
+                            <select id="billing-frequency" required>
+                                <option value="weekly">Weekly</option>
+                                <option value="fortnightly">Fortnightly</option>
+                                <option value="monthly" selected>Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </label>
+                        <label>
+                            Next due date
+                            <input type="date" id="next-due-date" required>
+                        </label>
+                        <label>
+                            Trial end date
+                            <input type="date" id="trial-end-date">
+                        </label>
+                        <label>
+                            Status
+                            <select id="status" required>
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <label class="checkbox-field">
+                        <input type="checkbox" id="auto-renew">
+                        <span>Renews automatically</span>
+                    </label>
+
+                    <label>
+                        Notes
+                        <textarea id="notes" rows="3" maxlength="250"></textarea>
+                    </label>
+
+                    <div class="form-actions">
+                        <button class="button button-primary" type="submit" id="save-bill">Save bill</button>
+                        <button class="button button-secondary" type="button" id="cancel-edit" hidden>Cancel edit</button>
+                    </div>
+                </form>
+            </aside>
+        </div>
+
+        <section class="panel bills-panel" aria-labelledby="bills-heading">
+            <div class="panel-heading bills-heading-row">
+                <div>
+                    <p class="section-kicker">Recurring commitments</p>
+                    <h2 id="bills-heading">Saved bills</h2>
+                </div>
+                <button class="button button-secondary" id="new-bill" type="button">Add new bill</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bill</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Frequency</th>
+                            <th>Next due</th>
+                            <th>Status</th>
+                            <th><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="bill-rows">
+                        <tr><td colspan="7" class="table-message">Loading bills…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
