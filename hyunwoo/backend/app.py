@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request
 
 import calculations
 import db
+import llm
 import review
 
 app = Flask(__name__)
@@ -223,7 +224,7 @@ def get_summary():
     return jsonify(calculations.build_cost_summary(bills))
 
 
-# Run the first three agentic review phases.
+# Run the full agentic review.
 @app.post("/api/bills/review")
 def review_bills():
     data = request.get_json(silent=True) or {}
@@ -240,11 +241,30 @@ def review_bills():
     act_result = review.act(bills, plan_result)
     observe_result = review.observe(act_result, plan_result)
 
-    return jsonify({
+    response = {
         "plan": plan_result,
         "act": act_result,
         "observe": observe_result,
-    })
+    }
+
+    try:
+        response["adapt"] = review.adapt(
+            act_result,
+            observe_result,
+            generate_fn=llm.generate,
+            model_name=llm.OLLAMA_MODEL,
+        )
+    except llm.LLMError as error:
+        response["adapt"] = {
+            "phase": "adapt",
+            "description": "Provide a plain-language action summary.",
+            "llm_called": True,
+            "model_name": llm.OLLAMA_MODEL,
+            "error": str(error),
+        }
+        return jsonify(response), 503
+
+    return jsonify(response)
 
 
 if __name__ == "__main__":

@@ -7,9 +7,11 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Flask application.
-COPY app.py db.py calculations.py review.py ./
+COPY app.py db.py calculations.py review.py llm.py ./
 
 ENV DB_PATH=/data/bills.db
+ENV OLLAMA_BASE_URL=http://ollama:11434
+ENV OLLAMA_MODEL=qwen2.5:0.5b
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 

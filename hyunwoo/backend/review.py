@@ -6,6 +6,12 @@ import calculations
 DEFAULT_WINDOW_DAYS = 30
 DUE_SOON_DAYS = 7
 
+INTRODUCTIONS = {
+    "neutral": "Review the following bills and subscriptions that need attention.",
+    "direct": "Take action on the bills and subscriptions listed below.",
+    "supportive": "Use the action list below to stay on top of upcoming commitments.",
+}
+
 
 # PLAN: choose the date range to review.
 def plan(review_date=None, window_days=DEFAULT_WINDOW_DAYS):
@@ -141,4 +147,105 @@ def observe(act_result, plan_result):
         "due_soon": due_soon,
         "upcoming_auto_renewals": upcoming_auto_renewals,
         "expiring_trials": expiring_trials,
+    }
+
+
+def _day_label(days):
+    return "day" if days == 1 else "days"
+
+
+def _future_label(days):
+    if days == 0:
+        return "today"
+
+    return f"in {days} {_day_label(days)}"
+
+
+# Build exact actions from the calculated alerts.
+def build_actions(observe_result):
+    actions = []
+    added_ids = set()
+
+    for bill in observe_result["overdue"]:
+        overdue_days = abs(bill["days_until_due"])
+        actions.append(
+            f"{bill['name']} from {bill['provider']} was due on "
+            f"{bill['next_due_date']} and is {overdue_days} "
+            f"{_day_label(overdue_days)} overdue."
+        )
+        added_ids.add(bill["id"])
+
+    for trial in observe_result["expiring_trials"]:
+        days = trial["days_until_trial_end"]
+        actions.append(
+            f"The trial for {trial['name']} from {trial['provider']} ends on "
+            f"{trial['trial_end_date']} {_future_label(days)}."
+        )
+        added_ids.add(trial["id"])
+
+    for bill in observe_result["due_soon"]:
+        if bill["id"] in added_ids:
+            continue
+
+        actions.append(
+            f"{bill['name']} from {bill['provider']} is due on "
+            f"{bill['next_due_date']} {_future_label(bill['days_until_due'])}."
+        )
+        added_ids.add(bill["id"])
+
+    for bill in observe_result["upcoming_auto_renewals"]:
+        if bill["id"] in added_ids:
+            continue
+
+        actions.append(
+            f"{bill['name']} from {bill['provider']} will automatically renew on "
+            f"{bill['next_due_date']} {_future_label(bill['days_until_due'])}."
+        )
+        added_ids.add(bill["id"])
+
+    return actions
+
+
+# Ask Ollama to choose an introduction style.
+def build_adapt_prompt():
+    return (
+        "Choose a tone for introducing a bills and subscriptions action list. "
+        "Reply with exactly one word: neutral, direct, or supportive. "
+        "Do not include any other text."
+    )
+
+
+# ADAPT: explain the calculated alerts in plain language.
+def adapt(act_result, observe_result, generate_fn, model_name):
+    actions = build_actions(observe_result)
+
+    if observe_result["attention_count"] == 0:
+        return {
+            "phase": "adapt",
+            "description": "Provide a plain-language action summary.",
+            "llm_called": False,
+            "model_name": model_name,
+            "summary": "No bills or subscriptions need attention in this period.",
+            "summary_tone": "neutral",
+            "actions": [],
+            "summary_fallback_used": False,
+        }
+
+    summary_tone = generate_fn(build_adapt_prompt()).strip().lower()
+    summary_fallback_used = summary_tone not in INTRODUCTIONS
+
+    if summary_fallback_used:
+        summary_tone = "neutral"
+
+    summary = INTRODUCTIONS[summary_tone]
+
+    return {
+        "phase": "adapt",
+        "description": "Provide a plain-language action summary.",
+        "llm_called": True,
+        "model_name": model_name,
+        "summary": summary,
+        "summary_tone": summary_tone,
+        "actions": actions,
+        "summary_fallback_used": summary_fallback_used,
     }
