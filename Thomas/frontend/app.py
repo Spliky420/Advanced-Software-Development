@@ -10,6 +10,32 @@ BACKEND_URL = "http://localhost:5001"
 def index():
     return render_template("index.html")
 
+@app.route(
+    "/api/transactions/<int:transaction_id>/edit",
+    methods=["GET"]
+)
+def edit_transaction_form(transaction_id):
+    response = requests.get(
+        f"{BACKEND_URL}/api/transactions/{transaction_id}/edit"
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type")
+    )
+
+@app.route("/api/transactions/summary", methods=["GET"])
+def transaction_summary():
+    response = requests.get(
+        f"{BACKEND_URL}/api/transactions/summary"
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type")
+    )
 
 @app.route("/api/transactions", methods=["GET", "POST"])
 def transactions():

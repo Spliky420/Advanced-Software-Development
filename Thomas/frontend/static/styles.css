@@ -446,3 +446,30 @@ footer {
         flex-direction: column;
     }
 }
+.edit-form {
+    width: 100%;
+}
+
+.edit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.edit-grid input,
+.edit-grid select {
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .edit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .edit-grid {
+        grid-template-columns: 1fr;
+    }
+}

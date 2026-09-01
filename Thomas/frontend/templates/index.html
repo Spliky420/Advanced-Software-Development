@@ -34,24 +34,28 @@
 <main class="container">
 
     <!-- SUMMARY -->
-    <section class="summary-grid">
+    <section
+    id="summary-grid"
+    class="summary-grid"
+    hx-get="/api/transactions/summary"
+    hx-trigger="load"
+    hx-swap="innerHTML"
+>
+    <div class="summary-card">
+        <span>Total Income</span>
+        <strong>Loading...</strong>
+    </div>
 
-        <div class="summary-card">
-            <span>Total Income</span>
-            <strong id="total-income">$0.00</strong>
-        </div>
+    <div class="summary-card">
+        <span>Total Expenses</span>
+        <strong>Loading...</strong>
+    </div>
 
-        <div class="summary-card">
-            <span>Total Expenses</span>
-            <strong id="total-expenses">$0.00</strong>
-        </div>
-
-        <div class="summary-card">
-            <span>Potential Deductions</span>
-            <strong id="total-deductions">$0.00</strong>
-        </div>
-
-    </section>
+    <div class="summary-card">
+        <span>Potential Deductions</span>
+        <strong>Loading...</strong>
+    </div>
+</section>
 
 
     <!-- ADD TRANSACTION -->
@@ -70,6 +74,12 @@
             hx-target="#transaction-table-body"
             hx-swap="afterbegin"
             hx-encoding="multipart/form-data"
+            hx-on::after-request="
+    htmx.ajax('GET', '/api/transactions/summary', {
+        target: '#summary-grid',
+        swap: 'innerHTML'
+    })
+"
             class="transaction-form"
         >
 
