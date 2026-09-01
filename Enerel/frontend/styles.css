@@ -79,8 +79,19 @@ body {
   margin: 0 auto;
 }
 
+/* The side module (detail pane + RAG search) is a permanent sidebar from
+   this breakpoint up, not something that only appears once a document is
+   open -- it stacks below the library on narrow screens instead. */
 @media (min-width: 900px) {
-  .layout.has-detail { grid-template-columns: 1fr 1fr; align-items: start; }
+  .layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+}
+
+.side-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
 }
 
 .filters {
@@ -100,6 +111,11 @@ body {
 
 .filters input[type="search"] { flex: 1 1 220px; }
 
+.date-range-input {
+  flex: 0 1 190px;
+  cursor: pointer;
+}
+
 .banner {
   padding: 0.6rem 1rem;
   border-radius: var(--radius);
@@ -114,6 +130,12 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 0.9rem;
+}
+
+.grid.grid-capped {
+  overflow-y: auto;
+  padding-right: 0.4rem;
+  scrollbar-gutter: stable;
 }
 
 .doc-card {
@@ -178,9 +200,10 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
-  position: sticky;
-  top: 1rem;
-  max-height: calc(100vh - 2rem);
+  /* .side-pane is the sticky element now, since it also holds the RAG
+     module below this; cap this block's own height so a long document
+     doesn't push the RAG module out of the sidebar entirely. */
+  max-height: 60vh;
   overflow-y: auto;
 }
 
@@ -229,15 +252,19 @@ body {
 
 .muted { color: var(--muted); font-size: 0.85rem; }
 
-.rag-panel {
-  margin-top: 1.5rem;
+.rag-module {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   background: var(--panel);
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
-.rag-panel summary { cursor: pointer; font-weight: 600; }
+.rag-module h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
 
 .rag-form {
   display: flex;
@@ -325,6 +352,12 @@ dialog#doc-modal::backdrop {
   color: var(--danger);
   font-size: 0.85rem;
   white-space: pre-line;
+}
+
+/* Reused as a transient status line (e.g. "Extracting text…") while a file
+   is being read, before anything has actually gone wrong. */
+.form-errors.muted {
+  color: var(--muted);
 }
 
 .modal-actions {

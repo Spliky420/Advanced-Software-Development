@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Research Library</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -19,8 +20,8 @@
         <select id="filter-doc-type">
           <option value="">All types</option>
         </select>
-        <input type="date" id="filter-date-from" title="Published from" />
-        <input type="date" id="filter-date-to" title="Published to" />
+        <input type="text" id="filter-date-range" class="date-range-input"
+          placeholder="Published date range" readonly />
         <button type="submit" class="btn btn-icon" aria-label="Search" title="Search">🔍</button>
         <button type="button" id="clear-filters-btn" class="btn btn-ghost">Clear</button>
       </form>
@@ -28,9 +29,16 @@
       <div id="status-banner" class="banner" hidden></div>
 
       <div id="document-grid" class="grid" aria-live="polite"></div>
+    </section>
 
-      <details class="rag-panel">
-        <summary>🔎 Retrieval search (RAG chunk lookup)</summary>
+    <aside class="side-pane">
+      <section id="detail-pane" class="detail-pane" hidden>
+        <button id="close-detail-btn" class="btn btn-ghost close-btn">✕ Close</button>
+        <div id="detail-content"></div>
+      </section>
+
+      <section class="rag-module">
+        <h3>🔎 Retrieval search</h3>
         <p class="muted">
           Searches indexed chunks across every document by meaning, not just
           keyword match — the same endpoint other services call to pull
@@ -41,13 +49,8 @@
           <button type="submit" class="btn">Search</button>
         </form>
         <div id="rag-results"></div>
-      </details>
-    </section>
-
-    <section id="detail-pane" class="detail-pane" hidden>
-      <button id="close-detail-btn" class="btn btn-ghost close-btn">✕ Close</button>
-      <div id="detail-content"></div>
-    </section>
+      </section>
+    </aside>
   </main>
 
   <dialog id="doc-modal">
@@ -78,7 +81,7 @@
       <label>
         Document
         <div class="body-source-row">
-          <input type="file" id="field-body-file" accept=".txt,.md,.csv,.json,text/plain" />
+          <input type="file" id="field-body-file" accept=".txt,.md,.csv,.json,.pdf,text/plain,application/pdf" />
           <span class="muted">or paste/type below</span>
         </div>
       </label>
@@ -99,6 +102,11 @@
     </form>
   </dialog>
 
+  <!-- PDF text extraction for the "upload a file" path in the document form.
+       Client-side only: the backend never sees a PDF, only the extracted
+       body_text string, so no server-side change or dependency is needed. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -24,6 +24,9 @@ const state = {
   editingId: null,
 };
 
+// flatpickr instance backing #filter-date-range, set once in init().
+let dateRangePicker = null;
+
 const el = (id) => document.getElementById(id);
 
 function labelForType(type) {
@@ -85,12 +88,27 @@ function hideBanner() {
 // list + filters
 // --------------------------------------------------------------------------
 
+// yyyy-mm-dd from local date parts, not toISOString() -- that converts to
+// UTC first and can shift the date by a day depending on timezone.
+function formatDateYMD(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function currentFilters() {
   const params = new URLSearchParams();
   const q = el("filter-q").value.trim();
   const docType = el("filter-doc-type").value;
-  const dateFrom = el("filter-date-from").value;
-  const dateTo = el("filter-date-to").value;
+
+  const selectedDates = dateRangePicker ? dateRangePicker.selectedDates : [];
+  const dateFrom = selectedDates[0] ? formatDateYMD(selectedDates[0]) : "";
+  // A range picker's second date only lands once both ends are picked; a
+  // single selected date means "just that day", same as before-and-after
+  // both being the two plain date inputs used to give you independently.
+  const dateTo = selectedDates[1] ? formatDateYMD(selectedDates[1]) : dateFrom;
+
   if (q) params.set("q", q);
   if (docType) params.set("doc_type", docType);
   if (dateFrom) params.set("date_from", dateFrom);
@@ -110,6 +128,8 @@ async function loadDocuments() {
   renderGrid();
 }
 
+const GRID_VISIBLE_CAP = 8;
+
 function renderGrid() {
   const grid = el("document-grid");
   grid.innerHTML = "";
@@ -119,6 +139,7 @@ function renderGrid() {
     empty.className = "empty-state";
     empty.textContent = "No documents match. Try clearing filters, or add a new document.";
     grid.appendChild(empty);
+    capGridHeight();
     return;
   }
 
@@ -159,6 +180,31 @@ function renderGrid() {
 
     grid.appendChild(card);
   }
+
+  capGridHeight();
+}
+
+// Shows at most GRID_VISIBLE_CAP rows of cards; anything beyond that scrolls
+// inside the grid itself rather than growing the page. Measured with
+// getBoundingClientRect rather than a fixed pixel height because the grid's
+// column count is responsive (auto-fill), so how many cards make up "8" worth
+// of rows depends on viewport width.
+function capGridHeight() {
+  const grid = el("document-grid");
+  const cards = grid.querySelectorAll(".doc-card");
+
+  if (cards.length <= GRID_VISIBLE_CAP) {
+    grid.classList.remove("grid-capped");
+    grid.style.maxHeight = "";
+    return;
+  }
+
+  const gridTop = grid.getBoundingClientRect().top;
+  const lastVisibleCard = cards[GRID_VISIBLE_CAP - 1];
+  const visibleHeight = lastVisibleCard.getBoundingClientRect().bottom - gridTop;
+
+  grid.style.maxHeight = `${Math.ceil(visibleHeight)}px`;
+  grid.classList.add("grid-capped");
 }
 
 function escapeHtml(str) {
@@ -174,7 +220,6 @@ function escapeHtml(str) {
 async function openDetail(id) {
   state.selectedId = id;
   el("detail-pane").hidden = false;
-  document.querySelector(".layout").classList.add("has-detail");
   renderDetailLoading();
 
   try {
@@ -272,7 +317,6 @@ async function deleteDocument(id) {
 function closeDetail() {
   state.selectedId = null;
   el("detail-pane").hidden = true;
-  document.querySelector(".layout").classList.remove("has-detail");
 }
 
 // --------------------------------------------------------------------------
@@ -293,25 +337,83 @@ function openForm(doc = null) {
   el("doc-modal").showModal();
 }
 
+function isPdfFile(file) {
+  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+}
+
+// Extracts plain text from a PDF entirely in the browser via pdf.js -- the
+// backend only ever receives the resulting body_text string, never the PDF
+// itself, so no server-side parsing dependency is needed.
+async function extractPdfText(file) {
+  if (!window.pdfjsLib) {
+    throw new Error("the PDF reader failed to load (check your internet connection and reload the page)");
+  }
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  const pageTexts = [];
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const textContent = await page.getTextContent();
+    pageTexts.push(textContent.items.map((item) => item.str).join(" "));
+  }
+  return pageTexts.join("\n\n").trim();
+}
+
 async function handleFilePicked(event) {
   const file = event.target.files[0];
   const fileError = el("file-error");
   fileError.hidden = true;
   if (!file) return;
 
-  const looksTextLike = file.type.startsWith("text/") || file.type === "application/json" || file.type === "";
-  if (!looksTextLike) {
-    fileError.textContent = `"${file.name}" doesn't look like a plain text file. Convert it to .txt or paste its text below instead.`;
-    fileError.hidden = false;
-    event.target.value = "";
-    return;
-  }
+  // Extraction is async and can take a moment for a multi-page PDF -- block
+  // Save until it finishes, otherwise a fast click submits an empty
+  // body_text and the backend rejects it, which looks like "save is broken"
+  // when it's really just a race with a file still being read.
+  const saveBtn = el("save-doc-btn");
+  saveBtn.disabled = true;
 
   try {
-    el("field-body-text").value = await file.text();
-  } catch (err) {
-    fileError.textContent = `Could not read "${file.name}": ${err.message}`;
-    fileError.hidden = false;
+    if (isPdfFile(file)) {
+      fileError.textContent = `Extracting text from "${file.name}"…`;
+      fileError.classList.add("muted");
+      fileError.hidden = false;
+      try {
+        const text = await extractPdfText(file);
+        if (!text) {
+          fileError.textContent = `"${file.name}" has no extractable text (likely a scanned image) — paste the text below instead.`;
+          fileError.classList.remove("muted");
+          event.target.value = "";
+          return;
+        }
+        el("field-body-text").value = text;
+        fileError.hidden = true;
+        fileError.classList.remove("muted");
+      } catch (err) {
+        fileError.textContent = `Could not read "${file.name}": ${err.message}`;
+        fileError.classList.remove("muted");
+        fileError.hidden = false;
+        event.target.value = "";
+      }
+      return;
+    }
+
+    const looksTextLike = file.type.startsWith("text/") || file.type === "application/json" || file.type === "";
+    if (!looksTextLike) {
+      fileError.textContent = `"${file.name}" doesn't look like a plain text or PDF file. Convert it to .txt/.pdf or paste its text below instead.`;
+      fileError.hidden = false;
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      el("field-body-text").value = await file.text();
+    } catch (err) {
+      fileError.textContent = `Could not read "${file.name}": ${err.message}`;
+      fileError.hidden = false;
+    }
+  } finally {
+    saveBtn.disabled = false;
   }
 }
 
@@ -397,12 +499,31 @@ function renderRagResults(results) {
 function init() {
   populateDocTypeSelects();
 
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+
+  if (window.flatpickr) {
+    dateRangePicker = flatpickr("#filter-date-range", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      altInput: true,
+      altFormat: "M j, Y",
+      altInputClass: "date-range-input",
+    });
+  }
+
   el("filter-form").addEventListener("submit", (e) => {
     e.preventDefault();
     loadDocuments();
   });
   el("clear-filters-btn").addEventListener("click", () => {
     el("filter-form").reset();
+    // form.reset() only clears the native input flatpickr wraps, not its
+    // own internal selectedDates -- clear that explicitly or a stale range
+    // keeps applying after "Clear" is clicked.
+    if (dateRangePicker) dateRangePicker.clear();
     loadDocuments();
   });
 
@@ -414,6 +535,14 @@ function init() {
   el("close-detail-btn").addEventListener("click", closeDetail);
 
   el("rag-form").addEventListener("submit", runRagSearch);
+
+  // The grid's column count is responsive, so how tall 8 rows' worth of
+  // cards is changes with viewport width -- recompute the cap on resize.
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(capGridHeight, 150);
+  });
 
   loadDocuments();
 }
