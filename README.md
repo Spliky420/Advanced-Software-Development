@@ -94,8 +94,8 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 | 8000      | **Shared** | Unified project home page                          |
 | 8010–8019 | **Joshua** | 8010 frontend, 8011 backend (database has no port) |
 | 8020–8029 | **Maxwell**| 8020 frontend, 8021 backend (database has no port) |
-| 8030–8039 | **HyunWoo**| 8030 frontend, 8031 backend (database has no port) |
-| 8040–8049 | free       |                                                    |
+| 8030–8039 | free       |                                                    |
+| 8040–8049 | **HyunWoo**| 8040 frontend, 8041 backend (database has no port) |
 | 8050–8059 | free       |                                                    |
 | 11434     | shared     | `ollama` — one instance serves every backend       |
 
@@ -372,12 +372,12 @@ recommended actions remain based on validated Python results.
 
 | Service              | Host port | Purpose                                      |
 | -------------------- | --------- | -------------------------------------------- |
-| `hyunwoo-frontend`   | **8030**  | nginx serving the bills dashboard            |
-| `hyunwoo-backend`    | **8031**  | Flask REST API and agentic review             |
+| `hyunwoo-frontend`   | **8040**  | nginx serving the bills dashboard            |
+| `hyunwoo-backend`    | **8041**  | Flask REST API and agentic review             |
 | `hyunwoo-database`   | —         | SQLite database seeded with 10 sample records |
 
-Open <http://localhost:8030> for the dashboard, or call the API directly at
-`http://localhost:8031`. The shared project homepage is available at
+Open <http://localhost:8040> for the dashboard, or call the API directly at
+`http://localhost:8041`. The shared project homepage is available at
 <http://localhost:8000>.
 
 The database service owns the `hyunwoo-db-data` volume. It creates the bills
@@ -420,7 +420,7 @@ docker compose up -d --build ollama shared-frontend hyunwoo-database hyunwoo-bac
 docker compose exec ollama ollama pull qwen2.5:0.5b
 ```
 
-Then open <http://localhost:8000> or <http://localhost:8030>.
+Then open <http://localhost:8000> or <http://localhost:8040>.
 
 ### Running the tests
 

@@ -1,5 +1,5 @@
 // Backend address used by the browser.
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:8031/api`;
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8041/api`;
 
 // Page elements updated by JavaScript.
 const elements = {

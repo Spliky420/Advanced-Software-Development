@@ -10,8 +10,8 @@
 #   Shared home 8000        unified landing page
 #   Joshua     8010-8019   CLAIMED
 #   Maxwell    8020-8029   CLAIMED
-#   HyunWoo    8030-8039   CLAIMED
-#   <student4> 8040-8049   free
+#   <student3> 8030-8039   free
+#   HyunWoo    8040-8049   CLAIMED
 #   <student5> 8050-8059   free
 #   shared     11434       ollama
 #
@@ -151,7 +151,7 @@ services:
       - ollama
 
   # =========================================================================
-  # HYUNWOO -- ports 8030-8039
+  # HYUNWOO -- ports 8040-8049
   # =========================================================================
   hyunwoo-database:
     build: ./hyunwoo/database
@@ -173,7 +173,7 @@ services:
     container_name: hyunwoo-backend
     restart: unless-stopped
     ports:
-      - "8031:5000"
+      - "8041:5000"
     environment:
       DB_PATH: /data/bills.db
       OLLAMA_BASE_URL: http://ollama:11434
@@ -198,7 +198,7 @@ services:
     container_name: hyunwoo-frontend
     restart: unless-stopped
     ports:
-      - "8030:80"
+      - "8040:80"
     depends_on:
       hyunwoo-backend:
         condition: service_started
