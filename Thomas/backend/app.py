@@ -1,18 +1,30 @@
 from flask import Flask, request, jsonify, send_from_directory
 import sqlite3
 import os
-import requests
 import json
+import requests
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-DATABASE = "transactions.db"
+DATABASE = os.getenv(
+    "DATABASE_PATH",
+    "transactions.db"
+)
+
 UPLOAD_FOLDER = "uploads/receipts"
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+OLLAMA_URL = os.getenv(
+    "OLLAMA_URL",
+    "http://localhost:11434"
+)
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+OLLAMA_MODEL = os.getenv(
+    "OLLAMA_MODEL",
+    "qwen2.5:0.5b"
+)
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 
@@ -92,15 +104,15 @@ def ai_classify_transaction():
         )
 
         ollama_response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "qwen2.5:0.5b",
-                "prompt": prompt,
-                "stream": False,
-                "format": "json"
-            },
-            timeout=60
-        )
+    f"{OLLAMA_URL}/api/generate",
+    json={
+        "model": "qwen2.5:0.5b",
+        "prompt": prompt,
+        "stream": False,
+        "format": "json"
+    },
+    timeout=60
+)
 
         ollama_response.raise_for_status()
 

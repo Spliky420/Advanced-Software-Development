@@ -1,9 +1,13 @@
 from flask import Flask, render_template, request, Response
 import requests
+import os
+
+BACKEND_URL = os.getenv(
+    "BACKEND_URL",
+    "http://localhost:5001"
+)
 
 app = Flask(__name__)
-
-BACKEND_URL = "http://localhost:5001"
 
 
 @app.route("/")
