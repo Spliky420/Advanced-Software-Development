@@ -91,10 +91,11 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 
 | Range     | Owner      | In use                                             |
 | --------- | ---------- | -------------------------------------------------- |
+| 8000      | **Shared** | Unified project home page                          |
 | 8010–8019 | **Joshua** | 8010 frontend, 8011 backend (database has no port) |
 | 8020–8029 | **Maxwell**| 8020 frontend, 8021 backend (database has no port) |
 | 8030–8039 | free       |                                                    |
-| 8040–8049 | free       |                                                    |
+| 8040–8049 | **HyunWoo**| 8040 frontend, 8041 backend (database has no port) |
 | 8050–8059 | free       |                                                    |
 | 11434     | shared     | `ollama` — one instance serves every backend       |
 
@@ -351,3 +352,93 @@ docker compose up --build maxwell-frontend maxwell-backend ollama
   about the model's output quality.
 - All LLM access goes through the shared `ollama` service at
   `http://ollama:11434` — never a hardcoded model name or a host install.
+
+---
+
+## HyunWoo — Bills & Subscriptions
+
+### What it does
+
+Tracks recurring bills and subscriptions in one dashboard. Users can add,
+view, edit and delete records, compare monthly and annual recurring costs, and
+monitor payment dates, automatic renewals and free trials.
+
+The AI review follows a visible Plan → Act → Observe → Adapt workflow. Python
+calculates every amount, date and priority. Ollama receives the completed
+findings and selects an appropriate tone for the action summary, while the
+recommended actions remain based on validated Python results.
+
+### Services and ports
+
+| Service              | Host port | Purpose                                      |
+| -------------------- | --------- | -------------------------------------------- |
+| `hyunwoo-frontend`   | **8040**  | nginx serving the bills dashboard            |
+| `hyunwoo-backend`    | **8041**  | Flask REST API and agentic review             |
+| `hyunwoo-database`   | —         | SQLite database seeded with 10 sample records |
+
+Open <http://localhost:8040> for the dashboard, or call the API directly at
+`http://localhost:8041`. The shared project homepage is available at
+<http://localhost:8000>.
+
+The database service owns the `hyunwoo-db-data` volume. It creates the bills
+table and adds 10 realistic sample bills only when the database is first
+started.
+
+### API endpoints
+
+| Method   | Path                    | Purpose                                         |
+| -------- | ----------------------- | ----------------------------------------------- |
+| `GET`    | `/health`               | Check the API and database connection           |
+| `GET`    | `/api/bills`            | List all bills and subscriptions                |
+| `GET`    | `/api/bills/<id>`       | Return one saved record                         |
+| `POST`   | `/api/bills`            | Add a bill or subscription                      |
+| `PUT`    | `/api/bills/<id>`       | Replace an existing record                      |
+| `DELETE` | `/api/bills/<id>`       | Delete an existing record                       |
+| `GET`    | `/api/summary`          | Return recurring cost and renewal totals        |
+| `POST`   | `/api/bills/review`     | Run the Plan → Act → Observe → Adapt review     |
+
+### How it works — the Plan → Act → Observe → Adapt loop
+
+`POST /api/bills/review` accepts a review date and a period from 1 to 90 days.
+The response contains a separate result for every phase:
+
+| Phase       | What happens                                                                  |
+| ----------- | ----------------------------------------------------------------------------- |
+| **Plan**    | Selects the date range, seven-day urgency rule and priority order.             |
+| **Act**     | Loads active records, calculates comparable costs and sorts payment dates.     |
+| **Observe** | Finds overdue bills, near-term payments, renewals and trials ending soon.      |
+| **Adapt**   | Selects the first priority, builds safe next steps and uses Ollama for tone.    |
+
+When no records require attention, Adapt returns a clear Python response and
+does not call Ollama. If Ollama returns an unexpected tone, the backend uses a
+validated neutral summary instead.
+
+### Running just these services
+
+```bash
+docker compose up -d --build ollama shared-frontend hyunwoo-database hyunwoo-backend hyunwoo-frontend
+docker compose exec ollama ollama pull qwen2.5:0.5b
+```
+
+Then open <http://localhost:8000> or <http://localhost:8040>.
+
+### Running the tests
+
+The tests use a temporary SQLite database and replace the Ollama response, so
+they do not require a running model or Docker stack.
+
+```bash
+python3 -m pip install -r hyunwoo/backend/requirements.txt -r hyunwoo/tests/requirements.txt
+python3 -m pytest hyunwoo/tests -v
+```
+
+### Known limitations
+
+- Release 0 scopes every bill to one default local user and does not include
+  accounts or login.
+- Due dates and trial dates are entered manually; the application does not
+  connect to banks, providers or calendars.
+- Recommendations are reminders and review prompts only. The application does
+  not make payments or cancel subscriptions.
+- The model must be pulled into the shared Ollama container before running an
+  AI review that contains items needing attention.
