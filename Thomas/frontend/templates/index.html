@@ -1,165 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Transactions Ledger</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='styles.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 
 <body>
 
-<header class="topbar">
-    <div>
-        <h1>Personal Finance Assistant</h1>
-        <p>Transactions Ledger</p>
-    </div>
-
-    <nav>
-        <a href="/" class="active">Transactions</a>
-        <a href="#">Budgeting</a>
-        <a href="#">Goals</a>
-        <a href="#">Portfolio</a>
-    </nav>
-</header>
-
-
-<main class="container">
-
-    <!-- SUMMARY -->
-    <section
-    id="summary-grid"
-    class="summary-grid"
-    hx-get="/api/transactions/summary"
-    hx-trigger="load"
-    hx-swap="innerHTML"
->
-    <div class="summary-card">
-        <span>Total Income</span>
-        <strong>Loading...</strong>
-    </div>
-
-    <div class="summary-card">
-        <span>Total Expenses</span>
-        <strong>Loading...</strong>
-    </div>
-
-    <div class="summary-card">
-        <span>Potential Deductions</span>
-        <strong>Loading...</strong>
-    </div>
-</section>
-
-
-    <!-- ADD TRANSACTION -->
-    <section class="card">
-
-        <div class="section-heading">
-            <div>
-                <h2>Add Transaction</h2>
-                <p>Add a new income or expense to your ledger.</p>
-            </div>
+    <header class="topbar">
+        <div>
+            <h1>Personal Finance Assistant</h1>
+            <p>Transactions Ledger</p>
         </div>
 
+        <nav>
+            <a href="/" class="active">Transactions</a>
+        </nav>
+    </header>
 
-        <form
-            hx-post="/api/transactions"
-            hx-target="#transaction-table-body"
-            hx-swap="afterbegin"
-            hx-encoding="multipart/form-data"
-            hx-on::after-request="
+
+    <main class="container">
+
+        <!-- SUMMARY -->
+        <section id="summary-grid" class="summary-grid" hx-get="/api/transactions/summary" hx-trigger="load"
+            hx-swap="innerHTML">
+            <div class="summary-card">
+                <span>Total Income</span>
+                <strong>Loading...</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Total Expenses</span>
+                <strong>Loading...</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Potential Deductions</span>
+                <strong>Loading...</strong>
+            </div>
+        </section>
+
+
+        <!-- ADD TRANSACTION -->
+        <section class="card">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Add Transaction</h2>
+                    <p>Add a new income or expense to your ledger.</p>
+                </div>
+            </div>
+
+
+            <form hx-post="/api/transactions" hx-target="#transaction-table-body" hx-swap="afterbegin"
+                hx-encoding="multipart/form-data" hx-on::after-request="
     htmx.ajax('GET', '/api/transactions/summary', {
         target: '#summary-grid',
         swap: 'innerHTML'
     })
-"
-            class="transaction-form"
-        >
+" class="transaction-form">
 
-            <div class="form-grid">
+                <div class="form-grid">
 
-                <div class="form-group">
-                    <label for="transaction_date">Date</label>
+                    <div class="form-group">
+                        <label for="transaction_date">Date</label>
 
-                    <input
-                        type="date"
-                        id="transaction_date"
-                        name="transaction_date"
-                        required
-                    >
+                        <input type="date" id="transaction_date" name="transaction_date" required>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="merchant">Merchant</label>
+
+                        <input type="text" id="merchant" name="merchant" placeholder="e.g. Officeworks" required>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+
+                        <input type="text" id="description" name="description" placeholder="e.g. Printer ink" required>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+
+                        <input type="number" id="amount" name="amount" min="0" step="0.01" placeholder="0.00" required>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="transaction_type">Type</label>
+
+                        <select id="transaction_type" name="transaction_type" required>
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+
+                        <select id="category" name="category">
+                            <option value="uncategorised">Uncategorised</option>
+                            <option value="groceries">Groceries</option>
+                            <option value="transport">Transport</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="work">Work Expenses</option>
+                            <option value="health">Health</option>
+                            <option value="education">Education</option>
+                            <option value="income">Income</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="deduction_status">
+                            Deduction Status
+                        </label>
+
+                        <select id="deduction_status" name="deduction_status">
+                            <option value="not_reviewed">Not Reviewed</option>
+                            <option value="potentially_deductible">
+                                Potentially Deductible
+                            </option>
+                            <option value="not_deductible">
+                                Not Deductible
+                            </option>
+                            <option value="needs_review">
+                                Needs Review
+                            </option>
+                        </select>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="receipt">Receipt</label>
+
+                        <input type="file" id="receipt" name="receipt" accept=".pdf,.png,.jpg,.jpeg">
+                    </div>
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button type="submit" class="button button-primary">
+                        Add Transaction
+                    </button>
+
+
+                    <button type="button" class="button button-secondary" hx-post="/api/transactions/ai-classify"
+                        hx-include="#merchant,#description,#amount,#transaction_type" hx-target="#ai-result"
+                        hx-swap="innerHTML">
+                        AI Suggest Category
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div id="ai-result" class="ai-result"></div>
+
+        </section>
+
+
+        <!-- FILTERS -->
+        <section class="card">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Search & Filter</h2>
+                    <p>Find transactions quickly.</p>
+                </div>
+            </div>
+
+
+            <form class="filter-grid" hx-get="/api/transactions" hx-target="#transaction-table-body"
+                hx-trigger="change, keyup delay:400ms from:#search">
+
+                <div class="form-group search-box">
+                    <label for="search">Search</label>
+
+                    <input type="search" id="search" name="search" placeholder="Search merchant or description...">
                 </div>
 
 
                 <div class="form-group">
-                    <label for="merchant">Merchant</label>
+                    <label for="filter-category">Category</label>
 
-                    <input
-                        type="text"
-                        id="merchant"
-                        name="merchant"
-                        placeholder="e.g. Officeworks"
-                        required
-                    >
-                </div>
-
-
-                <div class="form-group">
-                    <label for="description">Description</label>
-
-                    <input
-                        type="text"
-                        id="description"
-                        name="description"
-                        placeholder="e.g. Printer ink"
-                        required
-                    >
-                </div>
-
-
-                <div class="form-group">
-                    <label for="amount">Amount</label>
-
-                    <input
-                        type="number"
-                        id="amount"
-                        name="amount"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        required
-                    >
-                </div>
-
-
-                <div class="form-group">
-                    <label for="transaction_type">Type</label>
-
-                    <select
-                        id="transaction_type"
-                        name="transaction_type"
-                        required
-                    >
-                        <option value="expense">Expense</option>
-                        <option value="income">Income</option>
-                    </select>
-                </div>
-
-
-                <div class="form-group">
-                    <label for="category">Category</label>
-
-                    <select
-                        id="category"
-                        name="category"
-                    >
-                        <option value="uncategorised">Uncategorised</option>
+                    <select id="filter-category" name="category">
+                        <option value="">All Categories</option>
                         <option value="groceries">Groceries</option>
                         <option value="transport">Transport</option>
                         <option value="utilities">Utilities</option>
@@ -174,15 +217,21 @@
 
 
                 <div class="form-group">
-                    <label for="deduction_status">
-                        Deduction Status
-                    </label>
+                    <label for="filter-type">Type</label>
 
-                    <select
-                        id="deduction_status"
-                        name="deduction_status"
-                    >
-                        <option value="not_reviewed">Not Reviewed</option>
+                    <select id="filter-type" name="transaction_type">
+                        <option value="">All Types</option>
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="filter-deduction">Deduction</label>
+
+                    <select id="filter-deduction" name="deduction_status">
+                        <option value="">All</option>
                         <option value="potentially_deductible">
                             Potentially Deductible
                         </option>
@@ -197,211 +246,82 @@
 
 
                 <div class="form-group">
-                    <label for="receipt">Receipt</label>
+                    <label for="sort">Sort</label>
 
-                    <input
-                        type="file"
-                        id="receipt"
-                        name="receipt"
-                        accept=".pdf,.png,.jpg,.jpeg"
-                    >
+                    <select id="sort" name="sort">
+                        <option value="date_desc">Newest First</option>
+                        <option value="date_asc">Oldest First</option>
+                        <option value="amount_desc">Highest Amount</option>
+                        <option value="amount_asc">Lowest Amount</option>
+                        <option value="merchant_asc">Merchant A-Z</option>
+                        <option value="merchant_desc">Merchant Z-A</option>
+                    </select>
                 </div>
 
-            </div>
+            </form>
+
+        </section>
 
 
-            <div class="button-row">
+        <!-- TRANSACTION TABLE -->
+        <section class="card">
 
-                <button
-                    type="submit"
-                    class="button button-primary"
-                >
-                    Add Transaction
-                </button>
+            <div class="section-heading table-heading">
 
+                <div>
+                    <h2>Transactions</h2>
+                    <p>Your recorded financial activity.</p>
+                </div>
 
-                <button
-                    type="button"
-                    class="button button-secondary"
-                    hx-post="/api/transactions/ai-classify"
-                    hx-include="#merchant,#description,#amount,#transaction_type"
-                    hx-target="#ai-result"
-                    hx-swap="innerHTML"
-                >
-                    AI Suggest Category
+                <button class="button button-secondary" hx-get="/api/transactions" hx-target="#transaction-table-body">
+                    Refresh
                 </button>
 
             </div>
 
-        </form>
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Merchant</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Deduction</th>
+                            <th>Receipt</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
 
 
-        <div id="ai-result" class="ai-result"></div>
+                    <tbody id="transaction-table-body" hx-get="/api/transactions" hx-trigger="load">
 
-    </section>
+                        <tr>
+                            <td colspan="9" class="loading">
+                                Loading transactions...
+                            </td>
+                        </tr>
 
+                    </tbody>
 
-    <!-- FILTERS -->
-    <section class="card">
+                </table>
 
-        <div class="section-heading">
-            <div>
-                <h2>Search & Filter</h2>
-                <p>Find transactions quickly.</p>
-            </div>
-        </div>
-
-
-        <form
-            class="filter-grid"
-            hx-get="/api/transactions"
-            hx-target="#transaction-table-body"
-            hx-trigger="change, keyup delay:400ms from:#search"
-        >
-
-            <div class="form-group search-box">
-                <label for="search">Search</label>
-
-                <input
-                    type="search"
-                    id="search"
-                    name="search"
-                    placeholder="Search merchant or description..."
-                >
             </div>
 
+        </section>
 
-            <div class="form-group">
-                <label for="filter-category">Category</label>
-
-                <select id="filter-category" name="category">
-                    <option value="">All Categories</option>
-                    <option value="groceries">Groceries</option>
-                    <option value="transport">Transport</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="work">Work Expenses</option>
-                    <option value="health">Health</option>
-                    <option value="education">Education</option>
-                    <option value="income">Income</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
+    </main>
 
 
-            <div class="form-group">
-                <label for="filter-type">Type</label>
-
-                <select id="filter-type" name="transaction_type">
-                    <option value="">All Types</option>
-                    <option value="expense">Expense</option>
-                    <option value="income">Income</option>
-                </select>
-            </div>
-
-
-            <div class="form-group">
-                <label for="filter-deduction">Deduction</label>
-
-                <select id="filter-deduction" name="deduction_status">
-                    <option value="">All</option>
-                    <option value="potentially_deductible">
-                        Potentially Deductible
-                    </option>
-                    <option value="not_deductible">
-                        Not Deductible
-                    </option>
-                    <option value="needs_review">
-                        Needs Review
-                    </option>
-                </select>
-            </div>
-
-
-            <div class="form-group">
-                <label for="sort">Sort</label>
-
-                <select id="sort" name="sort">
-                    <option value="date_desc">Newest First</option>
-                    <option value="date_asc">Oldest First</option>
-                    <option value="amount_desc">Highest Amount</option>
-                    <option value="amount_asc">Lowest Amount</option>
-                    <option value="merchant_asc">Merchant A-Z</option>
-                    <option value="merchant_desc">Merchant Z-A</option>
-                </select>
-            </div>
-
-        </form>
-
-    </section>
-
-
-    <!-- TRANSACTION TABLE -->
-    <section class="card">
-
-        <div class="section-heading table-heading">
-
-            <div>
-                <h2>Transactions</h2>
-                <p>Your recorded financial activity.</p>
-            </div>
-
-            <button
-                class="button button-secondary"
-                hx-get="/api/transactions"
-                hx-target="#transaction-table-body"
-            >
-                Refresh
-            </button>
-
-        </div>
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Merchant</th>
-                        <th>Description</th>
-                        <th>Category</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Deduction</th>
-                        <th>Receipt</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-
-                <tbody
-                    id="transaction-table-body"
-                    hx-get="/api/transactions"
-                    hx-trigger="load"
-                >
-
-                    <tr>
-                        <td colspan="9" class="loading">
-                            Loading transactions...
-                        </td>
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </section>
-
-</main>
-
-
-<footer>
-    <p>Personal Finance Assistant</p>
-</footer>
+    <footer>
+        <p>Personal Finance Assistant</p>
+    </footer>
 
 </body>
+
 </html>

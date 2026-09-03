@@ -7,37 +7,24 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-DATABASE = os.getenv(
-    "DATABASE_PATH",
-    "transactions.db"
-)
+DATABASE = os.getenv("DATABASE_PATH", "transactions.db")
 
 UPLOAD_FOLDER = "uploads/receipts"
 
-OLLAMA_URL = os.getenv(
-    "OLLAMA_URL",
-    "http://localhost:11434"
-)
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
-OLLAMA_MODEL = os.getenv(
-    "OLLAMA_MODEL",
-    "qwen2.5:0.5b"
-)
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
-
 def load_prompt(filename):
-    prompt_path = os.path.join(
-        os.path.dirname(__file__),
-        "prompts",
-        filename
-    )
+    prompt_path = os.path.join(os.path.dirname(__file__), "prompts", filename)
 
     with open(prompt_path, "r", encoding="utf-8") as file:
         return file.read()
-    
+
+
 def get_db():
     connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
@@ -69,76 +56,60 @@ def init_db():
 
 @app.route("/health")
 def health():
-    return jsonify({
-        "status": "ok",
-        "service": "transactions-backend"
-    })
+    return jsonify({"status": "ok", "service": "transactions-backend"})
+
 
 @app.route("/api/transactions/ai-classify", methods=["POST"])
 def ai_classify_transaction():
     merchant = request.form.get("merchant", "").strip()
     description = request.form.get("description", "").strip()
     amount = request.form.get("amount", "").strip()
-    transaction_type = request.form.get(
-        "transaction_type",
-        "expense"
-    ).strip()
+    transaction_type = request.form.get("transaction_type", "expense").strip()
 
     if not merchant and not description:
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 Please enter a merchant or description first.
             </div>
-        """, 400
+        """,
+            400,
+        )
 
     try:
-        prompt_template = load_prompt(
-            "transaction_classification.txt"
-        )
+        prompt_template = load_prompt("transaction_classification.txt")
 
         prompt = prompt_template.format(
             merchant=merchant,
             description=description,
             amount=amount,
-            transaction_type=transaction_type
+            transaction_type=transaction_type,
         )
 
         ollama_response = requests.post(
-    f"{OLLAMA_URL}/api/generate",
-    json={
-        "model": "qwen2.5:0.5b",
-        "prompt": prompt,
-        "stream": False,
-        "format": "json"
-    },
-    timeout=60
-)
+            f"{OLLAMA_URL}/api/generate",
+            json={
+                "model": "qwen2.5:0.5b",
+                "prompt": prompt,
+                "stream": False,
+                "format": "json",
+            },
+            timeout=60,
+        )
 
         ollama_response.raise_for_status()
 
         ollama_data = ollama_response.json()
 
-        ai_response = ollama_data.get(
-            "response",
-            "{}"
-        )
+        ai_response = ollama_data.get("response", "{}")
 
         classification = json.loads(ai_response)
 
-        category = classification.get(
-            "category",
-            "uncategorised"
-        )
+        category = classification.get("category", "uncategorised")
 
-        deduction_status = classification.get(
-            "deduction_status",
-            "needs_review"
-        )
+        deduction_status = classification.get("deduction_status", "needs_review")
 
-        reason = classification.get(
-            "reason",
-            "No explanation provided."
-        )
+        reason = classification.get("reason", "No explanation provided.")
 
         return f"""
             <div class="ai-suggestion">
@@ -169,54 +140,73 @@ def ai_classify_transaction():
         """
 
     except FileNotFoundError:
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 AI prompt file could not be found.
             </div>
-        """, 500
+        """,
+            500,
+        )
 
     except requests.exceptions.ConnectionError:
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 Could not connect to Ollama.
                 Make sure Ollama is running.
             </div>
-        """, 503
+        """,
+            503,
+        )
 
     except requests.exceptions.Timeout:
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 Ollama took too long to respond.
             </div>
-        """, 504
+        """,
+            504,
+        )
 
     except requests.exceptions.HTTPError as error:
         print("Ollama HTTP error:", error)
 
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 Ollama returned an error.
             </div>
-        """, 502
+        """,
+            502,
+        )
 
     except json.JSONDecodeError:
         print("Invalid AI JSON response:", ai_response)
 
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 The AI returned an invalid response.
                 Please try again.
             </div>
-        """, 500
+        """,
+            500,
+        )
 
     except Exception as error:
         print("AI classification error:", error)
 
-        return """
+        return (
+            """
             <div class="ai-suggestion error">
                 AI classification failed.
             </div>
-        """, 500
+        """,
+            500,
+        )
+
 
 @app.route("/api/transactions/summary", methods=["GET"])
 def transaction_summary():
@@ -259,6 +249,7 @@ def transaction_summary():
             <strong>${potential_deductions:,.2f}</strong>
         </div>
     """
+
 
 @app.route("/api/transactions", methods=["GET"])
 def get_transactions():
@@ -305,7 +296,7 @@ def get_transactions():
         "amount_desc": "amount DESC",
         "amount_asc": "amount ASC",
         "merchant_asc": "merchant ASC",
-        "merchant_desc": "merchant DESC"
+        "merchant_desc": "merchant DESC",
     }
 
     order_by = sort_options.get(sort, "transaction_date DESC")
@@ -314,10 +305,7 @@ def get_transactions():
 
     connection = get_db()
 
-    transactions = connection.execute(
-        query,
-        params
-    ).fetchall()
+    transactions = connection.execute(query, params).fetchall()
 
     connection.close()
 
@@ -332,10 +320,7 @@ def create_transaction():
     amount = request.form.get("amount")
     transaction_type = request.form.get("transaction_type")
     category = request.form.get("category", "uncategorised")
-    deduction_status = request.form.get(
-        "deduction_status",
-        "not_reviewed"
-    )
+    deduction_status = request.form.get("deduction_status", "not_reviewed")
 
     receipt_filename = None
 
@@ -345,18 +330,14 @@ def create_transaction():
         if receipt and receipt.filename:
             filename = secure_filename(receipt.filename)
 
-            receipt.save(
-                os.path.join(
-                    app.config["UPLOAD_FOLDER"],
-                    filename
-                )
-            )
+            receipt.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
             receipt_filename = filename
 
     connection = get_db()
 
-    cursor = connection.execute("""
+    cursor = connection.execute(
+        """
         INSERT INTO transactions (
             transaction_date,
             merchant,
@@ -368,37 +349,38 @@ def create_transaction():
             receipt_filename
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        transaction_date,
-        merchant,
-        description,
-        amount,
-        transaction_type,
-        category,
-        deduction_status,
-        receipt_filename
-    ))
+    """,
+        (
+            transaction_date,
+            merchant,
+            description,
+            amount,
+            transaction_type,
+            category,
+            deduction_status,
+            receipt_filename,
+        ),
+    )
 
     connection.commit()
 
     transaction_id = cursor.lastrowid
 
     transaction = connection.execute(
-        "SELECT * FROM transactions WHERE id = ?",
-        (transaction_id,)
+        "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
     ).fetchone()
 
     connection.close()
 
     return render_transaction_row(transaction)
 
+
 @app.route("/api/transactions/<int:transaction_id>/edit", methods=["GET"])
 def edit_transaction_form(transaction_id):
     connection = get_db()
 
     transaction = connection.execute(
-        "SELECT * FROM transactions WHERE id = ?",
-        (transaction_id,)
+        "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
     ).fetchone()
 
     connection.close()
@@ -506,63 +488,39 @@ def edit_transaction_form(transaction_id):
             </td>
         </tr>
     """
-@app.route(
-    "/api/transactions/<int:transaction_id>",
-    methods=["PUT"]
-)
+
+
+@app.route("/api/transactions/<int:transaction_id>", methods=["PUT"])
 def update_transaction(transaction_id):
     data = request.form
 
     connection = get_db()
 
     existing = connection.execute(
-        "SELECT * FROM transactions WHERE id = ?",
-        (transaction_id,)
+        "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
     ).fetchone()
 
     if existing is None:
         connection.close()
 
-        return jsonify({
-            "error": "Transaction not found"
-        }), 404
+        return jsonify({"error": "Transaction not found"}), 404
 
-    transaction_date = data.get(
-        "transaction_date",
-        existing["transaction_date"]
-    )
+    transaction_date = data.get("transaction_date", existing["transaction_date"])
 
-    merchant = data.get(
-        "merchant",
-        existing["merchant"]
-    )
+    merchant = data.get("merchant", existing["merchant"])
 
-    description = data.get(
-        "description",
-        existing["description"]
-    )
+    description = data.get("description", existing["description"])
 
-    amount = data.get(
-        "amount",
-        existing["amount"]
-    )
+    amount = data.get("amount", existing["amount"])
 
-    transaction_type = data.get(
-        "transaction_type",
-        existing["transaction_type"]
-    )
+    transaction_type = data.get("transaction_type", existing["transaction_type"])
 
-    category = data.get(
-        "category",
-        existing["category"]
-    )
+    category = data.get("category", existing["category"])
 
-    deduction_status = data.get(
-        "deduction_status",
-        existing["deduction_status"]
-    )
+    deduction_status = data.get("deduction_status", existing["deduction_status"])
 
-    connection.execute("""
+    connection.execute(
+        """
         UPDATE transactions
         SET
             transaction_date = ?,
@@ -573,22 +531,23 @@ def update_transaction(transaction_id):
             category = ?,
             deduction_status = ?
         WHERE id = ?
-    """, (
-        transaction_date,
-        merchant,
-        description,
-        amount,
-        transaction_type,
-        category,
-        deduction_status,
-        transaction_id
-    ))
+    """,
+        (
+            transaction_date,
+            merchant,
+            description,
+            amount,
+            transaction_type,
+            category,
+            deduction_status,
+            transaction_id,
+        ),
+    )
 
     connection.commit()
 
     updated = connection.execute(
-        "SELECT * FROM transactions WHERE id = ?",
-        (transaction_id,)
+        "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
     ).fetchone()
 
     connection.close()
@@ -596,29 +555,20 @@ def update_transaction(transaction_id):
     return render_transaction_row(updated)
 
 
-@app.route(
-    "/api/transactions/<int:transaction_id>",
-    methods=["DELETE"]
-)
+@app.route("/api/transactions/<int:transaction_id>", methods=["DELETE"])
 def delete_transaction(transaction_id):
     connection = get_db()
 
     transaction = connection.execute(
-        "SELECT * FROM transactions WHERE id = ?",
-        (transaction_id,)
+        "SELECT * FROM transactions WHERE id = ?", (transaction_id,)
     ).fetchone()
 
     if transaction is None:
         connection.close()
 
-        return jsonify({
-            "error": "Transaction not found"
-        }), 404
+        return jsonify({"error": "Transaction not found"}), 404
 
-    connection.execute(
-        "DELETE FROM transactions WHERE id = ?",
-        (transaction_id,)
-    )
+    connection.execute("DELETE FROM transactions WHERE id = ?", (transaction_id,))
 
     connection.commit()
     connection.close()
@@ -628,10 +578,7 @@ def delete_transaction(transaction_id):
 
 @app.route("/receipts/<filename>")
 def receipt(filename):
-    return send_from_directory(
-        app.config["UPLOAD_FOLDER"],
-        filename
-    )
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 
 def render_transaction_rows(transactions):
@@ -644,10 +591,8 @@ def render_transaction_rows(transactions):
         </tr>
         """
 
-    return "".join(
-        render_transaction_row(transaction)
-        for transaction in transactions
-    )
+    return "".join(render_transaction_row(transaction) for transaction in transactions)
+
 
 def render_transaction_row(transaction):
     receipt_html = "—"
@@ -737,6 +682,7 @@ def render_transaction_row(transaction):
         </tr>
     """
 
+
 def category_options(selected_category):
     categories = [
         ("uncategorised", "Uncategorised"),
@@ -748,20 +694,17 @@ def category_options(selected_category):
         ("health", "Health"),
         ("education", "Education"),
         ("income", "Income"),
-        ("other", "Other")
+        ("other", "Other"),
     ]
 
-    return "".join(
-        f"""
+    return "".join(f"""
         <option
             value="{value}"
             {"selected" if value == selected_category else ""}
         >
             {label}
         </option>
-        """
-        for value, label in categories
-    )
+        """ for value, label in categories)
 
 
 def deduction_options(selected_status):
@@ -769,27 +712,23 @@ def deduction_options(selected_status):
         ("not_reviewed", "Not Reviewed"),
         ("potentially_deductible", "Potentially Deductible"),
         ("not_deductible", "Not Deductible"),
-        ("needs_review", "Needs Review")
+        ("needs_review", "Needs Review"),
     ]
 
-    return "".join(
-        f"""
+    return "".join(f"""
         <option
             value="{value}"
             {"selected" if value == selected_status else ""}
         >
             {label}
         </option>
-        """
-        for value, label in statuses
-    )
+        """ for value, label in statuses)
+
 
 def seed_db():
     connection = get_db()
 
-    count = connection.execute(
-        "SELECT COUNT(*) FROM transactions"
-    ).fetchone()[0]
+    count = connection.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
 
     if count > 0:
         connection.close()
@@ -805,7 +744,7 @@ def seed_db():
             "income",
             "not_reviewed",
             None,
-            "Monthly salary payment"
+            "Monthly salary payment",
         ),
         (
             "2026-08-02",
@@ -816,7 +755,7 @@ def seed_db():
             "groceries",
             "not_deductible",
             None,
-            "Food and household items"
+            "Food and household items",
         ),
         (
             "2026-08-03",
@@ -827,7 +766,7 @@ def seed_db():
             "transport",
             "needs_review",
             None,
-            "Fuel purchase"
+            "Fuel purchase",
         ),
         (
             "2026-08-04",
@@ -838,7 +777,7 @@ def seed_db():
             "work",
             "potentially_deductible",
             None,
-            "Printer ink for home office"
+            "Printer ink for home office",
         ),
         (
             "2026-08-05",
@@ -849,7 +788,7 @@ def seed_db():
             "entertainment",
             "not_deductible",
             None,
-            "Streaming subscription"
+            "Streaming subscription",
         ),
         (
             "2026-08-06",
@@ -860,7 +799,7 @@ def seed_db():
             "transport",
             "not_deductible",
             None,
-            "Public transport"
+            "Public transport",
         ),
         (
             "2026-08-07",
@@ -871,7 +810,7 @@ def seed_db():
             "health",
             "not_deductible",
             None,
-            "Personal health products"
+            "Personal health products",
         ),
         (
             "2026-08-08",
@@ -882,7 +821,7 @@ def seed_db():
             "education",
             "potentially_deductible",
             None,
-            "Study-related textbook"
+            "Study-related textbook",
         ),
         (
             "2026-08-09",
@@ -893,7 +832,7 @@ def seed_db():
             "utilities",
             "needs_review",
             None,
-            "Monthly electricity bill"
+            "Monthly electricity bill",
         ),
         (
             "2026-08-10",
@@ -904,7 +843,7 @@ def seed_db():
             "income",
             "not_reviewed",
             None,
-            "Freelance income"
+            "Freelance income",
         ),
         (
             "2026-08-11",
@@ -915,7 +854,7 @@ def seed_db():
             "work",
             "potentially_deductible",
             None,
-            "Accessory used for study and work"
+            "Accessory used for study and work",
         ),
         (
             "2026-08-12",
@@ -926,11 +865,12 @@ def seed_db():
             "other",
             "not_deductible",
             None,
-            "Personal meal"
+            "Personal meal",
         ),
     ]
 
-    connection.executemany("""
+    connection.executemany(
+        """
         INSERT INTO transactions (
             transaction_date,
             merchant,
@@ -943,7 +883,9 @@ def seed_db():
             notes
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, sample_transactions)
+    """,
+        sample_transactions,
+    )
 
     connection.commit()
     connection.close()
@@ -953,8 +895,4 @@ if __name__ == "__main__":
     init_db()
     seed_db()
 
-    app.run(
-        host="0.0.0.0",
-        port=5001,
-        debug=True
-    )
+    app.run(host="0.0.0.0", port=5001, debug=True)
