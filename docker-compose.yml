@@ -11,10 +11,8 @@
 #   Joshua     8010-8019   CLAIMED
 #   Maxwell    8020-8029   CLAIMED
 #   Enerel     8030-8039   CLAIMED
-#   <student4> 8040-8049   free
-#   <student3> 8030-8039   free
 #   HyunWoo    8040-8049   CLAIMED
-#   <student5> 8050-8059   free
+#   Thomas     8050-8059   CLAIMED
 #   shared     11434       ollama
 #
 # Model selection lives in .env (copy .env.example to .env). The :- defaults
@@ -154,7 +152,7 @@ services:
 
 
   # =========================================================================
-  # THOMAS -- ports 8030-8039
+  # THOMAS -- ports 8050-8059
   # Transactions Ledger
   # =========================================================================
 
@@ -164,7 +162,7 @@ services:
     restart: unless-stopped
 
     ports:
-      - "8031:5001"
+      - "8051:5001"
 
     environment:
       DATABASE_PATH: /data/transactions.db
@@ -199,7 +197,7 @@ services:
     restart: unless-stopped
 
     ports:
-      - "8030:5000"
+      - "8050:5000"
 
     environment:
       BACKEND_URL: http://thomas-backend:5001
