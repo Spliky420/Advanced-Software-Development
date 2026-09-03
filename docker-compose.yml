@@ -9,7 +9,7 @@
 # Host port ranges (keep these non-overlapping; claim yours in CLAUDE.md):
 #   Joshua     8010-8019   CLAIMED
 #   Maxwell    8020-8029   CLAIMED
-#   <student3> 8030-8039   free
+#   Thomas     8030-8039   CLAIMED
 #   <student4> 8040-8049   free
 #   <student5> 8050-8059   free
 #   shared     11434       ollama
