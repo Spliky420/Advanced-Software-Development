@@ -152,6 +152,75 @@ services:
     depends_on:
       - ollama
 
+
+  # =========================================================================
+  # THOMAS -- ports 8030-8039
+  # Transactions Ledger
+  # =========================================================================
+
+  thomas-backend:
+    build: ./Thomas/backend
+    container_name: thomas-backend
+    restart: unless-stopped
+
+    ports:
+      - "8031:5001"
+
+    environment:
+      DATABASE_PATH: /data/transactions.db
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+
+    volumes:
+      - thomas-db-data:/data
+      - thomas-receipts:/app/uploads/receipts
+
+    depends_on:
+      ollama:
+        condition: service_started
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+
+  thomas-frontend:
+    build: ./Thomas/frontend
+    container_name: thomas-frontend
+    restart: unless-stopped
+
+    ports:
+      - "8030:5000"
+
+    environment:
+      BACKEND_URL: http://thomas-backend:5001
+
+    depends_on:
+      thomas-backend:
+        condition: service_started
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5)"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
   # =========================================================================
   # ENEREL -- ports 8030-8039 -- Research Library
   # =========================================================================
@@ -310,6 +379,7 @@ services:
 volumes:
   # Shared
   ollama-models:
+
   # Joshua
   joshua-db-data:
   # Enerel
@@ -317,3 +387,6 @@ volumes:
   # HyunWoo
   hyunwoo-db-data:
     name: hyunwoo-db-data
+  # Thomas
+  thomas-db-data:
+  thomas-receipts:
