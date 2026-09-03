@@ -1,0 +1,87 @@
+# CI for Enerel's microservices (Enerel/frontend, Enerel/backend, Enerel/database).
+#
+# Scope: this workflow builds and tests ONLY Enerel/**. The path filters below
+# keep it from running on another student's work, and nothing here reads or
+# writes outside Enerel/ and this file.
+#
+# No Ollama runs in CI, and none is needed: every LLM path in Enerel/tests is
+# either monkeypatched (llm.requests.post, llm.generate, llm.embed) or
+# injected via summarize.adapt's / retrieval.act's generate_fn/embed_fn. The
+# whole suite has been verified to pass with all outbound sockets blocked.
+
+name: enerel-ci
+
+on:
+  push:
+    branches:
+      - Enerel-Research-Library
+    paths:
+      - 'Enerel/**'
+      - '.github/workflows/enerel-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Enerel/**'
+      - '.github/workflows/enerel-ci.yml'
+
+# Least privilege: nothing here needs to write to the repo.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: enerel-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests (pytest, no Ollama)
+    runs-on: ubuntu-24.04
+    env:
+      # Deliberately unreachable. Nothing in the suite should ever open a
+      # socket to Ollama; if a future test regresses and tries, it fails fast
+      # here instead of silently passing on a machine that happens to have one.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          # Matches python:3.11-slim in Enerel/backend/Dockerfile, so CI tests
+          # the interpreter the container actually ships.
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            Enerel/backend/requirements.txt
+            Enerel/tests/requirements.txt
+
+      - name: Install backend and test dependencies
+        # Both files are needed: the backend requirements provide Flask and
+        # requests that the modules under test import, and the tests
+        # requirements provide pytest itself.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r Enerel/backend/requirements.txt
+          pip install -r Enerel/tests/requirements.txt
+
+      - name: Run pytest
+        run: pytest Enerel/tests -v
+
+  images:
+    name: Docker images build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build the database image
+        run: docker build -t enerel-database:ci Enerel/database
+
+      - name: Build the backend image
+        run: docker build -t enerel-backend:ci Enerel/backend
+
+      - name: Build the frontend image
+        run: docker build -t enerel-frontend:ci Enerel/frontend

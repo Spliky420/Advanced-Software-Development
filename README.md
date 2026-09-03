@@ -91,10 +91,13 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 
 | Range     | Owner      | In use                                             |
 | --------- | ---------- | -------------------------------------------------- |
+| 8000      | **Shared** | Unified project home page                          |
 | 8010–8019 | **Joshua** | 8010 frontend, 8011 backend (database has no port) |
 | 8020–8029 | **Maxwell**| 8020 frontend, 8021 backend (database has no port) |
-| 8030–8039 | free       |                                                    |
+| 8030–8039 | **Enerel** | 8030 frontend, 8031 backend (database has no port) |
 | 8040–8049 | free       |                                                    |
+| 8030–8039 | free       |                                                    |
+| 8040–8049 | **HyunWoo**| 8040 frontend, 8041 backend (database has no port) |
 | 8050–8059 | free       |                                                    |
 | 11434     | shared     | `ollama` — one instance serves every backend       |
 
@@ -351,3 +354,276 @@ docker compose up --build maxwell-frontend maxwell-backend ollama
   about the model's output quality.
 - All LLM access goes through the shared `ollama` service at
   `http://ollama:11434` — never a hardcoded model name or a host install.
+
+---
+
+## Enerel — Research Library
+
+### What it does
+
+Stores financial research documents — articles, guides, reports, filings,
+whatever the user pastes or types in — and lets the model do the reading for
+you. Add a document, then ask for an AI **summary and key-points list**
+instead of reading the whole thing.
+
+On top of that sits **retrieval**: every document is chunked and embedded so
+`/api/documents/search` can pull the most relevant chunks for a natural-
+language query by meaning, not just keyword match. That endpoint is also the
+one other services on the compose network would call to pull research
+context for their own features, per the feature spec's RAG requirement.
+
+The architectural rule throughout is the same one Joshua's backend follows:
+**no numeric figure is ever computed by the model.** Summarization is
+different from that rule, not an exception to it — condensing text is a
+legitimate task to hand the model, the same way Joshua's backend hands it
+finished figures to narrate. What never happens here, in either backend, is
+asking the model to calculate something.
+
+### Services and ports
+
+| Service            | Host port | What it is                                               |
+| ------------------- | --------- | ---------------------------------------------------------|
+| `enerel-frontend`  | **8030**  | nginx serving a page and proxying `/api/` to the backend |
+| `enerel-backend`   | **8031**  | Python 3 + Flask REST API (gunicorn in the container)    |
+| `enerel-database`  | —         | SQLite, created and seeded on first start                |
+
+Open <http://localhost:8030> for the page, or call the API directly at
+`http://localhost:8031`.
+
+The database service has no host port on purpose: it owns the
+`enerel-db-data` volume and is reached only over the compose network. It
+seeds 8 documents spanning every `doc_type`, none pre-summarised or
+pre-embedded — summarizing and indexing both go through the API, which needs
+a running Ollama, so a build step that ran with neither would have to fake
+the output.
+
+The frontend is plain HTML/CSS/JS with `fetch`, no build step — nginx serves
+it directly and proxies `/api/` to the backend so the page needs no CORS
+headers.
+
+### API endpoints
+
+Base URL `http://localhost:8031`. All request and response bodies are JSON.
+
+| Method   | Path                              | Description                                                                                    |
+| -------- | ---------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `GET`    | `/health`                          | Liveness check; 503 if the database is unreachable.                                              |
+| `GET`    | `/api/documents`                   | List documents, optionally filtered by `q` (title/source substring), `doc_type`, `date_from`, `date_to`. |
+| `GET`    | `/api/documents/<id>`              | Fetch one document's full metadata and body text; 404 if it does not exist.                      |
+| `POST`   | `/api/documents`                   | Create a document; 201 with the stored row plus an `indexing` status, or 400 listing every validation error. |
+| `PUT`    | `/api/documents/<id>`              | Replace a document's metadata and body, then re-index it; 404 if it does not exist.               |
+| `DELETE` | `/api/documents/<id>`              | Delete a document (and its indexed chunks, via `ON DELETE CASCADE`); 204 on success.               |
+| `POST`   | `/api/documents/<id>/summarize`    | Run the full Plan → Act → Observe → Adapt loop and store the result; 503 if the model is unavailable. |
+| `GET`    | `/api/documents/<id>/summary`      | Retrieve the stored summary and key points (`summarized: false` if none yet).                     |
+| `POST`   | `/api/documents/search`            | RAG retrieval: embed a `query`, return the top `top_k` most relevant chunks across every document. |
+
+Creating or editing a document triggers indexing (chunking + embedding)
+automatically — there is no separate index endpoint. Indexing is soft-fail:
+if the embedding model has not been pulled, the document still saves, and the
+response's `indexing.error` says why. Every `summarize` and `search` call
+writes an audit row to `document_ai_log`, mirroring Joshua's `insight_log`.
+
+A quick check once the stack is up:
+
+```bash
+curl http://localhost:8031/api/documents
+curl -X POST http://localhost:8031/api/documents/1/summarize
+curl -X POST http://localhost:8031/api/documents/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "how does dollar-cost averaging work?"}'
+```
+
+On Windows PowerShell use `curl.exe` — plain `curl` is an alias for
+`Invoke-WebRequest` and takes different arguments.
+
+### How it works — the Plan → Act → Observe → Adapt loop
+
+`POST /api/documents/<id>/summarize` implements the agentic loop in
+[`Enerel/backend/summarize.py`](Enerel/backend/summarize.py). As with
+Joshua's `drift.py`, each phase is one public function, called in order, and
+each contributes its own key to the response.
+
+| Phase       | Function                     | What happens                                                                                                                    |
+| ----------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------|
+| **Plan**    | `plan(body_text)`             | Decides, from the document's length, whether it fits in one pass (`direct`) or needs chunking (`map_reduce`, `SUMMARIZE_DIRECT_CHAR_THRESHOLD`, default 3000 chars). |
+| **Act**     | `act(body_text, plan_result)` | Builds the text segment(s) to send: the whole document for `direct`, or up to `SUMMARIZE_MAX_CHUNKS` (default 6) chunks for `map_reduce`. Pure Python, no LLM call.  |
+| **Observe** | `observe(act_result)`         | Drops empty segments and decides whether a reduce pass is needed (more than one segment survived).                             |
+| **Adapt**   | `adapt(observe_result)`       | Calls the model: one call for `direct`; for `map_reduce`, one call per segment (map) plus one call combining them (reduce) — every model call happens in this phase, however many there are. |
+
+**Only Adapt talks to the model**, exactly as in Joshua's loop — Plan, Act
+and Observe decide the chunking strategy in pure Python, and the model is
+only ever asked to condense text it is handed, never to calculate anything.
+
+`POST /api/documents/search` implements a shorter loop — Plan → Act →
+Observe, no Adapt — in
+[`Enerel/backend/retrieval.py`](Enerel/backend/retrieval.py): the query is
+embedded in Act (the loop's one model call, a vector lookup rather than text
+generation), then everything from there — cosine similarity, ranking, the
+`top_k` cutoff — is pure-Python Observe. There is no Adapt phase because the
+endpoint's job is retrieval, not narration; see the module docstring for why
+that is a deliberate design choice, not a missing feature.
+
+The model's response for summarization is parsed from a fixed
+`SUMMARY: ... / KEY POINTS: ...` text format (`parse_summary_response` in
+`summarize.py`), not JSON — small local models are unreliable at producing
+valid JSON, and the parser falls back to treating the whole response as the
+summary if the model ignores the format, so a malformed response degrades
+gracefully instead of erroring.
+
+### Running just these services
+
+```bash
+docker compose up -d --build ollama enerel-database enerel-backend enerel-frontend
+```
+
+Then pull both models — `OLLAMA_MODEL` for summarization and
+`OLLAMA_EMBED_MODEL` for search/indexing — as in step 3 above:
+
+```bash
+docker compose exec ollama ollama pull qwen2.5:0.5b
+docker compose exec ollama ollama pull nomic-embed-text
+```
+
+### Running the tests
+
+The tests run on the host, not in a container, and need no running stack and
+no database — they build their own temporary SQLite database and stub the
+model.
+
+```bash
+pip install pytest Flask requests
+python -m pytest Enerel/tests
+```
+
+Run that from the repo root. 84 tests, under a second.
+
+Install those three packages directly rather than using
+`-r Enerel/backend/requirements.txt` — that file also pins `gunicorn`, which
+is the container's WSGI server and does not install on Windows.
+
+| File                 | Covers                                                                       |
+| --------------------- | ----------------------------------------------------------------------------|
+| `test_validation.py` | Document and search payload validation, including every `doc_type`.          |
+| `test_embeddings.py` | Chunking (word-boundary safe, overlap coverage) and the indexing soft-fail path. |
+| `test_summarize.py`  | Response parsing and each phase of the Plan → Act → Observe → Adapt loop, direct and map-reduce. |
+| `test_retrieval.py`  | Cosine similarity and the Plan → Act → Observe retrieval loop.               |
+| `test_llm.py`        | Ollama failure modes for both `generate()` and `embed()`: unreachable versus model-not-pulled. |
+| `test_app.py`        | Every endpoint end-to-end against a temporary database, with the model stubbed. |
+
+### Known limitations
+
+**Embedding needs a second model pulled.** `OLLAMA_EMBED_MODEL` (default
+`nomic-embed-text`) is separate from `OLLAMA_MODEL` and must be pulled into
+the container on its own — covered above. Until then, documents still save
+(indexing just fails softly, reported in the create/update response), but
+`/api/documents/search` 503s.
+
+**A long map-reduce summary is truncated, not paginated.** `act()` caps the
+number of chunks sent to the model at `SUMMARIZE_MAX_CHUNKS` (default 6); a
+document long enough to produce more chunks than that has its tail dropped
+from the summary rather than processed in a further pass. `act_result.truncated`
+reports whether this happened.
+
+**Small models can still summarize unevenly**, the same caveat Joshua's
+README documents for figure interpretation: `parse_summary_response`
+guarantees a usable `summary_text` and a `key_points` list that only ever
+contains lines the model actually wrote, never fabricated by the parser —
+it does not guarantee the model's condensation is a good one. Demo on
+`llama3.1:8b` for the same reason Joshua's backend does.
+
+**Release 0 is single-user.** Every query is scoped to one `DEFAULT_USER_ID`
+constant defined in `db.py`; the documents and search endpoints never take a
+`user_id` from the client. `user_id` stays in the schema and every query
+function still takes it as a parameter, so multi-user support later means
+passing a real value through, not a rewrite.
+
+**The model must be pulled into the container.** Covered above — a host-side
+`ollama pull` does not count, and both LLM-backed endpoints return 503 until
+the relevant model is.
+## HyunWoo — Bills & Subscriptions
+
+### What it does
+
+Tracks recurring bills and subscriptions in one dashboard. Users can add,
+view, edit and delete records, compare monthly and annual recurring costs, and
+monitor payment dates, automatic renewals and free trials.
+
+The AI review follows a visible Plan → Act → Observe → Adapt workflow. Python
+calculates every amount, date and priority. Ollama receives the completed
+findings and selects an appropriate tone for the action summary, while the
+recommended actions remain based on validated Python results.
+
+### Services and ports
+
+| Service              | Host port | Purpose                                      |
+| -------------------- | --------- | -------------------------------------------- |
+| `hyunwoo-frontend`   | **8040**  | nginx serving the bills dashboard            |
+| `hyunwoo-backend`    | **8041**  | Flask REST API and agentic review             |
+| `hyunwoo-database`   | —         | SQLite database seeded with 10 sample records |
+
+Open <http://localhost:8040> for the dashboard, or call the API directly at
+`http://localhost:8041`. The shared project homepage is available at
+<http://localhost:8000>.
+
+The database service owns the `hyunwoo-db-data` volume. It creates the bills
+table and adds 10 realistic sample bills only when the database is first
+started.
+
+### API endpoints
+
+| Method   | Path                    | Purpose                                         |
+| -------- | ----------------------- | ----------------------------------------------- |
+| `GET`    | `/health`               | Check the API and database connection           |
+| `GET`    | `/api/bills`            | List all bills and subscriptions                |
+| `GET`    | `/api/bills/<id>`       | Return one saved record                         |
+| `POST`   | `/api/bills`            | Add a bill or subscription                      |
+| `PUT`    | `/api/bills/<id>`       | Replace an existing record                      |
+| `DELETE` | `/api/bills/<id>`       | Delete an existing record                       |
+| `GET`    | `/api/summary`          | Return recurring cost and renewal totals        |
+| `POST`   | `/api/bills/review`     | Run the Plan → Act → Observe → Adapt review     |
+
+### How it works — the Plan → Act → Observe → Adapt loop
+
+`POST /api/bills/review` accepts a review date and a period from 1 to 90 days.
+The response contains a separate result for every phase:
+
+| Phase       | What happens                                                                  |
+| ----------- | ----------------------------------------------------------------------------- |
+| **Plan**    | Selects the date range, seven-day urgency rule and priority order.             |
+| **Act**     | Loads active records, calculates comparable costs and sorts payment dates.     |
+| **Observe** | Finds overdue bills, near-term payments, renewals and trials ending soon.      |
+| **Adapt**   | Selects the first priority, builds safe next steps and uses Ollama for tone.    |
+
+When no records require attention, Adapt returns a clear Python response and
+does not call Ollama. If Ollama returns an unexpected tone, the backend uses a
+validated neutral summary instead.
+
+### Running just these services
+
+```bash
+docker compose up -d --build ollama shared-frontend hyunwoo-database hyunwoo-backend hyunwoo-frontend
+docker compose exec ollama ollama pull qwen2.5:0.5b
+```
+
+Then open <http://localhost:8000> or <http://localhost:8040>.
+
+### Running the tests
+
+The tests use a temporary SQLite database and replace the Ollama response, so
+they do not require a running model or Docker stack.
+
+```bash
+python3 -m pip install -r hyunwoo/backend/requirements.txt -r hyunwoo/tests/requirements.txt
+python3 -m pytest hyunwoo/tests -v
+```
+
+### Known limitations
+
+- Release 0 scopes every bill to one default local user and does not include
+  accounts or login.
+- Due dates and trial dates are entered manually; the application does not
+  connect to banks, providers or calendars.
+- Recommendations are reminders and review prompts only. The application does
+  not make payments or cancel subscriptions.
+- The model must be pulled into the shared Ollama container before running an
+  AI review that contains items needing attention.
