@@ -95,10 +95,8 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 | 8010–8019 | **Joshua** | 8010 frontend, 8011 backend (database has no port) |
 | 8020–8029 | **Maxwell**| 8020 frontend, 8021 backend (database has no port) |
 | 8030–8039 | **Enerel** | 8030 frontend, 8031 backend (database has no port) |
-| 8040–8049 | free       |                                                    |
-| 8030–8039 | free       |                                                    |
 | 8040–8049 | **HyunWoo**| 8040 frontend, 8041 backend (database has no port) |
-| 8050–8059 | free       |                                                    |
+| 8050–8059 | **Thomas** | 8050 frontend, 8051 backend (database has no port) |
 | 11434     | shared     | `ollama` — one instance serves every backend       |
 
 ### A note for the other four students
@@ -627,3 +625,161 @@ python3 -m pytest hyunwoo/tests -v
   not make payments or cancel subscriptions.
 - The model must be pulled into the shared Ollama container before running an
   AI review that contains items needing attention.
+
+
+
+---
+
+## Thomas — Transactions Ledger
+
+### What it does
+
+Tracks income and expense transactions in a personal finance ledger.
+
+Users can add, view, edit and delete transactions, upload receipt references, sort and filter the ledger, assign transaction categories, and mark expenses as potentially deductible, non-deductible or needing review.
+
+The dashboard also calculates total income, total expenses and potential deductions from the saved transaction data.
+
+The AI-assisted classification feature uses the shared Ollama service to suggest a transaction category and deduction status from the merchant, description, amount and transaction type.
+
+The model does not make the final decision. Its output is presented as a suggestion that the user can review, accept or change before saving the transaction.
+
+### Services and ports
+
+| Service | Host port | What it is |
+| --- | --- | --- |
+| `thomas-frontend` | **8050** | Flask + HTMX Transactions Ledger frontend |
+| `thomas-backend` | **8051** | Python 3 + Flask REST API, SQLite access and Ollama integration |
+| `thomas-database` | — | SQLite transaction database |
+
+Open <http://localhost:8050> for the Transactions Ledger, or call the API directly at `http://localhost:8051`.
+
+The backend communicates with the shared Ollama service over the Docker Compose network at `http://ollama:11434`.
+
+The database stores transaction details including date, merchant, description, amount, transaction type, category, deduction status, receipt filename and notes.
+
+The database is seeded with at least 10 sample transaction records so the ledger, filtering and summary endpoints return meaningful results as soon as the service starts.
+
+### API endpoints
+
+Base URL `http://localhost:8051`.
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/health` | Liveness check for the Transactions backend. |
+| `GET` | `/api/transactions` | List transactions with optional search, filtering and sorting. |
+| `POST` | `/api/transactions` | Create a new transaction and optionally upload a receipt. |
+| `GET` | `/api/transactions/<id>/edit` | Return the edit form for an existing transaction. |
+| `PUT` | `/api/transactions/<id>` | Update an existing transaction. |
+| `DELETE` | `/api/transactions/<id>` | Delete a transaction. |
+| `GET` | `/api/transactions/summary` | Return total income, total expenses and potential deductions. |
+| `POST` | `/api/transactions/ai-classify` | Run the Plan → Act → Observe → Adapt AI classification workflow. |
+| `GET` | `/receipts/<filename>` | Return an uploaded receipt file. |
+
+`GET /api/transactions` supports optional query parameters including:
+
+- `search`
+- `category`
+- `transaction_type`
+- `deduction_status`
+- `sort`
+
+A quick check once the stack is up:
+
+    curl http://localhost:8051/api/transactions
+    curl http://localhost:8051/api/transactions/summary
+
+On Windows PowerShell use `curl.exe`, or:
+
+    Invoke-WebRequest http://localhost:8051/api/transactions -UseBasicParsing
+
+### How it works — the Plan → Act → Observe → Adapt loop
+
+`POST /api/transactions/ai-classify` implements the agentic loop used by the Transactions Ledger.
+
+The user provides transaction information including the merchant, description, amount and transaction type.
+
+| Phase | What happens |
+| --- | --- |
+| **Plan** | Determines that the transaction requires a category and deduction classification. |
+| **Act** | Builds the classification prompt and sends the transaction information to the configured LLM through Ollama. |
+| **Observe** | Parses the model response into a suggested category, deduction status and short explanation. |
+| **Adapt** | Presents the suggestion to the user so it can be accepted or manually changed before the transaction is saved. |
+
+For example:
+
+    Merchant: Officeworks
+    Description: Printer ink for work
+    Amount: $89.95
+    Transaction type: Expense
+
+may produce:
+
+    Category: work
+    Deduction status: potentially_deductible
+    Reason: The description suggests the purchase may be related to work activities.
+
+The Adapt phase does not automatically decide that the expense is deductible. The user remains responsible for reviewing and accepting or modifying the classification.
+
+The classification prompt is stored separately from the application logic in:
+
+`Thomas/backend/prompts/transaction_classification.txt`
+
+The model is selected through the `OLLAMA_MODEL` environment variable, with `qwen2.5:0.5b` as the lightweight default.
+
+### Running just these services
+
+From the repository root:
+
+    docker compose up -d --build ollama thomas-backend thomas-frontend
+
+If the configured model has not already been pulled into the shared Ollama container:
+
+    docker compose exec ollama ollama pull qwen2.5:0.5b
+
+Then open:
+
+<http://localhost:8050>
+
+The backend health endpoint is:
+
+    curl http://localhost:8051/health
+
+On Windows PowerShell:
+
+    Invoke-WebRequest http://localhost:8051/health -UseBasicParsing
+
+### Running the tests
+
+The tests can be run from the repository root.
+
+    pip install pytest Flask requests
+    python -m pytest Thomas/tests -v
+
+Tests should cover:
+
+| Area | Covers |
+| --- | --- |
+| CRUD | Creating, reading, updating and deleting transactions. |
+| Filtering | Search, category, type and deduction-status filters. |
+| Sorting | Date, amount and merchant ordering. |
+| Summary | Total income, total expenses and potential deductions. |
+| AI classification | Category, deduction status and explanation handling. |
+| Ollama errors | Unreachable Ollama and model-not-pulled behaviour. |
+| Receipts | Receipt upload and retrieval. |
+
+### Known limitations
+
+**Release 0 is single-user.** The Transactions Ledger does not currently include authentication or separate user accounts.
+
+**Transactions are entered manually.** The application does not connect to bank accounts or automatically import transaction history.
+
+**Receipt processing is basic.** Receipts can be attached to transactions, but Release 0 does not automatically extract merchant, amount or date information from receipt images.
+
+**AI deduction classifications are suggestions only.** The model is not treated as a tax authority and does not make a final determination that an expense is deductible.
+
+**Classification quality depends on the information entered by the user.** A vague description may result in `needs_review` or an inaccurate category.
+
+**The model must be pulled into the shared Ollama container.** A model installed through Ollama on the host machine is not automatically available inside the Docker container.
+
+**`qwen2.5:0.5b` is the lightweight development model.** It is fast and suitable for local testing, but larger models may provide more consistent classifications at the cost of greater memory and disk usage.
