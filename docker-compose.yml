@@ -166,6 +166,11 @@ services:
     healthcheck:
       # Also proves the schema exists, not merely that the file does.
       test: ["CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # HYUNWOO -- ports 8040-8049
   # =========================================================================
   hyunwoo-database:
@@ -209,6 +214,13 @@ services:
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
   hyunwoo-backend:
     build: ./hyunwoo/backend
     container_name: hyunwoo-backend
@@ -242,6 +254,14 @@ services:
       - "8030:80"
     depends_on:
       enerel-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   hyunwoo-frontend:
     build: ./hyunwoo/frontend
     container_name: hyunwoo-frontend
