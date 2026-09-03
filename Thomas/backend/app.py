@@ -712,17 +712,22 @@ def render_transaction_row(transaction):
         Edit
     </button>
 
-    <button
+<button
     class="action-button delete-button"
     hx-delete="/api/transactions/{transaction['id']}"
     hx-target="#transaction-{transaction['id']}"
     hx-swap="outerHTML"
     hx-confirm="Delete this transaction?"
     hx-on::after-request="
+        htmx.ajax('GET', '/api/transactions', {{
+            target: '#transaction-table-body',
+            swap: 'innerHTML'
+        }});
+
         htmx.ajax('GET', '/api/transactions/summary', {{
             target: '#summary-grid',
             swap: 'innerHTML'
-        }})
+        }});
     "
 >
     Delete
