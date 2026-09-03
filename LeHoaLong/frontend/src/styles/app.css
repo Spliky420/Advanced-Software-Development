@@ -1,0 +1,541 @@
+/* Goals and Budgeting -- feature styles.
+ *
+ * The team's shared theme is imported first and never edited: it owns the
+ * design tokens (colours, spacing, radii, type) and the shared button and
+ * status-message classes. Everything below is built from those same tokens,
+ * so this feature sits next to the other five without looking like a
+ * different application. Changing the shared file needs a pull request; this
+ * file is mine.
+ */
+@import '../../../../shared/styles.css';
+
+/* --------------------------------------------------------------------------
+ * Local tokens -- derived, not competing. Only additions the shared theme
+ * has no opinion about.
+ * -------------------------------------------------------------------------- */
+:root {
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+  --color-warning: #ef6c00;
+  --color-warning-bg: #fff3e0;
+  --color-danger-bg: #ffebee;
+  --color-info-bg: #e3f2fd;
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* The shared .container caps at 800px, which is right for a single column of
+ * glossary terms and too narrow for a grid of goal cards. Widened here rather
+ * than in the shared file. */
+.container--wide {
+  max-width: 1100px;
+}
+
+/* --------------------------------------------------------------------------
+ * Page furniture
+ * -------------------------------------------------------------------------- */
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+.app-header h1 {
+  margin: 0;
+  color: var(--color-primary);
+}
+.app-header .tagline {
+  margin: var(--spacing-xs) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.app-nav {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+.panel h2 {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+}
+.panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  color: var(--color-text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+ * Buttons. The shared theme styles .edit-btn / .delete-btn / .cancel-btn only
+ * inside .term-actions, so the same palette is applied here to buttons that
+ * live anywhere.
+ * -------------------------------------------------------------------------- */
+.btn {
+  display: inline-block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+.btn:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn--secondary {
+  background-color: var(--color-tertiary);
+}
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-tertiary-dark);
+}
+.btn--danger {
+  background-color: var(--color-secondary);
+}
+.btn--danger:hover:not(:disabled) {
+  background-color: var(--color-secondary-dark);
+}
+.btn--small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+.btn-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* --------------------------------------------------------------------------
+ * Badges and pills
+ * -------------------------------------------------------------------------- */
+.badge {
+  display: inline-block;
+  padding: 2px var(--spacing-sm);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.badge--high {
+  background: var(--color-danger-bg);
+  color: var(--color-secondary-dark);
+}
+.badge--medium {
+  background: var(--color-info-bg);
+  color: var(--color-primary-dark);
+}
+.badge--low {
+  background: #eeeeee;
+  color: var(--color-tertiary-dark);
+}
+.badge--ahead,
+.badge--achieved {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+.badge--on_track {
+  background: var(--color-info-bg);
+  color: var(--color-primary-dark);
+}
+.badge--behind {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+.badge--paused,
+.badge--abandoned {
+  background: #eeeeee;
+  color: var(--color-tertiary-dark);
+}
+
+/* --------------------------------------------------------------------------
+ * Progress bar
+ * -------------------------------------------------------------------------- */
+.progress {
+  height: 10px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress__fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 999px;
+  transition: width var(--transition-fast);
+}
+.progress__fill--ahead,
+.progress__fill--achieved {
+  background: var(--color-success);
+}
+.progress__fill--behind {
+  background: var(--color-warning);
+}
+.progress__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* --------------------------------------------------------------------------
+ * Goal cards
+ * -------------------------------------------------------------------------- */
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-md);
+}
+.goal-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.goal-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+.goal-card__title {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+.goal-card__title a {
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+.goal-card__title a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.goal-card__badges {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+.goal-card__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.goal-card__actions {
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+/* --------------------------------------------------------------------------
+ * Budget panel
+ * -------------------------------------------------------------------------- */
+.budget-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+}
+.figure__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.figure__value {
+  font-size: 22px;
+  font-weight: bold;
+}
+.figure__value--over {
+  color: var(--color-secondary);
+}
+.figure__value--under {
+  color: var(--color-success);
+}
+.callout {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  border-left: 4px solid transparent;
+}
+.callout--warning {
+  background: var(--color-warning-bg);
+  color: #a34a00;
+  border-left-color: var(--color-warning);
+}
+.callout--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-left-color: var(--color-success);
+}
+.callout--info {
+  background: var(--color-info-bg);
+  color: var(--color-primary-dark);
+  border-left-color: var(--color-primary);
+}
+
+/* --------------------------------------------------------------------------
+ * Forms
+ * -------------------------------------------------------------------------- */
+.field {
+  margin-bottom: var(--spacing-md);
+}
+.field label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'] {
+  border-color: var(--color-secondary);
+}
+.field__error {
+  display: block;
+  margin-top: var(--spacing-xs);
+  color: var(--color-secondary-dark);
+  font-size: var(--font-size-sm);
+}
+.field__hint {
+  display: block;
+  margin-top: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+}
+
+/* --------------------------------------------------------------------------
+ * Feedback banner -- same palette as the shared #form-status states.
+ * -------------------------------------------------------------------------- */
+.feedback {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+.feedback--error {
+  background: var(--color-danger-bg);
+  color: #c62828;
+}
+.feedback--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+.feedback--info {
+  background: var(--color-info-bg);
+  color: #1565c0;
+}
+.feedback ul {
+  margin: var(--spacing-xs) 0 0;
+  padding-left: var(--spacing-lg);
+}
+
+/* --------------------------------------------------------------------------
+ * Steps
+ * -------------------------------------------------------------------------- */
+.step-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.step {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.step:last-child {
+  border-bottom: none;
+}
+.step--complete .step__description {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+}
+.step--overdue .step__due {
+  color: var(--color-secondary);
+  font-weight: bold;
+}
+.step__order {
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.step--complete .step__order {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+.step__body {
+  flex: 1;
+  min-width: 0;
+}
+.step__description {
+  display: block;
+}
+.step__meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.step__amount {
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+.step__actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+ * Simple table, used for contributions
+ * -------------------------------------------------------------------------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+.table th {
+  color: var(--color-text-secondary);
+  font-weight: bold;
+}
+.table td.numeric,
+.table th.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+ * Confirmation dialog
+ * -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  z-index: 100;
+}
+.modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+.modal h2 {
+  margin-top: 0;
+  color: var(--color-secondary);
+  font-size: var(--font-size-base);
+}
+.modal__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+/* --------------------------------------------------------------------------
+ * The generating-a-plan state. The model can take tens of seconds on a
+ * laptop, so the wait needs to look deliberate rather than broken.
+ * -------------------------------------------------------------------------- */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--spacing-xs);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: -1px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+}
+
+@media (max-width: 600px) {
+  .step {
+    flex-wrap: wrap;
+  }
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

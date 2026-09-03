@@ -1,0 +1,25 @@
+# This build's context is the REPOSITORY ROOT (the app imports the team's
+# shared stylesheet from shared/styles.css), so frontend/.dockerignore is not
+# the file BuildKit reads -- a context-root .dockerignore would be, and the
+# repo has none. BuildKit looks for <dockerfile>.dockerignore first, which is
+# this file, so the ignores live here and no shared file has to be touched.
+#
+# Without it the context is the whole repo: five students' node_modules, the
+# checked-in venv, and .git, all uploaded to the daemon on every build.
+
+# Everything, then re-admit only what this image needs.
+*
+
+# The shared theme, at the path src/styles/app.css imports it from.
+!shared/styles.css
+
+# The app itself.
+!LeHoaLong/frontend
+
+# Build inputs and outputs that must not come along even so.
+LeHoaLong/frontend/node_modules
+LeHoaLong/frontend/dist
+LeHoaLong/frontend/.gitignore
+LeHoaLong/frontend/Dockerfile
+LeHoaLong/frontend/Dockerfile.dockerignore
+LeHoaLong/frontend/.dockerignore
