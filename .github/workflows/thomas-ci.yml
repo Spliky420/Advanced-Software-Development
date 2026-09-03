@@ -1,0 +1,52 @@
+name: Thomas Transactions CI
+
+on:
+  push:
+    paths:
+      - "Thomas/**"
+      - ".github/workflows/student-thomas.yml"
+
+  pull_request:
+    paths:
+      - "Thomas/**"
+
+jobs:
+  validate-thomas-services:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: Thomas/backend
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check backend Python syntax
+        working-directory: Thomas/backend
+        run: |
+          python -m py_compile app.py
+
+      - name: Install frontend dependencies
+        working-directory: Thomas/frontend
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check frontend Python syntax
+        working-directory: Thomas/frontend
+        run: |
+          python -m py_compile app.py
+
+      - name: Build backend Docker image
+        run: |
+          docker build -t thomas-backend ./Thomas/backend
+
+      - name: Build frontend Docker image
+        run: |
+          docker build -t thomas-frontend ./Thomas/frontend
