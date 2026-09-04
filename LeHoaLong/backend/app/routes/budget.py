@@ -7,9 +7,8 @@ an "all users" view.
 
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request
-
 from config import DEFAULT_USER_ID
+from flask import Blueprint, jsonify, request
 
 from ..db import get_db
 from ..services import budget as budget_service

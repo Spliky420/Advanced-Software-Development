@@ -16,7 +16,6 @@ from ..models import goals as goals_model
 from ..models import steps as steps_model
 from . import dates, serialise
 
-
 # ---------------------------------------------------------------------------
 # Reads
 # ---------------------------------------------------------------------------

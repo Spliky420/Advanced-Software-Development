@@ -13,7 +13,6 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
-
 from app.services import agent, dates
 
 AS_AT = date(2026, 9, 3)

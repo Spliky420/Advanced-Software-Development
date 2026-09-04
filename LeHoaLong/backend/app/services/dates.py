@@ -11,7 +11,7 @@ timestamps YYYY-MM-DDTHH:MM:SS.
 from __future__ import annotations
 
 import calendar
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 DATE_FORMAT = "%Y-%m-%d"
 TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -23,12 +23,12 @@ def today() -> date:
     UTC rather than local time so that the API, the tests and a container in
     another timezone all agree on which steps are overdue.
     """
-    return datetime.now(timezone.utc).date()
+    return datetime.now(UTC).date()
 
 
 def now_iso() -> str:
     """The current UTC timestamp, as stored in created_at / updated_at."""
-    return datetime.now(timezone.utc).strftime(TIMESTAMP_FORMAT)
+    return datetime.now(UTC).strftime(TIMESTAMP_FORMAT)
 
 
 def parse_date(value: str) -> date:

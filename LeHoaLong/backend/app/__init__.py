@@ -7,9 +7,8 @@ touching the real one, and gunicorn can build the same app from wsgi.py.
 
 from __future__ import annotations
 
-from flask import Flask, request
-
 from config import Config
+from flask import Flask, request
 
 from .db import close_db
 from .errors import register_error_handlers

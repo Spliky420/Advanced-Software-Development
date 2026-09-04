@@ -12,7 +12,6 @@ import json
 from datetime import date
 
 import pytest
-
 from app.ai import client as ollama
 from app.ai import parsing
 from app.services import agent, dates

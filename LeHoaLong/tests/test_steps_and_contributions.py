@@ -7,7 +7,6 @@ steps and 2 contributions totalling 450.00, goal 7 has no plan and no money.
 from __future__ import annotations
 
 import pytest
-
 from app.services import dates
 
 PAST_DATE = "2020-01-01"

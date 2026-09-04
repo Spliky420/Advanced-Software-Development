@@ -6,9 +6,8 @@ status code. No SQL and no arithmetic in this file.
 
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request
-
 from config import DEFAULT_USER_ID
+from flask import Blueprint, jsonify, request
 
 from ..db import get_db
 from ..services import goals as goals_service

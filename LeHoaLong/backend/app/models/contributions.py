@@ -43,7 +43,7 @@ def totals_by_goal(conn: sqlite3.Connection, goal_ids: list[int]) -> dict[int, f
         """,
         goal_ids,
     ).fetchall()
-    totals = {goal_id: 0.0 for goal_id in goal_ids}
+    totals = dict.fromkeys(goal_ids, 0.0)
     totals.update({int(row["goal_id"]): float(row["total"]) for row in rows})
     return totals
 

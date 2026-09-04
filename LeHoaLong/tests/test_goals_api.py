@@ -10,7 +10,6 @@ from __future__ import annotations
 import sqlite3
 
 import pytest
-
 from app import create_app
 
 FUTURE_DATE = "2030-06-30"
@@ -245,16 +244,37 @@ def test_create_ignores_a_client_supplied_timestamp(client, conn):
         ({"name": "No amount", "target_date": FUTURE_DATE}, "target_amount is required"),
         ({"name": "Negative", "target_amount": -5, "target_date": FUTURE_DATE}, "target_amount must be greater than 0"),
         ({"name": "Zero", "target_amount": 0, "target_date": FUTURE_DATE}, "target_amount must be greater than 0"),
-        ({"name": "Text amount", "target_amount": "lots", "target_date": FUTURE_DATE}, "target_amount must be a number"),
-        ({"name": "Boolean amount", "target_amount": True, "target_date": FUTURE_DATE}, "target_amount must be a number"),
+        (
+            {"name": "Text amount", "target_amount": "lots", "target_date": FUTURE_DATE},
+            "target_amount must be a number",
+        ),
+        (
+            {"name": "Boolean amount", "target_amount": True, "target_date": FUTURE_DATE},
+            "target_amount must be a number",
+        ),
         ({"name": "Huge", "target_amount": 1e12, "target_date": FUTURE_DATE}, "target_amount must be"),
         ({"name": "No date", "target_amount": 100}, "target_date is required"),
-        ({"name": "Bad date", "target_amount": 100, "target_date": "30/06/2030"}, "target_date must be an ISO-8601 date"),
-        ({"name": "Unpadded date", "target_amount": 100, "target_date": "2030-6-3"}, "target_date must be an ISO-8601 date"),
+        (
+            {"name": "Bad date", "target_amount": 100, "target_date": "30/06/2030"},
+            "target_date must be an ISO-8601 date",
+        ),
+        (
+            {"name": "Unpadded date", "target_amount": 100, "target_date": "2030-6-3"},
+            "target_date must be an ISO-8601 date",
+        ),
         ({"name": "Past date", "target_amount": 100, "target_date": PAST_DATE}, "is in the past"),
-        ({"name": "Bad priority", "target_amount": 100, "target_date": FUTURE_DATE, "priority": "urgent"}, "priority must be one of"),
-        ({"name": "Bad status", "target_amount": 100, "target_date": FUTURE_DATE, "status": "done"}, "status must be one of"),
-        ({"name": "Bad user", "target_amount": 100, "target_date": FUTURE_DATE, "user_id": 0}, "user_id must be a positive integer"),
+        (
+            {"name": "Bad priority", "target_amount": 100, "target_date": FUTURE_DATE, "priority": "urgent"},
+            "priority must be one of",
+        ),
+        (
+            {"name": "Bad status", "target_amount": 100, "target_date": FUTURE_DATE, "status": "done"},
+            "status must be one of",
+        ),
+        (
+            {"name": "Bad user", "target_amount": 100, "target_date": FUTURE_DATE, "user_id": 0},
+            "user_id must be a positive integer",
+        ),
     ],
 )
 def test_create_rejects_invalid_payloads(client, payload, expected_detail):

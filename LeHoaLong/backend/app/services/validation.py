@@ -130,7 +130,9 @@ def clean_date(payload: dict, field: str, errors: list[str], *, required: bool) 
     return value.strip()
 
 
-def clean_choice(payload: dict, field: str, errors: list[str], choices: tuple[str, ...], *, required: bool) -> str | None:
+def clean_choice(
+    payload: dict, field: str, errors: list[str], choices: tuple[str, ...], *, required: bool
+) -> str | None:
     if field not in payload or payload[field] is None:
         if required:
             errors.append(f"{field} is required")
