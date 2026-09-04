@@ -2,9 +2,14 @@ name: maxwell-ci
 
 on:
   push:
+    paths:
+      - "Maxwell/**"
+      - ".github/workflows/maxwell-ci.yml"
     branches: [ main, '**' ]
+
   pull_request:
-    branches: [ main ]
+      paths:
+      - "Maxwell/**"
 
 jobs:
   test:
