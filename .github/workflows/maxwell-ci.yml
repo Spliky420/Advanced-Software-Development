@@ -8,7 +8,7 @@ on:
     branches: [ main, '**' ]
 
   pull_request:
-      paths:
+    paths:
       - "Maxwell/**"
 
 jobs:
@@ -22,6 +22,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Cache Ollama models
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ollama
+          key: ${{ runner.os }}-ollama-${{ hashFiles('docker-compose.yml') }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-ollama-
 
       - name: Install backend dependencies
         working-directory: ./Maxwell/backend
@@ -47,12 +56,18 @@ jobs:
             sleep 2
           done
 
-      - name: Pull Ollama model (qwen2.5:0.5b)
+      - name: Pull Ollama model (qwen2.5:0.5b) - SKIP if cached
         run: |
-          curl -s -X POST http://localhost:11434/api/pull -d '{"model":"qwen2.5:0.5b"}' > /dev/null
-          echo "Ollama model pull initiated"
-          # Give it a moment to start pulling; actual pull may continue in background
-          sleep 10
+          # Check if model already exists
+          if curl -s http://localhost:11434/api/tags | grep -q "qwen2.5:0.5b"; then
+            echo "Model qwen2.5:0.5b already pulled, skipping..."
+          else
+            echo "Pulling Ollama model (qwen2.5:0.5b)..."
+            curl -s -X POST http://localhost:11434/api/pull -d '{"model":"qwen2.5:0.5b"}' > /dev/null
+            echo "Ollama model pull initiated"
+            # Give it a moment to start pulling; actual pull may continue in background
+            sleep 10
+          fi
 
       - name: Wait for backend to be ready
         run: |

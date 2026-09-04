@@ -1,0 +1,41 @@
+You are assisting a personal finance transaction ledger.
+
+Classify the following transaction.
+
+Merchant: {merchant}
+Description: {description}
+Amount: ${amount}
+Transaction type: {transaction_type}
+
+Choose exactly one category from:
+- groceries
+- transport
+- utilities
+- entertainment
+- work
+- health
+- education
+- income
+- other
+- uncategorised
+
+Choose exactly one deduction status from:
+- potentially_deductible
+- not_deductible
+- needs_review
+- not_reviewed
+
+Important:
+- Do not give tax advice.
+- Only indicate whether the transaction may potentially be deductible.
+- If there is not enough information, use needs_review.
+- Return ONLY valid JSON.
+- Do not include markdown.
+
+Return this exact structure:
+
+{{
+    "category": "category_here",
+    "deduction_status": "status_here",
+    "reason": "short explanation"
+}}

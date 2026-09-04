@@ -1,44 +1,411 @@
-version: '3.8'
+# ASD 2026 -- shared orchestration for all five students' microservices.
+#
+# SHARED FILE: change only via pull request (see CLAUDE.md).
+#
+# Layout: shared infrastructure first, then one clearly delimited block per
+# student. Add your block by copying the template comment at the bottom --
+# nothing above your own block should need to change.
+#
+# Host port ranges (keep these non-overlapping; claim yours in CLAUDE.md):
+#   Shared home 8000        unified landing page
+#   Joshua     8010-8019   CLAIMED
+#   Maxwell    8020-8029   CLAIMED
+#   Enerel     8030-8039   CLAIMED
+#   HyunWoo    8040-8049   CLAIMED
+#   Thomas     8050-8059   CLAIMED
+#   shared     11434       ollama
+#
+# Model selection lives in .env (copy .env.example to .env). The :- defaults
+# below mean the stack still comes up if .env is missing.
 
-# Port ranges:
-# Maxwell: 8020-8029
+name: asd2026
 
 services:
-  # Ollama service provides LLM access for all backends
+
+  # =========================================================================
+  # SHARED INFRASTRUCTURE -- used by every student's backend.
+  # =========================================================================
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama
+    container_name: asd-ollama
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
+      # Named volume so pulled models survive `docker compose down` and
+      # restarts. Models are NOT shared with a host Ollama install.
       - ollama-models:/root/.ollama
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
-  # Maxwell frontend serves the static UI
+  shared-frontend:
+    build: ./shared
+    container_name: shared-frontend
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # JOSHUA -- ports 8010-8019
+  # =========================================================================
+  joshua-database:
+    build: ./joshua/database
+    container_name: joshua-database
+    restart: unless-stopped
+    volumes:
+      - joshua-db-data:/data
+    environment:
+      DB_FILE: /data/portfolio.db
+    healthcheck:
+      # Also proves the schema exists, not merely that the file does.
+      test: ["CMD", "sqlite3", "/data/portfolio.db", "SELECT COUNT(*) FROM holdings;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  joshua-backend:
+    build: ./joshua/backend
+    container_name: joshua-backend
+    restart: unless-stopped
+    ports:
+      - "8011:5000"
+    environment:
+      DB_PATH: /data/portfolio.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
+    volumes:
+      # Same volume as joshua-database: that service creates and seeds the
+      # file, this one reads and writes it.
+      - joshua-db-data:/data
+    depends_on:
+      joshua-database:
+        condition: service_healthy
+      ollama:
+        # service_started, not service_healthy: the API is useful before a
+        # model has been pulled, and /api/insights returns a clean 503 until
+        # one is.
+        condition: service_started
+    healthcheck:
+      # /health returns 503 when the database is unreachable; urlopen raises
+      # on a non-2xx status, so the check fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  joshua-frontend:
+    build: ./joshua/frontend
+    container_name: joshua-frontend
+    restart: unless-stopped
+    ports:
+      - "8010:80"
+    depends_on:
+      joshua-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # MAXWELL -- ports 8020-8029
+  # =========================================================================
+  maxwell-database:
+    build: ./Maxwell/database
+    container_name: maxwell-database
+    restart: unless-stopped
+    volumes:
+      - maxwell-db-data:/data
+    healthcheck:
+      test: ["CMD", "sqlite3", "/data/glossary.sqlite", "SELECT COUNT(*) FROM terms;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  maxwell-backend:
+    build: ./Maxwell/backend
+    container_name: maxwell-backend
+    restart: unless-stopped
+    ports:
+      - "8021:5000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - DATABASE=/data/glossary.sqlite
+    volumes:
+      - maxwell-db-data:/data
+    depends_on:
+      maxwell-database:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
   maxwell-frontend:
     build:
       context: .
       dockerfile: Maxwell/frontend/Dockerfile
     container_name: maxwell-frontend
+    restart: unless-stopped
     ports:
       - "8020:80"
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    restart: unless-stopped
     depends_on:
-      - ollama
+      - maxwell-backend
 
-  # Maxwell backend provides API for glossary terms (SQLite + Ollama)
-  maxwell-backend:
-    build: ./Maxwell/backend
-    container_name: maxwell-backend
-    ports:
-      - "8021:5000"
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
+
+  # =========================================================================
+  # THOMAS -- ports 8050-8059
+  # Transactions Ledger
+  # =========================================================================
+
+  thomas-backend:
+    build: ./Thomas/backend
+    container_name: thomas-backend
     restart: unless-stopped
+
+    ports:
+      - "8051:5001"
+
+    environment:
+      DATABASE_PATH: /data/transactions.db
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+
+    volumes:
+      - thomas-db-data:/data
+      - thomas-receipts:/app/uploads/receipts
+
     depends_on:
-      - ollama
+      ollama:
+        condition: service_started
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+
+  thomas-frontend:
+    build: ./Thomas/frontend
+    container_name: thomas-frontend
+    restart: unless-stopped
+
+    ports:
+      - "8050:5000"
+
+    environment:
+      BACKEND_URL: http://thomas-backend:5001
+
+    depends_on:
+      thomas-backend:
+        condition: service_started
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5)"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # ENEREL -- ports 8030-8039 -- Research Library
+  # =========================================================================
+  enerel-database:
+    build: ./Enerel/database
+    container_name: enerel-database
+    restart: unless-stopped
+    volumes:
+      - enerel-db-data:/data
+    environment:
+      DB_FILE: /data/library.db
+    healthcheck:
+      # Also proves the schema exists, not merely that the file does.
+      test: ["CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # HYUNWOO -- ports 8040-8049
+  # =========================================================================
+  hyunwoo-database:
+    build: ./hyunwoo/database
+    container_name: hyunwoo-database
+    restart: unless-stopped
+    volumes:
+      - hyunwoo-db-data:/data
+    environment:
+      DB_FILE: /data/bills.db
+    healthcheck:
+      test: ["CMD", "sqlite3", "/data/bills.db", "SELECT COUNT(*) FROM bills;"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  enerel-backend:
+    build: ./Enerel/backend
+    container_name: enerel-backend
+    restart: unless-stopped
+    ports:
+      - "8031:5000"
+    environment:
+      DB_PATH: /data/library.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+    volumes:
+      # Same volume as enerel-database: that service creates and seeds the
+      # file, this one reads and writes it.
+      - enerel-db-data:/data
+    depends_on:
+      enerel-database:
+        condition: service_healthy
+      ollama:
+        # service_started, not service_healthy: the API is useful before a
+        # model has been pulled, and /summarize or /search return a clean 503
+        # until one is.
+        condition: service_started
+    healthcheck:
+      # /health returns 503 when the database is unreachable; urlopen raises
+      # on a non-2xx status, so the check fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  hyunwoo-backend:
+    build: ./hyunwoo/backend
+    container_name: hyunwoo-backend
+    restart: unless-stopped
+    ports:
+      - "8041:5000"
+    environment:
+      DB_PATH: /data/bills.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+    volumes:
+      - hyunwoo-db-data:/data
+    depends_on:
+      hyunwoo-database:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  enerel-frontend:
+    build: ./Enerel/frontend
+    container_name: enerel-frontend
+    restart: unless-stopped
+    ports:
+      - "8030:80"
+    depends_on:
+      enerel-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  hyunwoo-frontend:
+    build: ./hyunwoo/frontend
+    container_name: hyunwoo-frontend
+    restart: unless-stopped
+    ports:
+      - "8040:80"
+    depends_on:
+      hyunwoo-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # TEMPLATE -- copy this block, replace <name>, claim a port range above.
+  #
+  #   <name>-database:
+  #     build: ./<name>/database
+  #     volumes:
+  #       - <name>-db-data:/data
+  #
+  #   <name>-backend:
+  #     build: ./<name>/backend
+  #     ports:
+  #       - "80X1:5000"
+  #     environment:
+  #       OLLAMA_BASE_URL: http://ollama:11434
+  #       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+  #     volumes:
+  #       - <name>-db-data:/data
+  #     depends_on:
+  #       <name>-database:
+  #         condition: service_healthy
+  #
+  #   <name>-frontend:
+  #     build: ./<name>/frontend
+  #     ports:
+  #       - "80X0:80"
+  #
+  # ...and add <name>-db-data to the volumes block below.
+  # =========================================================================
 
 volumes:
+  # Shared
   ollama-models:
+
+  # Joshua
+  joshua-db-data:
+  # Maxwell
+  maxwell-db-data:
+  # Enerel
+  enerel-db-data:
+  # HyunWoo
+  hyunwoo-db-data:
+    name: hyunwoo-db-data
+  # Thomas
+  thomas-db-data:
+  thomas-receipts:

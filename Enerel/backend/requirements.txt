@@ -1,0 +1,6 @@
+Flask==3.0.3
+Werkzeug==3.0.3
+requests==2.32.3
+# Production WSGI server used in the container (Linux only -- the host dev
+# workflow still uses `python app.py`).
+gunicorn==22.0.0

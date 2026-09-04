@@ -127,7 +127,7 @@ def is_financial_term(term):
     return True
 
 # Database configuration
-DATABASE = os.path.join(os.path.dirname(__file__), '..', 'database', 'glossary.sqlite')
+DATABASE = os.environ.get('DATABASE', os.path.join(os.path.dirname(__file__), '..', 'database', 'glossary.sqlite'))
 OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://ollama:11434')
 OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
 
@@ -209,8 +209,13 @@ def get_term_definition(term):
         except sqlite3.IntegrityError:
             # Another request might have inserted it meanwhile
             row = conn.execute('SELECT definition FROM terms WHERE term = ?', (term,)).fetchone()
-            if row:
-                definition = row['definition']
+            if row is None:
+                app.logger.error(f"IntegrityError for term {term} but term not found on select")
+                return jsonify({'term': term, 'definition': "Error generating definition.", 'error': "Database inconsistency"}), 500
+            definition = row['definition']
+        except sqlite3.Error as e:
+            app.logger.error(f"SQLite error during insert: {e}")
+            return jsonify({'term': term, 'definition': "Error generating definition.", 'error': str(e)}), 500
 
     return jsonify({'term': term, 'definition': definition})
 
@@ -226,15 +231,19 @@ def update_term(term):
     if not new_definition:
         return jsonify({'error': 'Definition cannot be empty'}), 400
 
-    with get_db() as conn:
-        # Check if term exists
-        row = conn.execute('SELECT definition FROM terms WHERE term = ?', (term,)).fetchone()
-        if not row:
-            return jsonify({'error': f'Term "{term}" not found'}), 404
+    try:
+        with get_db() as conn:
+            # Check if term exists
+            row = conn.execute('SELECT definition FROM terms WHERE term = ?', (term,)).fetchone()
+            if not row:
+                return jsonify({'error': f'Term "{term}" not found'}), 404
 
-        # Update the definition
-        conn.execute('UPDATE terms SET definition = ? WHERE term = ?', (new_definition, term))
-        conn.commit()
+            # Update the definition
+            conn.execute('UPDATE terms SET definition = ? WHERE term = ?', (new_definition, term))
+            conn.commit()
+    except sqlite3.Error as e:
+        app.logger.error(f"SQLite error during update: {e}")
+        return jsonify({'error': 'Database error'}), 500
 
     return jsonify({'term': term, 'definition': new_definition})
 
@@ -242,15 +251,19 @@ def update_term(term):
 # Delete term
 @app.route('/api/glossary/<term>', methods=['DELETE'])
 def delete_term(term):
-    with get_db() as conn:
-        # Check if term exists
-        row = conn.execute('SELECT definition FROM terms WHERE term = ?', (term,)).fetchone()
-        if not row:
-            return jsonify({'error': f'Term "{term}" not found'}), 404
+    try:
+        with get_db() as conn:
+            # Check if term exists
+            row = conn.execute('SELECT definition FROM terms WHERE term = ?', (term,)).fetchone()
+            if not row:
+                return jsonify({'error': f'Term "{term}" not found'}), 404
 
-        # Delete the term
-        conn.execute('DELETE FROM terms WHERE term = ?', (term,))
-        conn.commit()
+            # Delete the term
+            conn.execute('DELETE FROM terms WHERE term = ?', (term,))
+            conn.commit()
+    except sqlite3.Error as e:
+        app.logger.error(f"SQLite error during delete: {e}")
+        return jsonify({'error': 'Database error'}), 500
 
     return jsonify({'message': f'Term "{term}" deleted successfully'})
 

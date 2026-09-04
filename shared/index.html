@@ -1,193 +1,114 @@
 <!DOCTYPE html>
-<!-- Shared asset – changes must be made via a pull request. -->
-<!-- This file serves as the common frontend for all student frontends. -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Glossary</title>
+    <meta name="description" content="Open the financial tools in the ASD 2026 Agentic AI application.">
+    <title>ASD 2026 - Finance Workspace</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="container">
-        <h1>Financial Glossary</h1>
-        <div id="add-term-section">
-            <h2>Add New Term</h2>
-            <form id="add-term-form">
-                <input type="text" id="new-term" placeholder="Enter financial term (e.g., 'ETF', 'Bond')" required>
-                <button type="submit">Add Term</button>
-            </form>
-            <div id="form-status" style="margin-top: 10px; padding: 10px; border-radius: 4px;"></div>
+    <header class="landing-hero">
+        <div class="container landing-shell">
+            <p class="landing-kicker">ASD 2026 Agentic AI application</p>
+            <h1>Personal Finance Workspace</h1>
+            <p class="landing-intro">
+                Choose a tool to review your finances, understand key terms,
+                and make informed decisions.
+            </p>
         </div>
-        <div id="glossary-list">
-            <!-- Glossary terms will be loaded here -->
-        </div>
-    </div>
-    <script>
-        // Fetch glossary terms from the backend API
-        async function loadGlossary() {
-            try {
-                const response = await fetch('http://localhost:8021/api/glossary');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const glossary = await response.json();
-                const listDiv = document.getElementById('glossary-list');
-                // Clear any existing content
-                listDiv.innerHTML = '';
-                glossary.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'term-item';
-                    div.dataset.term = item.term;
-                    div.innerHTML = `
-                        <div class="term-content">
-                            <strong>${item.term}</strong>: <span class="term-definition">${item.definition}</span>
-                        </div>
-                        <div class="term-actions">
-                            <button class="edit-btn">Edit</button>
-                            <button class="delete-btn">Delete</button>
-                        </div>
-                    `;
-                    listDiv.appendChild(div);
-                });
-                // Add event listeners to the new buttons
-                attachTermActions();
-            } catch (error) {
-                console.error('Error loading glossary:', error);
-                const listDiv = document.getElementById('glossary-list');
-                listDiv.textContent = 'Failed to load glossary.';
-            }
-        }
+    </header>
 
-        // Attach event listeners to edit and delete buttons
-        function attachTermActions() {
-            document.querySelectorAll('.edit-btn').forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const termItem = e.target.closest('.term-item');
-                    const term = termItem.dataset.term;
-                    const definitionSpan = termItem.querySelector('.term-definition');
-                    const currentDefinition = definitionSpan.textContent;
+    <main class="container landing-shell">
+        <section class="feature-grid" aria-label="Finance features">
 
-                    // Switch to edit mode
-                    termItem.innerHTML = `
-                        <div class="term-content">
-                            <strong>${term}</strong>:
-                            <textarea class="edit-textarea">${currentDefinition}</textarea>
-                        </div>
-                        <div class="term-actions">
-                            <button class="save-btn">Save</button>
-                            <button class="cancel-btn">Cancel</button>
-                        </div>
-                    `;
+            <a class="feature-card" href="http://localhost:8010">
+                <span class="feature-owner">Joshua</span>
 
-                    // Add listeners for save and cancel
-                    termItem.querySelector('.save-btn').addEventListener('click', async () => {
-                        const newDefinition = termItem.querySelector('.edit-textarea').value.trim();
-                        if (!newDefinition) {
-                            alert('Definition cannot be empty');
-                            return;
-                        }
-                        try {
-                            const response = await fetch(`http://localhost:8021/api/glossary/${encodeURIComponent(term)}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({ definition: newDefinition })
-                            });
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-                            // Reload the glossary to reflect changes
-                            await loadGlossary();
-                        } catch (error) {
-                            console.error('Error updating term:', error);
-                            alert(`Failed to update term: ${error.message}`);
-                            // Revert to display mode on error
-                            await loadGlossary();
-                        }
-                    });
+                <h2>Portfolio Holdings</h2>
 
-                    termItem.querySelector('.cancel-btn').addEventListener('click', async () => {
-                        // Revert to display mode
-                        await loadGlossary();
-                    });
-                });
-            });
+                <p>
+                    Track investments, compare allocation targets,
+                    and review portfolio drift.
+                </p>
 
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const termItem = e.target.closest('.term-item');
-                    const term = termItem.dataset.term;
-                    if (confirm(`Are you sure you want to delete the term "${term}"?`)) {
-                        try {
-                            const response = await fetch(`http://localhost:8021/api/glossary/${encodeURIComponent(term)}`, {
-                                method: 'DELETE'
-                            });
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-                            // Reload the glossary to reflect deletion
-                            await loadGlossary();
-                        } catch (error) {
-                            console.error('Error deleting term:', error);
-                            alert(`Failed to delete term: ${error.message}`);
-                        }
-                    }
-                });
-            });
-        }
+                <span class="feature-link">
+                    Open portfolio
+                    <span aria-hidden="true">&rarr;</span>
+                </span>
+            </a>
 
-        // Handle adding a new term
-        document.getElementById('add-term-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const termInput = document.getElementById('new-term');
-            const term = termInput.value.trim();
-            const statusDiv = document.getElementById('form-status');
 
-            if (!term) {
-                statusDiv.textContent = 'Please enter a term';
-                statusDiv.style.backgroundColor = '#ffebee';
-                statusDiv.style.color = '#c62828';
-                return;
-            }
+            <a class="feature-card" href="http://localhost:8020">
+                <span class="feature-owner">Maxwell</span>
 
-            statusDiv.textContent = `Adding term "${term}"...`;
-            statusDiv.style.backgroundColor = '#e3f2fd';
-            statusDiv.style.color = '#1565c0';
+                <h2>Financial Glossary</h2>
 
-            try {
-                // Call the endpoint that will generate definition if needed and store it
-                const response = await fetch(`http://localhost:8021/api/glossary/${encodeURIComponent(term)}`);
-                if (!response.ok) {
-                    // Handle specific error cases
-                    if (response.status === 400) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Invalid term');
-                    }
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const result = await response.json();
+                <p>
+                    Look up financial terms and manage clear definitions
+                    generated with AI assistance.
+                </p>
 
-                // Show success
-                statusDiv.textContent = `Term "${term}" added/updated successfully!`;
-                statusDiv.style.backgroundColor = '#e8f5e9';
-                statusDiv.style.color = '#2e7d32';
+                <span class="feature-link">
+                    Open glossary
+                    <span aria-hidden="true">&rarr;</span>
+                </span>
+            </a>
 
-                // Clear input and reload glossary to show updated list
-                termInput.value = '';
-                await loadGlossary();
 
-            } catch (error) {
-                console.error('Error adding term:', error);
-                statusDiv.textContent = `Failed to add term: ${error.message}`;
-                statusDiv.style.backgroundColor = '#ffebee';
-                statusDiv.style.color = '#c62828';
-            }
-        });
+            <a class="feature-card" href="http://localhost:8030">
+                <span class="feature-owner">Enerel</span>
 
-        // Initial load
-        loadGlossary();
-    </script>
+                <h2>Research Library</h2>
+
+                <p>
+                    Save research documents, generate AI summaries,
+                    and search across your library by meaning.
+                </p>
+
+                <span class="feature-link">
+                    Open library
+                    <span aria-hidden="true">&rarr;</span>
+                </span>
+            </a>
+
+
+            <a class="feature-card" href="http://localhost:8040">
+                <span class="feature-owner">HyunWoo</span>
+
+                <h2>Bills &amp; Subscriptions</h2>
+
+                <p>
+                    Manage recurring payments, monitor renewals,
+                    and run an agentic bill review.
+                </p>
+
+                <span class="feature-link">
+                    Open bills
+                    <span aria-hidden="true">&rarr;</span>
+                </span>
+            </a>
+
+
+            <a class="feature-card" href="http://localhost:8050">
+                <span class="feature-owner">Thomas</span>
+
+                <h2>Transactions Ledger</h2>
+
+                <p>
+                    Record income and expenses, upload receipts,
+                    sort and filter transactions, and use AI-assisted
+                    category and deduction suggestions.
+                </p>
+
+                <span class="feature-link">
+                    Open transactions
+                    <span aria-hidden="true">&rarr;</span>
+                </span>
+            </a>
+
+        </section>
+    </main>
 </body>
 </html>
