@@ -36,7 +36,7 @@ services:
       # restarts. Models are NOT shared with a host Ollama install.
       - ollama-models:/root/.ollama
     healthcheck:
-      test: ["CMD", "ollama", "list"]
+      test: [ "CMD", "ollama", "list" ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -49,7 +49,7 @@ services:
     ports:
       - "8000:80"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -68,7 +68,7 @@ services:
       DB_FILE: /data/portfolio.db
     healthcheck:
       # Also proves the schema exists, not merely that the file does.
-      test: ["CMD", "sqlite3", "/data/portfolio.db", "SELECT COUNT(*) FROM holdings;"]
+      test: [ "CMD", "sqlite3", "/data/portfolio.db", "SELECT COUNT(*) FROM holdings;" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -100,8 +100,7 @@ services:
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -117,7 +116,7 @@ services:
       joshua-backend:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -150,11 +149,28 @@ services:
     depends_on:
       - ollama
 
-
   # =========================================================================
   # THOMAS -- ports 8050-8059
   # Transactions Ledger
   # =========================================================================
+
+  thomas-database:
+    build: ./Thomas/database
+    container_name: thomas-database
+    restart: unless-stopped
+
+    environment:
+      DB_FILE: /data/transactions.db
+
+    volumes:
+      - thomas-db-data:/data
+
+    healthcheck:
+      test: [ "CMD", "sqlite3", "/data/transactions.db", "SELECT COUNT(*) FROM transactions;" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   thomas-backend:
     build: ./Thomas/backend
@@ -174,22 +190,17 @@ services:
       - thomas-receipts:/app/uploads/receipts
 
     depends_on:
+      thomas-database:
+        condition: service_healthy
       ollama:
         condition: service_started
 
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)"
-        ]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
       start_period: 15s
-
 
   thomas-frontend:
     build: ./Thomas/frontend
@@ -207,13 +218,7 @@ services:
         condition: service_started
 
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5)"
-        ]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -232,7 +237,7 @@ services:
       DB_FILE: /data/library.db
     healthcheck:
       # Also proves the schema exists, not merely that the file does.
-      test: ["CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;"]
+      test: [ "CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -249,7 +254,7 @@ services:
     environment:
       DB_FILE: /data/bills.db
     healthcheck:
-      test: ["CMD", "sqlite3", "/data/bills.db", "SELECT COUNT(*) FROM bills;"]
+      test: [ "CMD", "sqlite3", "/data/bills.db", "SELECT COUNT(*) FROM bills;" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -281,8 +286,7 @@ services:
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -306,8 +310,7 @@ services:
       ollama:
         condition: service_started
     healthcheck:
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -323,7 +326,7 @@ services:
       enerel-backend:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -339,12 +342,11 @@ services:
       hyunwoo-backend:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 10s
-
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
   #
@@ -379,10 +381,10 @@ volumes:
   ollama-models:
 
   # Joshua
-  joshua-db-data:
-  # Enerel
-  enerel-db-data:
-  # HyunWoo
+  joshua-db-data: # Enerel
+
+  enerel-db-data: # HyunWoo
+
   hyunwoo-db-data:
     name: hyunwoo-db-data
   # Thomas
