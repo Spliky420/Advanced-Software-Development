@@ -97,6 +97,7 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 | 8030–8039 | **Enerel** | 8030 frontend, 8031 backend (database has no port) |
 | 8040–8049 | **HyunWoo**| 8040 frontend, 8041 backend (database has no port) |
 | 8050–8059 | **Thomas** | 8050 frontend, 8051 backend (database has no port) |
+| 8060–8069 | **LeHoaLong** | 8060 frontend, 8061 backend (database has no port) |
 | 11434     | shared     | `ollama` — one instance serves every backend       |
 
 ### A note for the other four students

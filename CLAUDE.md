@@ -90,10 +90,9 @@ this table and the header comment in `docker-compose.yml`.
 | 8010–8019   | **Joshua**  | 8010 frontend, 8011 backend (database has no port)   |
 | 8020–8029   | **Maxwell** | 8020 frontend, 8021 backend (database has no port)   |
 | 8030–8039   | **Enerel**  | 8030 frontend, 8031 backend (database has no port)   |
-| 8040–8049   | free        |                                                       |
-| 8030–8039   | free        |                                                       |
 | 8040–8049   | **HyunWoo** | 8040 frontend, 8041 backend (database has no port)   |
-| 8050–8059   | free        |                                                       |
+| 8050–8059   | **Tom**     | 8050 frontend, 8051 backend (database has no port)   |                                                |
+| 8060–8069   | **LeHoaLong** | 8060 frontend, 8061 backend (database has no port) |
 | 11434       | shared      | `ollama` (one instance serves every backend)          |
 
 Container-internal ports are not shared state — every backend can listen on
