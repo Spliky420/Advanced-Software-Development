@@ -16,7 +16,13 @@ The database path is taken from, in order of precedence: ``--db``, the
 ``DB_FILE`` environment variable, then ``DB_PATH`` (which is the name the
 backend container uses for the same file), then ``/data/goals.db``.
 
-Exit codes: 0 success, 1 failure (missing SQL file, bad SQL, failed check).
+Exit codes: 0 success, 1 failure (missing SQL file, bad SQL, structural
+corruption, or a seed-time invariant broken on a *freshly built* database).
+
+A database that already exists is checked more leniently on purpose: see
+``check`` for which claims are guarantees and which are only observations
+once real activity has touched the data. Getting that distinction wrong made
+one drifted goal enough to crash-loop the database container.
 """
 
 from __future__ import annotations
@@ -101,22 +107,50 @@ def build(db_path: Path, force: bool) -> bool:
     return True
 
 
-def check(conn: sqlite3.Connection) -> list[str]:
-    """Verify the invariants the seed data claims. Returns a list of problems."""
-    problems: list[str] = []
+def check(conn: sqlite3.Connection, *, fresh: bool) -> tuple[list[str], list[str]]:
+    """Verify the database. Returns (fatal, advisory).
 
+    Two different kinds of claim live here, and conflating them is what made
+    this script able to brick the stack.
+
+    **Fatal, always.** Structural corruption -- orphaned rows that no correct
+    write could have produced. A database in this state is broken however it
+    got there, so the container should refuse to come up around it.
+
+    **Fatal only on a fresh build.** The invariants the *seed data* claims:
+    at least MIN_ROWS_PER_TABLE rows per table, each goal's steps summing to
+    its target, achieved goals actually funded. These hold by construction the
+    moment seed.sql has run, and CI enforces them that way. They are NOT
+    properties of a live database:
+
+      * replan regenerates the pending steps from (target - contributions)
+        while completed steps keep the amounts they were planned with, and
+        contributions do not have to equal those amounts -- so the steps of a
+        replanned goal legitimately stop summing to the target
+      * a user may delete goals, taking a table back under ten rows
+      * a user may mark a goal achieved before funding it
+
+    None of that is corruption, and none of it should stop the database
+    container from starting. On an existing database these are reported as
+    advisories and the exit code stays 0.
+    """
+    fatal: list[str] = []
+    seeded: list[str] = []
+
+    # --- structural: always fatal ------------------------------------------
+    # SQLite only enforces foreign keys on write, so a file built with the
+    # pragma off could still hold orphans.
+    for violation in conn.execute("PRAGMA foreign_key_check").fetchall():
+        fatal.append(f"foreign key violation in {violation[0]}, rowid {violation[1]}")
+
+    # --- seed-time invariants ----------------------------------------------
     for table in TABLES:
         count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
         if count < MIN_ROWS_PER_TABLE:
-            problems.append(f"{table} has {count} rows, fewer than the required {MIN_ROWS_PER_TABLE}")
-
-    # Foreign keys: SQLite only enforces them on write, so an existing file
-    # built with the pragma off could still hold orphans.
-    for violation in conn.execute("PRAGMA foreign_key_check").fetchall():
-        problems.append(f"foreign key violation in {violation[0]}, rowid {violation[1]}")
+            seeded.append(f"{table} has {count} rows, fewer than the required {MIN_ROWS_PER_TABLE}")
 
     # Each goal's steps should sum to its target amount. Goals with no steps
-    # yet (7 and 13) are excluded -- no plan is not a broken plan.
+    # yet are excluded -- no plan is not a broken plan.
     mismatches = conn.execute(
         """
         SELECT g.goal_id, g.name, g.target_amount, SUM(s.step_amount) AS step_total
@@ -127,7 +161,7 @@ def check(conn: sqlite3.Connection) -> list[str]:
         """
     ).fetchall()
     for row in mismatches:
-        problems.append(
+        seeded.append(
             f"goal {row['goal_id']} ({row['name']}): steps sum to {row['step_total']:.2f} "
             f"but the target is {row['target_amount']:.2f}"
         )
@@ -143,12 +177,15 @@ def check(conn: sqlite3.Connection) -> list[str]:
     ).fetchall()
     for row in underfunded:
         if row["saved"] + 0.005 < row["target_amount"]:
-            problems.append(
+            seeded.append(
                 f"goal {row['goal_id']} ({row['name']}) is marked achieved but only "
                 f"{row['saved']:.2f} of {row['target_amount']:.2f} has been contributed"
             )
 
-    return problems
+    if fresh:
+        # seed.sql just ran: these are guarantees, not observations.
+        return fatal + seeded, []
+    return fatal, seeded
 
 
 def summarise(conn: sqlite3.Connection) -> None:
@@ -214,28 +251,45 @@ def main(argv: list[str] | None = None) -> int:
 
     db_path = resolve_db_path(args.db)
 
+    fresh = False
     try:
         if args.summary_only:
             if not db_path.exists():
                 print(f"[init_db] no database at {db_path}", file=sys.stderr)
                 return 1
         else:
-            build(db_path, force=args.force)
+            # True only when schema.sql and seed.sql actually just ran. That is
+            # what decides whether the seed-time invariants are guarantees to
+            # enforce or observations about live data to report.
+            fresh = build(db_path, force=args.force)
     except (OSError, sqlite3.Error) as exc:
         print(f"[init_db] failed: {exc}", file=sys.stderr)
         return 1
 
     conn = connect(db_path)
     try:
-        problems = check(conn)
+        fatal, advisory = check(conn, fresh=fresh)
         if not args.quiet:
             summarise(conn)
     finally:
         conn.close()
 
-    if problems:
+    if advisory:
+        # Not a failure. An existing database drifts from what the seed
+        # claimed as soon as anyone replans a goal or deletes one, and the
+        # container has to keep starting through that.
+        print("[init_db] NOTE -- this database no longer matches the seed's claims:", file=sys.stderr)
+        for item in advisory:
+            print(f"  - {item}", file=sys.stderr)
+        print(
+            "[init_db] expected on a database with live activity; "
+            "run with --force to rebuild from seed.sql.",
+            file=sys.stderr,
+        )
+
+    if fatal:
         print("[init_db] CONSISTENCY PROBLEMS:", file=sys.stderr)
-        for problem in problems:
+        for problem in fatal:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 

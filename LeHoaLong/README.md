@@ -165,10 +165,26 @@ setting it in the schema alone would not stick):
 | `ai_plan_log`     | One row per model exchange: phase, model, prompt, response |
 | `budget_settings` | Monthly budget and currency, per user                      |
 
-`init_db.py` creates, seeds and then **verifies** the result — at least 10 rows
-in every table, no foreign key violations, step amounts summing to their goal's
-target. It exits non-zero if any check fails, so neither the container nor CI
-can come up around a database the checks would have rejected.
+`init_db.py` creates, seeds and then **verifies** the result. It separates two
+kinds of claim, and the distinction is load-bearing:
+
+- **Structural corruption — always fatal.** Foreign key violations: orphaned
+  rows no correct write could have produced. The container refuses to start
+  around a database in this state, however it got there.
+- **Seed-time invariants — fatal only on a fresh build.** At least 10 rows per
+  table, each goal's steps summing to its target, achieved goals actually
+  funded. These hold by construction the moment `seed.sql` has run, and CI
+  enforces them that way (it always passes `--force`). They are *not*
+  properties of a live database: replan rebuilds the pending steps from
+  `target − contributions` while completed steps keep the amounts they were
+  planned with, so a replanned goal legitimately stops summing to its target.
+  A user may also delete goals, or mark one achieved before funding it. On an
+  existing database these are reported as advisories and the exit code stays 0.
+
+Conflating the two is not hypothetical — it crash-looped the database
+container, and through `depends_on: service_healthy` took the whole stack with
+it, after a single replan during testing.
+`tests/test_init_db_checks.py` pins both halves.
 
 ```bash
 python LeHoaLong/database/init_db.py --summary-only    # what is in there now
@@ -241,7 +257,7 @@ pip install -r LeHoaLong/tests/requirements.txt
 pytest LeHoaLong/tests -v
 ```
 
-238 tests, and **none of them touches the network**. Every test gets its own
+246 tests, and **none of them touches the network**. Every test gets its own
 copy of a database built from the real `schema.sql` and `seed.sql`, so the suite
 exercises the same constraints the container enforces. An autouse `no_network`
 fixture monkeypatches `socket.connect`, so a test that tries to open a socket
@@ -273,9 +289,12 @@ another student's work and never reports on it. Three parallel jobs:
 
 Two of the gates are doing more than they look:
 
-- The **seed step is the marking requirement in executable form**. `init_db.py`
-  exits non-zero unless every table carries at least 10 rows, so a seed file
-  that regresses fails the build rather than being noticed at demo time.
+- The **seed step is the marking requirement in executable form**. CI runs
+  `init_db.py --force`, which is the strict path: it exits non-zero unless
+  every table carries at least 10 rows and every seed-time invariant holds, so
+  a seed file that regresses fails the build rather than being noticed at demo
+  time. (The lenient path applies only to an already-existing database — see
+  **Database** above.)
 - The **frontend build catches integration drift**. `src/styles/app.css` imports
   the shared theme by a path relative to the repository root, so if that
   stylesheet is moved or renamed, this job goes red instead of the feature
