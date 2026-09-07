@@ -4,6 +4,7 @@ from core.ai_runner import AIRunner
 from core.orchestrator import run_agentic_review
 
 
+# Folder names must match the repository exactly
 STUDENTS = {
     "1": ("joshua", "Joshua"),
     "2": ("Maxwell", "Maxwell"),
@@ -15,7 +16,22 @@ STUDENTS = {
 
 
 def get_paths():
+    """
+    Resolve the agentic-loop folder and repository root.
+
+    Expected structure:
+
+    Advanced-Software-Development/
+    ├── ai-services/
+    │   └── agentic-loop/
+    │       └── app.py
+    ├── Thomas/
+    ├── Maxwell/
+    └── docker-compose.yml
+    """
+
     app_dir = Path(__file__).resolve().parent
+
     repo_root = app_dir.parent.parent
 
     return app_dir, repo_root
@@ -35,31 +51,50 @@ def print_main_menu():
     print()
 
 
-def choose_student():
+def choose_student(mode):
+    """
+    Allow the user to choose one student's files
+    or review the integrated team application.
+    """
+
     while True:
         print()
         print("======================================")
-        print("SELECT STUDENT")
+        print("SELECT REVIEW TARGET")
         print("======================================")
-
         print("1. Joshua")
         print("2. Maxwell")
         print("3. Enerel")
         print("4. HyunWoo")
         print("5. Thomas")
         print("6. Le Hoa Long")
-        print("7. All Students")
+
+        if mode == "architecture":
+            print("7. Integrated Team Application")
+        else:
+            print("7. All Students")
+
         print("0. Back")
+        print()
 
         choice = input(
-            "Choose a student: "
+            "Choose a review target: "
         ).strip()
 
         if choice == "0":
             return None
 
         if choice == "7":
-            return ("all", "All Students")
+            if mode == "architecture":
+                return (
+                    "all",
+                    "Integrated Team Application"
+                )
+
+            return (
+                "all",
+                "All Students"
+            )
 
         student = STUDENTS.get(choice)
 
@@ -67,6 +102,85 @@ def choose_student():
             return student
 
         print("Invalid selection.")
+
+
+def run_single_review(
+    mode,
+    app_dir,
+    repo_root,
+    ai
+):
+    """
+    Ask which student/application should be reviewed,
+    then execute the Plan -> Act -> Observe -> Adapt loop.
+    """
+
+    target = choose_student(mode)
+
+    if target is None:
+        return
+
+    student, student_label = target
+
+    run_agentic_review(
+        mode=mode,
+        app_dir=app_dir,
+        repo_root=repo_root,
+        ai=ai,
+        student=student,
+        student_label=student_label,
+    )
+
+
+def run_everything(
+    app_dir,
+    repo_root,
+    ai
+):
+    """
+    Run all four review categories.
+
+    The user selects one target first so Review Everything
+    does not automatically send the entire six-person
+    repository to Ollama.
+    """
+
+    print()
+    print("======================================")
+    print("REVIEW EVERYTHING")
+    print("======================================")
+    print()
+    print(
+        "Select the student whose Database, "
+        "Implementation, Architecture and DevOps "
+        "should be reviewed."
+    )
+
+    target = choose_student(
+        "implementation"
+    )
+
+    if target is None:
+        return
+
+    student, student_label = target
+
+    modes = (
+        "database",
+        "implementation",
+        "architecture",
+        "devops",
+    )
+
+    for mode in modes:
+        run_agentic_review(
+            mode=mode,
+            app_dir=app_dir,
+            repo_root=repo_root,
+            ai=ai,
+            student=student,
+            student_label=student_label,
+        )
 
 
 def main():
@@ -88,30 +202,31 @@ def main():
             "Choose a review target: "
         ).strip()
 
+        # ----------------------------
+        # EXIT
+        # ----------------------------
+
         if choice == "0":
+            print()
             print("Agentic loop closed.")
             break
 
-        if choice == "5":
-            print()
-            print("Running complete project review...")
+        # ----------------------------
+        # REVIEW EVERYTHING
+        # ----------------------------
 
-            for mode in (
-                "database",
-                "implementation",
-                "architecture",
-                "devops",
-            ):
-                run_agentic_review(
-                    mode=mode,
-                    app_dir=app_dir,
-                    repo_root=repo_root,
-                    ai=ai,
-                    student="all",
-                    student_label="All Students",
-                )
+        if choice == "5":
+            run_everything(
+                app_dir,
+                repo_root,
+                ai
+            )
 
             continue
+
+        # ----------------------------
+        # SINGLE REVIEW CATEGORY
+        # ----------------------------
 
         mode = modes.get(choice)
 
@@ -119,33 +234,11 @@ def main():
             print("Invalid selection.")
             continue
 
-        # Architecture is primarily a group-level review
-        if mode == "architecture":
-            run_agentic_review(
-                mode=mode,
-                app_dir=app_dir,
-                repo_root=repo_root,
-                ai=ai,
-                student="all",
-                student_label="Integrated Team Application",
-            )
-
-            continue
-
-        student_choice = choose_student()
-
-        if student_choice is None:
-            continue
-
-        student, student_label = student_choice
-
-        run_agentic_review(
-            mode=mode,
-            app_dir=app_dir,
-            repo_root=repo_root,
-            ai=ai,
-            student=student,
-            student_label=student_label,
+        run_single_review(
+            mode,
+            app_dir,
+            repo_root,
+            ai
         )
 
 

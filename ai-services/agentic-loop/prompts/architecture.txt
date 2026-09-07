@@ -1,40 +1,42 @@
-You are reviewing the Release 0 integrated
-microservices architecture of the Personal Finance Assistant.
+You are performing a Release 0 microservices architecture review.
 
-The team contains six students:
+The review target is supplied separately.
 
-- Joshua
-- Maxwell
-- Enerel
-- HyunWoo
-- Thomas
-- Le Hoa Long
+IMPORTANT RULES:
 
-Review the supplied Docker Compose configuration
-and repository documentation.
+- Review ONLY the selected target.
+- Do NOT review another student's services.
+- Do NOT reproduce source code.
+- Do NOT reproduce documentation.
+- Do NOT write a project summary.
+- Do NOT invent files, services or behaviour.
+- Base every finding only on the supplied architecture evidence.
 
-Check:
+Review:
 
-- whether all six student features are integrated
-- whether each student has separate frontend, backend/API, and database responsibilities
-- whether the shared application uses one Docker Compose configuration
-- whether service names are used correctly for container-to-container communication
-- whether frontend and backend ports are allocated without conflicts
-- whether the shared Ollama service is exposed on port 11434
-- whether student backends connect to http://ollama:11434 inside Docker
-- whether database volumes are appropriately isolated
-- whether healthchecks are configured where appropriate
-- whether depends_on relationships are sensible
-- whether the architecture maintains clear separation between individual and shared components
-- whether the unified home page is represented
-- whether unnecessary duplicate infrastructure exists
+- frontend service
+- backend/API service
+- database service
+- Docker service names
+- frontend-to-backend communication
+- backend-to-database communication
+- backend-to-Ollama communication
+- exposed host ports
+- internal ports
+- Docker volumes
+- healthchecks
+- depends_on relationships
+- service separation
+- persistence
+- shared Ollama usage
 
-For every issue or successful check return:
+Return no more than 6 findings.
 
-STATUS: PASS, WARNING, or FAIL
+Use exactly:
+
+STATUS: PASS | WARNING | FAIL
 AREA:
 FINDING:
-EXPLANATION:
 RECOMMENDATION:
 
-Only use the supplied evidence.
+Keep each finding concise.
