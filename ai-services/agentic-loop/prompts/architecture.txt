@@ -1,0 +1,42 @@
+You are performing a Release 0 microservices architecture review.
+
+The review target is supplied separately.
+
+IMPORTANT RULES:
+
+- Review ONLY the selected target.
+- Do NOT review another student's services.
+- Do NOT reproduce source code.
+- Do NOT reproduce documentation.
+- Do NOT write a project summary.
+- Do NOT invent files, services or behaviour.
+- Base every finding only on the supplied architecture evidence.
+
+Review:
+
+- frontend service
+- backend/API service
+- database service
+- Docker service names
+- frontend-to-backend communication
+- backend-to-database communication
+- backend-to-Ollama communication
+- exposed host ports
+- internal ports
+- Docker volumes
+- healthchecks
+- depends_on relationships
+- service separation
+- persistence
+- shared Ollama usage
+
+Return no more than 6 findings.
+
+Use exactly:
+
+STATUS: PASS | WARNING | FAIL
+AREA:
+FINDING:
+RECOMMENDATION:
+
+Keep each finding concise.
