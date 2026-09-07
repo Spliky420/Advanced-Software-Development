@@ -13,6 +13,7 @@
 #   Enerel     8030-8039   CLAIMED
 #   HyunWoo    8040-8049   CLAIMED
 #   Thomas     8050-8059   CLAIMED
+#   LeHoaLong  8060-8069   CLAIMED
 #   shared     11434       ollama
 #
 # Model selection lives in .env (copy .env.example to .env). The :- defaults
@@ -367,6 +368,87 @@ services:
       retries: 5
       start_period: 10s
   # =========================================================================
+  # LE HOA LONG -- ports 8060-8069 -- Goals and Budgeting
+  # =========================================================================
+  lehoalong-database:
+    build: ./LeHoaLong/database
+    container_name: lehoalong-database
+    restart: unless-stopped
+    volumes:
+      - lehoalong-db-data:/data
+    environment:
+      DB_FILE: /data/goals.db
+      # Set to 1 for one run to drop and re-seed the database -- a clean slate
+      # before a demo. Destructive: it discards every goal created live.
+      INIT_DB_FORCE: ${LEHOALONG_INIT_DB_FORCE:-0}
+    healthcheck:
+      # Queries a real table, so a present-but-unseeded file reads as
+      # unhealthy rather than passing. python:3.11-slim has no sqlite3 CLI,
+      # so this goes through the stdlib module instead.
+      test: ["CMD", "python", "-c",
+             "import sqlite3; sqlite3.connect('/data/goals.db').execute('SELECT COUNT(*) FROM goals')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  lehoalong-backend:
+    build: ./LeHoaLong/backend
+    container_name: lehoalong-backend
+    restart: unless-stopped
+    ports:
+      - "8061:5000"
+    environment:
+      DB_PATH: /data/goals.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      # Only used by `npm run dev`; in the container nginx makes /api
+      # same-origin and this layer never fires.
+      CORS_ORIGINS: http://localhost:8060,http://127.0.0.1:8060
+    volumes:
+      # Same volume as lehoalong-database: that service creates and seeds
+      # goals.db, this one reads and writes it.
+      - lehoalong-db-data:/data
+    depends_on:
+      lehoalong-database:
+        condition: service_healthy
+      ollama:
+        # service_started, not service_healthy: goals CRUD, progress and the
+        # budget summary are all useful before a model has been pulled, and
+        # /plan and /replan return a clean 503 until one is.
+        condition: service_started
+    healthcheck:
+      # /health returns 503 when the database is unreachable; urlopen raises
+      # on a non-2xx status, so this fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  lehoalong-frontend:
+    # Context is the repo root, not ./LeHoaLong/frontend: the app imports the
+    # team's shared stylesheet from shared/styles.css, which is outside the
+    # frontend directory. Same arrangement as maxwell-frontend.
+    build:
+      context: .
+      dockerfile: LeHoaLong/frontend/Dockerfile
+    container_name: lehoalong-frontend
+    restart: unless-stopped
+    ports:
+      - "8060:80"
+    depends_on:
+      lehoalong-backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
   #
   #   <name>-database:
@@ -411,3 +493,5 @@ volumes:
   # Thomas
   thomas-db-data:
   thomas-receipts:
+  # Le Hoa Long
+  lehoalong-db-data:
