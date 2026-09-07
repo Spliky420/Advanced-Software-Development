@@ -4,15 +4,9 @@ import requests
 
 class AIRunner:
     def __init__(self):
-        self.base_url = os.getenv(
-            "OLLAMA_URL",
-            "http://localhost:11434"
-        )
+        self.base_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
-        self.model = os.getenv(
-            "OLLAMA_MODEL",
-            "qwen2.5:0.5b"
-        )
+        self.model = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
 
     def run(self, prompt: str) -> str:
         print(f"Prompt size: {len(prompt):,} characters")
@@ -25,12 +19,13 @@ class AIRunner:
                     "prompt": prompt,
                     "stream": True,
                     "options": {
-                        "num_predict": 300,
-                        "num_ctx": 4096
-                    }
+                        "num_predict": 220,
+                        "num_ctx": 4096,
+                        "temperature": 0.1,
+                    },
                 },
                 stream=True,
-                timeout=(10, 600)
+                timeout=(10, 600),
             )
 
             response.raise_for_status()
@@ -47,6 +42,7 @@ class AIRunner:
                 data = line.decode("utf-8")
 
                 import json
+
                 chunk = json.loads(data)
 
                 text = chunk.get("response", "")
@@ -65,9 +61,7 @@ class AIRunner:
             )
 
         except requests.exceptions.ConnectionError:
-            return (
-                "REVIEW ERROR: Could not connect to Ollama."
-            )
+            return "REVIEW ERROR: Could not connect to Ollama."
 
         except Exception as error:
             return f"REVIEW ERROR: {error}"

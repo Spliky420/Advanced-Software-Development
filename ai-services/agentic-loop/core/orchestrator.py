@@ -126,7 +126,6 @@ PROJECT EVIDENCE
         full_prompt
     )
 
-    print()
     print(result)
 
     # =====================================
