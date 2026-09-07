@@ -110,3 +110,8 @@ jobs:
 
       - name: Build the backend image
         run: docker build -t joshua-backend:ci joshua/backend
+
+      - name: Build the database image
+        # The third microservice. It owns portfolio.db and runs init.sql and
+        # seed.sql on first start, so a break here breaks the whole stack.
+        run: docker build -t joshua-database:ci joshua/database

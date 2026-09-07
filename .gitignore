@@ -78,12 +78,17 @@ nosetests.xml
 ENV/
 env.bak/
 venv.bak/
+# Committed by mistake and untracked in the spec 7.2 hygiene pass;
+# the name does not match the .venv/ or venv/ patterns above.
+venvcd/
 
 # --- Logs ---
 *.log
 
 # --- Docker ---
 docker-compose.override.yml
+# Superseded snapshot of docker-compose.yml; nothing references it.
+docker-compose.yml.backup
 
 # --- Editors / OS (additional) ---
 *.swp
