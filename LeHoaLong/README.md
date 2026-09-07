@@ -25,11 +25,10 @@ service.
 
 ### With the team stack (the normal way)
 
-The three service blocks are not yet in the root `docker-compose.yml` — that is
-a shared file, so they go in by pull request. The blocks to paste, plus the
-one-line volume entry, are in [`docs/compose-snippet.md`](docs/compose-snippet.md).
-
-Once they are in:
+The three service blocks are in the root `docker-compose.yml`, so a clone of
+`main` already has them. (They went in by pull request — `docker-compose.yml`
+is a shared file. [`docs/compose-snippet.md`](docs/compose-snippet.md) records
+what was added.)
 
 ```bash
 docker compose up -d lehoalong-database lehoalong-backend lehoalong-frontend
@@ -41,6 +40,45 @@ Then open <http://localhost:8060>, or reach it from the team home page at
 
 `GET http://localhost:8061/health` reports the database and whether Ollama is
 reachable with the configured model pulled.
+
+#### Warm the model before the first request
+
+**Do this after starting the stack, and before demonstrating `/plan` or
+`/replan`:**
+
+```bash
+docker compose exec -T ollama ollama run qwen2.5:0.5b "hi"
+```
+
+Ollama loads a model into memory on first use and unloads it again after five
+minutes idle. On a cold model the load happens *inside* the first
+`/plan` request, which pushes that one request close to
+`OLLAMA_TIMEOUT_SECONDS` (120s). Measured on the development laptop, CPU-only:
+
+| Model state                        | `POST /api/goals/<id>/plan` |
+| ---------------------------------- | --------------------------- |
+| Cold, machine otherwise idle       | 106.8s — succeeds           |
+| Cold, machine busy (a build running) | hit 120s — **503**        |
+| Warm                               | 13–37s                      |
+
+So a cold first request is not reliably a failure — it is a coin flip with
+about thirteen seconds of headroom, decided by whatever else the machine is
+doing. The one-line warm-up above removes the variable entirely, and every
+request after it is fast.
+
+Two things follow from the five-minute idle unload, both worth knowing before
+a live demonstration:
+
+- Warming up once at startup is not enough if several minutes then pass before
+  the first plan is generated — the model will have been unloaded again.
+- This affects only `/plan` and `/replan`. Goals CRUD, `/progress` and the
+  budget summary never call the model and are unaffected.
+
+This is a startup-latency characteristic of running an LLM on CPU, not a fault
+in the feature: the request does complete, and if it ever does time out the
+service returns a clean 503 naming the problem rather than failing silently or
+storing a half-written plan.
+
 
 ### On a laptop, without Docker
 

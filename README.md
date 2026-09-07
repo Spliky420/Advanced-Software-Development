@@ -915,6 +915,44 @@ docker compose exec ollama ollama pull qwen2.5:0.5b
 Then open <http://localhost:8060>, or reach it from the team home page at
 <http://localhost:8000>.
 
+#### Warm the model before the first request
+
+**Do this after starting the stack, and before demonstrating `/plan` or
+`/replan`:**
+
+```bash
+docker compose exec -T ollama ollama run qwen2.5:0.5b "hi"
+```
+
+Ollama loads a model into memory on first use and unloads it again after five
+minutes idle. On a cold model the load happens *inside* the first
+`/plan` request, which pushes that one request close to
+`OLLAMA_TIMEOUT_SECONDS` (120s). Measured on the development laptop, CPU-only:
+
+| Model state                        | `POST /api/goals/<id>/plan` |
+| ---------------------------------- | --------------------------- |
+| Cold, machine otherwise idle       | 106.8s — succeeds           |
+| Cold, machine busy (a build running) | hit 120s — **503**        |
+| Warm                               | 13–37s                      |
+
+So a cold first request is not reliably a failure — it is a coin flip with
+about thirteen seconds of headroom, decided by whatever else the machine is
+doing. The one-line warm-up above removes the variable entirely, and every
+request after it is fast.
+
+Two things follow from the five-minute idle unload, both worth knowing before
+a live demonstration:
+
+- Warming up once at startup is not enough if several minutes then pass before
+  the first plan is generated — the model will have been unloaded again.
+- This affects only `/plan` and `/replan`. Goals CRUD, `/progress` and the
+  budget summary never call the model and are unaffected.
+
+This is a startup-latency characteristic of running an LLM on CPU, not a fault
+in the feature: the request does complete, and if it ever does time out the
+service returns a clean 503 naming the problem rather than failing silently or
+storing a half-written plan.
+
 To reset to clean seed data before a demo — destructive, it discards every goal
 created live:
 
