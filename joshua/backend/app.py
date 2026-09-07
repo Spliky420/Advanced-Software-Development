@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
@@ -9,6 +11,42 @@ import drift
 import llm
 from db import DEFAULT_USER_ID
 from validation import ValidationError, validate_holding_payload, validate_targets_payload
+
+LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s | %(message)s"
+
+# Named so a second create_app() can recognise the handler it already added.
+LOG_HANDLER_NAME = "joshua-stdout"
+
+
+def configure_logging():
+    """Send the root logger to stdout at LOG_LEVEL (default INFO).
+
+    stdout, not stderr: it is what `docker compose logs joshua-backend` shows
+    alongside gunicorn's own output.
+
+    Idempotent. create_app() runs once per test in the suite and twice over in
+    development (module import plus the reloader), and without the name check
+    each call would stack another handler and print every line again.
+    """
+    level_name = (os.environ.get("LOG_LEVEL") or "INFO").strip().upper()
+    level = getattr(logging, level_name, None)
+    if not isinstance(level, int):
+        level = logging.INFO
+
+    root = logging.getLogger()
+    root.setLevel(level)
+
+    for handler in root.handlers:
+        if getattr(handler, "name", None) == LOG_HANDLER_NAME:
+            handler.setLevel(level)
+            return
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.name = LOG_HANDLER_NAME
+    handler.setLevel(level)
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    root.addHandler(handler)
+
 
 INSIGHT_SYSTEM_PROMPT = (
     "You are a portfolio reporting assistant. You will be given a set of "
@@ -78,6 +116,7 @@ def _round_report(report):
 
 
 def create_app():
+    configure_logging()
     app = Flask(__name__)
 
     @app.get("/health")
@@ -203,12 +242,14 @@ def create_app():
                 "target_percent_by_class": {
                     k: _round(v) for k, v in plan_result["target_percent_by_class"].items()
                 },
+                "run_id": plan_result.get("run_id", "-"),
             },
             "act": {
                 "phase": act_result["phase"],
                 "description": act_result["description"],
                 "total_market_value": _round(act_result["total_market_value"]),
                 "drift_by_class": [_round_drift_row(r) for r in act_result["drift_by_class"]],
+                "run_id": act_result.get("run_id", "-"),
             },
             "observe": {
                 "phase": observe_result["phase"],
@@ -219,6 +260,7 @@ def create_app():
                 "within_threshold": [
                     _round_drift_row(r) for r in observe_result["within_threshold"]
                 ],
+                "run_id": observe_result.get("run_id", "-"),
             },
             "adapt": {
                 "phase": adapt_result["phase"],
@@ -226,8 +268,13 @@ def create_app():
                 "llm_called": adapt_result["llm_called"],
                 "model_name": adapt_result["model_name"],
                 "summary": adapt_result["summary"],
+                "run_id": adapt_result.get("run_id", "-"),
             },
             "insight_log_id": insight_log_id,
+            # Same id the four [agentic-loop <run_id>] log lines carry, lifted
+            # to the top level so a response and a terminal capture can be
+            # matched up without opening a section.
+            "run_id": plan_result.get("run_id", "-"),
         }), 200
 
     return app

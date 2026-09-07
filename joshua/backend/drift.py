@@ -6,13 +6,26 @@ Adapt talks to the model, and only ever about breaches Observe already found.
 
 No Flask imports here, and nothing in this module rounds: rounding belongs at
 the output layer, the same rule allocation.py follows.
+
+Each phase emits one aligned INFO line tagged with the run's correlation id, so
+a single review reads as four consecutive lines in the terminal. Handler
+configuration is the application's job, not this module's -- see
+app.create_app.
 """
 
+import logging
 import os
+import uuid
 
 import llm
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_DRIFT_THRESHOLD_PERCENT = 5.0
+
+# Phase names are padded to the width of the longest ("OBSERVE") so the four
+# lines of a run align in a terminal.
+PHASE_NAME_WIDTH = 7
 
 DRIFT_SYSTEM_PROMPT = (
     "You are a portfolio reporting assistant. You will be given a list of "
@@ -27,6 +40,70 @@ DRIFT_SYSTEM_PROMPT = (
     "yourself, and never introduce, restate or recalculate any figure that is "
     "not given to you exactly as provided below."
 )
+
+
+def _run_id(*sources):
+    """The correlation id carried by the first source that has one.
+
+    Falls back to "-" so a caller passing a hand-built dict -- as several tests
+    do -- logs an anonymous run instead of raising.
+    """
+    for source in sources:
+        try:
+            value = source.get("run_id")
+        except AttributeError:
+            continue
+        if value:
+            return value
+    return "-"
+
+
+def _log(level, phase, run_id, template, *args):
+    """Emit one aligned agentic-loop line.
+
+    Never raises. Logging is additive evidence that the loop ran; a phase must
+    not fail because a handler, a formatter or a malformed argument did.
+    """
+    try:
+        logger.log(
+            level,
+            "[agentic-loop %s] %-*s | " + template,
+            run_id, PHASE_NAME_WIDTH, phase, *args,
+        )
+    except Exception:  # noqa: BLE001 -- see docstring
+        pass
+
+
+def _chars(value):
+    """Length of a text field for the log line, or -1 if it has none.
+
+    Keeps len() out of the argument list of a log call, so a stub or a model
+    client that returned something unexpected cannot fail the phase.
+    """
+    try:
+        return len(value)
+    except TypeError:
+        return -1
+
+
+def _breached_summary(breaches):
+    """"ETFs +9.30pp overweight; Cash -6.10pp underweight", or "none".
+
+    Reads drift_magnitude and direction straight off the rows Observe already
+    classified -- the sign comes from the direction, not from re-deriving it.
+    """
+    signs = {"overweight": "+", "underweight": "-"}
+    try:
+        parts = [
+            f"{row.get('asset_class', '?')} "
+            f"{signs.get(row.get('direction'), '')}"
+            f"{row.get('drift_magnitude', 0.0):.2f}pp "
+            f"{row.get('direction', '?')}"
+            for row in breaches
+        ]
+    except Exception:  # noqa: BLE001 -- this string is evidence, not logic
+        return "unavailable"
+    return "; ".join(parts) if parts else "none"
 
 
 def get_threshold_percent():
@@ -53,8 +130,11 @@ def plan(targets, threshold_percent=None):
     threshold = get_threshold_percent() if threshold_percent is None else float(threshold_percent)
     target_by_class = {t["asset_class"]: float(t["target_percent"]) for t in targets}
 
-    return {
+    result = {
         "phase": "plan",
+        # Plan opens the run, so it is where the correlation id is minted; the
+        # other three phases carry this same id forward.
+        "run_id": uuid.uuid4().hex[:8],
         "description": (
             "Read the allocation targets and set the drift threshold that "
             "decides which asset classes count as off-target."
@@ -63,6 +143,13 @@ def plan(targets, threshold_percent=None):
         "asset_classes_to_examine": sorted(target_by_class),
         "target_percent_by_class": target_by_class,
     }
+
+    _log(
+        logging.INFO, "PLAN", _run_id(result),
+        "threshold=%.2fpp | classes_to_examine=%d",
+        threshold, len(result["asset_classes_to_examine"]),
+    )
+    return result
 
 
 def act(portfolio, plan_result):
@@ -95,8 +182,9 @@ def act(portfolio, plan_result):
             "is_held": actual is not None,
         })
 
-    return {
+    result = {
         "phase": "act",
+        "run_id": _run_id(plan_result),
         "description": (
             "Compute the current allocation and the drift, in percentage "
             "points, between actual and target for each asset class."
@@ -104,6 +192,17 @@ def act(portfolio, plan_result):
         "total_market_value": portfolio["total_market_value"],
         "drift_by_class": drift_by_class,
     }
+
+    run_id = _run_id(result, plan_result)
+    _log(
+        logging.INFO, "ACT", run_id,
+        "total_market_value=%.2f | classes_evaluated=%d",
+        portfolio["total_market_value"], len(drift_by_class),
+    )
+    # The per-class rows are far too long for a terminal screenshot, so they
+    # sit at DEBUG for when a specific number needs tracing.
+    _log(logging.DEBUG, "ACT", run_id, "drift_by_class=%r", drift_by_class)
+    return result
 
 
 def observe(act_result, plan_result):
@@ -133,8 +232,10 @@ def observe(act_result, plan_result):
 
     breaches.sort(key=lambda r: r["drift_magnitude"], reverse=True)
 
-    return {
+    result = {
         "phase": "observe",
+        # Adapt is handed only this dict, so the id has to travel in it.
+        "run_id": _run_id(act_result, plan_result),
         "description": (
             "Identify which asset classes breach the drift threshold and "
             "classify each as overweight or underweight."
@@ -144,6 +245,13 @@ def observe(act_result, plan_result):
         "breaches": breaches,
         "within_threshold": within_threshold,
     }
+
+    _log(
+        logging.INFO, "OBSERVE", _run_id(result, act_result, plan_result),
+        "breaches=%d | within_threshold=%d | breached=%s",
+        len(breaches), len(within_threshold), _breached_summary(breaches),
+    )
+    return result
 
 
 def build_drift_prompt(observe_result):
@@ -167,9 +275,18 @@ def adapt(observe_result, generate_fn=None):
     Only the breaches are sent. When nothing breached, this says so directly
     and never calls the LLM.
     """
+    run_id = _run_id(observe_result)
+
     if observe_result["breach_count"] == 0:
+        # The skip is the decision that makes this loop agentic rather than a
+        # fixed pipeline, so it is logged as explicitly as a call would be.
+        _log(
+            logging.INFO, "ADAPT", run_id,
+            "llm_called=False | reason=no breaches, LLM skipped",
+        )
         return {
             "phase": "adapt",
+            "run_id": run_id,
             "description": (
                 "Report the observed breaches in plain English, or state "
                 "directly that there were none."
@@ -189,14 +306,27 @@ def adapt(observe_result, generate_fn=None):
     figures = build_drift_prompt(observe_result)
     response_text, model_name = generate(figures, system=DRIFT_SYSTEM_PROMPT)
 
+    prompt_sent = DRIFT_SYSTEM_PROMPT + "\n\n" + figures
+
+    _log(
+        logging.INFO, "ADAPT", run_id,
+        "llm_called=True | model=%s | prompt_chars=%d | response_chars=%d",
+        model_name, _chars(prompt_sent), _chars(response_text),
+    )
+    # Full text at DEBUG only: prompt_sent runs to hundreds of characters and
+    # would bury the other three phases in a terminal.
+    _log(logging.DEBUG, "ADAPT", run_id, "prompt_sent=%s", prompt_sent)
+    _log(logging.DEBUG, "ADAPT", run_id, "response_text=%s", response_text)
+
     return {
         "phase": "adapt",
+        "run_id": run_id,
         "description": (
             "Report the observed breaches in plain English, or state "
             "directly that there were none."
         ),
         "llm_called": True,
         "summary": response_text,
-        "prompt_sent": DRIFT_SYSTEM_PROMPT + "\n\n" + figures,
+        "prompt_sent": prompt_sent,
         "model_name": model_name,
     }
