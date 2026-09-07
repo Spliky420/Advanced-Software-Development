@@ -11,19 +11,30 @@ STUDENT_FOLDERS = [
 ]
 
 
-def read_file(path: Path) -> str:
+def read_file(
+    path: Path,
+    max_chars: int = 12000
+) -> str:
+
     if not path.exists():
         return f"FILE NOT FOUND: {path}"
 
     try:
-        return path.read_text(
+        content = path.read_text(
             encoding="utf-8",
             errors="replace"
         )
 
+        if len(content) > max_chars:
+            return (
+                content[:max_chars]
+                + "\n\n[FILE TRUNCATED FOR AI REVIEW]"
+            )
+
+        return content
+
     except Exception as error:
         return f"ERROR READING {path}: {error}"
-
 
 def collect_single_database(
     repo_root: Path,

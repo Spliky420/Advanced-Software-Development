@@ -15,18 +15,59 @@ class AIRunner:
         )
 
     def run(self, prompt: str) -> str:
-        response = requests.post(
-            f"{self.base_url}/api/generate",
-            json={
-                "model": self.model,
-                "prompt": prompt,
-                "stream": False
-            },
-            timeout=300
-        )
+        print(f"Prompt size: {len(prompt):,} characters")
 
-        response.raise_for_status()
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": True,
+                    "options": {
+                        "num_predict": 300,
+                        "num_ctx": 4096
+                    }
+                },
+                stream=True,
+                timeout=(10, 600)
+            )
 
-        data = response.json()
+            response.raise_for_status()
 
-        return data["response"]
+            full_response = ""
+
+            print("AI response:")
+            print()
+
+            for line in response.iter_lines():
+                if not line:
+                    continue
+
+                data = line.decode("utf-8")
+
+                import json
+                chunk = json.loads(data)
+
+                text = chunk.get("response", "")
+
+                if text:
+                    print(text, end="", flush=True)
+                    full_response += text
+
+            print()
+            return full_response
+
+        except requests.exceptions.Timeout:
+            return (
+                "REVIEW ERROR: Ollama timed out. "
+                "Reduce the amount of repository evidence."
+            )
+
+        except requests.exceptions.ConnectionError:
+            return (
+                "REVIEW ERROR: Could not connect to Ollama."
+            )
+
+        except Exception as error:
+            return f"REVIEW ERROR: {error}"
