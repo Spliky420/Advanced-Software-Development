@@ -784,3 +784,204 @@ Tests should cover:
 **The model must be pulled into the shared Ollama container.** A model installed through Ollama on the host machine is not automatically available inside the Docker container.
 
 **`qwen2.5:0.5b` is the lightweight development model.** It is fast and suitable for local testing, but larger models may provide more consistent classifications at the cost of greater memory and disk usage.
+
+---
+
+## LeHoaLong — Goals and Budgeting
+
+### What it does
+
+Turns a savings goal into a dated plan, then keeps the plan honest as real
+money arrives.
+
+You create a **goal** — a name, a target amount, a target date, a priority.
+The backend splits what is still owed into monthly **steps**, each with its own
+amount and due date, and the model writes a short description for each one. You
+log **contributions** against the goal as you save. From those, the service
+computes what you *should* have saved by today, compares it to what you actually
+have, and reports the goal as `on_track`, `behind` or `ahead` with the variance
+in dollars and a projected completion date. When a goal drifts, a re-plan
+regenerates only the steps that have not happened yet and leaves the completed
+ones alone.
+
+A **budget summary** sits over the top: the total monthly commitment across all
+active goals against the monthly budget, with a warning when the goals ask for
+more than the budget allows.
+
+The architectural rule throughout: **every number is calculated in Python.**
+The model is handed a finished schedule — amounts and dates already settled —
+and asked only for the words around it. It is never asked to divide a target by
+a number of months. See [Known limitations](#known-limitations-4) for what that
+guarantee does and does not cover.
+
+### Services and ports
+
+| Service              | Host port | What it is                                                          |
+| -------------------- | --------- | ------------------------------------------------------------------- |
+| `lehoalong-frontend` | **8060**  | nginx serving a React (Vite) build, proxying `/api/` to the backend |
+| `lehoalong-backend`  | **8061**  | Python 3 + Flask REST API (gunicorn in the container)               |
+| `lehoalong-database` | —         | SQLite, created, seeded and verified on first start                 |
+
+Open <http://localhost:8060> for the app, or call the API directly at
+`http://localhost:8061`.
+
+The database service has no host port on purpose: SQLite is a file, not a
+server. It owns the `lehoalong-db-data` volume and the backend reaches the same
+file over that volume. **8062 is reserved** in the port table for a later
+release that fronts it with a service.
+
+It seeds all five tables past the ten-row requirement — 13 goals across three
+users, 77 steps, 26 contributions, 12 AI log rows and 10 budget settings —
+covering every state the UI has to render: a goal on track, one behind, one
+with no plan at all, and one already achieved.
+
+The frontend is React 19 + Vite with React Router, styled from the team's
+shared `shared/styles.css` rather than a component library, so it matches the
+other five features.
+
+### API endpoints
+
+Base URL `http://localhost:8061`. All request and response bodies are JSON.
+
+| Method   | Path                              | Description                                                                                     |
+| -------- | --------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `GET`    | `/health`                         | Liveness check; reports the database and whether Ollama is reachable with the model pulled.      |
+| `GET`    | `/api/goals`                      | List goals; optional `?status=`, `?priority=`, `?user_id=` filters.                              |
+| `GET`    | `/api/goals/<id>`                 | One goal, including its steps and contribution total; 404 if it does not exist.                  |
+| `POST`   | `/api/goals`                      | Create a goal; 201 with the stored row, or 400 listing every validation error.                   |
+| `PUT`    | `/api/goals/<id>`                 | Update a goal.                                                                                   |
+| `DELETE` | `/api/goals/<id>`                 | Delete a goal; 204. Cascades to its steps and contributions.                                     |
+| `GET`    | `/api/goals/<id>/steps`           | The ordered steps for one goal.                                                                  |
+| `PUT`    | `/api/goals/<id>/steps/<step_id>` | Edit a step's amount or due date, or mark it complete.                                           |
+| `DELETE` | `/api/goals/<id>/steps/<step_id>` | Delete one step; 204.                                                                            |
+| `GET`    | `/api/goals/<id>/contributions`   | Every contribution recorded against the goal.                                                    |
+| `POST`   | `/api/goals/<id>/contributions`   | Record a contribution; 201. This is the **Act** phase.                                           |
+| `GET`    | `/api/goals/<id>/progress`        | The **Observe** phase: saved vs required to date, status, variance, projected completion.        |
+| `POST`   | `/api/goals/<id>/plan`            | The **Plan** phase: generate and persist the dated steps; 503 if the model is unavailable.       |
+| `POST`   | `/api/goals/<id>/replan`          | The **Adapt** phase: regenerate only the pending steps against the observed variance.            |
+| `GET`    | `/api/goals/<id>/ai-log`          | The `ai_plan_log` trail for one goal — prompt, raw response, model and phase.                    |
+| `GET`    | `/api/budget/summary?user_id=`    | Total monthly commitment across active goals vs the monthly budget, with the over/under figure.  |
+| `GET`    | `/api/budget/settings`            | The monthly budget and currency.                                                                 |
+| `PUT`    | `/api/budget/settings`            | Update them.                                                                                     |
+
+Every LLM call writes a row to `ai_plan_log` recording the exact prompt sent,
+the model tag used and the raw text that came back — one row per attempt, plus
+a final row when the deterministic fallback stood in.
+
+A quick check once the stack is up:
+
+```bash
+curl http://localhost:8061/api/goals
+curl "http://localhost:8061/api/budget/summary?user_id=1"
+curl -X POST http://localhost:8061/api/goals/1/plan
+```
+
+On Windows PowerShell use `curl.exe` — plain `curl` is an alias for
+`Invoke-WebRequest` and takes different arguments.
+
+### How it works — the Plan → Act → Observe → Adapt loop
+
+The loop is four HTTP endpoints rather than four functions behind one, because
+each phase is a thing the user actually does. The service layer lives in
+[`LeHoaLong/backend/app/services/agent.py`](LeHoaLong/backend/app/services/agent.py).
+
+**Only Plan and Adapt talk to the model, and neither asks it for a number.**
+
+| Phase       | Endpoint                             | What happens                                                                                                                                                                                                                                   |
+| ----------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Plan**    | `POST /api/goals/<id>/plan`          | `build_schedule` splits what is still owed into equal monthly instalments — the last absorbing the rounding remainder — landing on the target date. The model is then handed that finished schedule and asked only for one description per step. |
+| **Act**     | `POST /api/goals/<id>/contributions` | Recording money against the goal. No model involvement; this is the world changing.                                                                                                                                                            |
+| **Observe** | `GET /api/goals/<id>/progress`       | Pure Python. Sums the step amounts already due to get `required_to_date`, compares against contributions, and classifies as `on_track` / `behind` / `ahead` outside a tolerance band.                                                           |
+| **Adapt**   | `POST /api/goals/<id>/replan`        | Re-runs Observe, rebuilds a schedule for the **pending steps only** from `target − contributions`, and re-prompts the model with the measured variance. Completed steps are never touched.                                                      |
+
+Two details worth knowing:
+
+- **The model cannot introduce a figure.** `merge_descriptions` iterates over
+  *Python's* schedule and reads exactly one field from the model's reply — the
+  description, keyed by `step_order`. Any amount, date or extra step the model
+  returns is discarded because it is never read.
+- **A bad answer is not an error.** Malformed JSON costs one retry, then a
+  deterministic even-split plan stands in, flagged `fallback: true` with the
+  reason. Ollama being *unreachable* is a different case and returns a clean
+  503. The feature never hard-fails because the model misbehaved.
+
+### Running just these services
+
+```bash
+docker compose up -d --build ollama shared-frontend lehoalong-database lehoalong-backend lehoalong-frontend
+docker compose exec ollama ollama pull qwen2.5:0.5b
+```
+
+Then open <http://localhost:8060>, or reach it from the team home page at
+<http://localhost:8000>.
+
+To reset to clean seed data before a demo — destructive, it discards every goal
+created live:
+
+```bash
+LEHOALONG_INIT_DB_FORCE=1 docker compose up -d --force-recreate lehoalong-database
+```
+
+### Running the tests
+
+The tests run on the host, need no container and no running model, and **no
+test touches the network** — an autouse fixture makes any socket attempt fail
+loudly rather than hang.
+
+```bash
+pip install -r LeHoaLong/tests/requirements.txt
+python -m pytest LeHoaLong/tests -v
+```
+
+Run that from the repo root. 246 tests, a few seconds. Each test gets its own
+copy of a database built from the real `schema.sql` and `seed.sql`, so the
+suite exercises the same constraints the container enforces.
+
+| File                              | Covers                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `test_goals_api.py`               | Goals CRUD happy paths, validation failures and cascade deletion.            |
+| `test_steps_and_contributions.py` | Step edits, completion, and recording contributions.                         |
+| `test_progress.py`                | The Observe calculation — zero contributions, overdue, already achieved.     |
+| `test_budget.py`                  | The budget summary maths and the over-budget warning.                        |
+| `test_ai_contract.py`             | The response parser against valid and malformed JSON, and the fallback path. |
+| `test_init_db_checks.py`          | That a fresh build refuses bad seed data while a live database still starts. |
+
+### Known limitations
+
+**Small models follow the prompt poorly.** `qwen2.5:0.5b` produces repetitive
+step descriptions and writes dollar amounts and dates into them despite the
+system prompt forbidding it. The figures it uses are copied from the prompt,
+not invented, so no stored amount or date is ever wrong — but the prose is
+weaker than it should be. `llama3.1:8b` is the demo model for this reason;
+develop against `qwen2.5:0.5b` for speed.
+
+**Model prose is returned verbatim.** Nothing at runtime strips a number out of
+a step description. The no-invented-figures guarantee is structural — it comes
+from `merge_descriptions` reading only the description field — and it protects
+the stored schedule, not the wording.
+
+**A full disk corrupts pulled models silently.** Ollama names model blobs by
+their content hash but does not re-verify them at load time, so a download
+truncated by a full disk produces a model that loads without error and emits
+pure noise for every prompt. If output turns to garbage, check free disk space
+and re-pull before suspecting the model.
+
+**Release 0 is single-user.** A `DEFAULT_USER_ID` constant supplies the user
+when the client does not name one. `user_id` stays in the schema and is an
+explicit parameter on every query-layer function, so multi-user support later
+means passing a real value through rather than restructuring.
+
+**A live database drifts from the seed's claims.** Once a goal is replanned its
+steps legitimately stop summing to its target, because replan rebuilds the
+pending steps from `target − contributions` while completed steps keep the
+amounts they were planned with. `init_db.py` reports this as a note on an
+existing database and stays strict only on a fresh build.
+
+**`budget_settings` is a documented addition.** The original four-table design
+had nowhere to store a monthly budget, which the required budget summary panel
+needs. Flagged as a deliberate addition to the registration form, along with
+standardising the form's `/API/Goals` casing to `/api/goals`.
+
+**The model must be pulled into the container.** A host-side `ollama pull` does
+not count — the container keeps its models in the `ollama-models` volume, and
+`/plan` and `/replan` return 503 naming the missing tag until you pull it there.
