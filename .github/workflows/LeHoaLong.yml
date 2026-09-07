@@ -1,0 +1,166 @@
+# CI for Le Hoa Long's microservices -- Goals and Budgeting.
+#
+# Scope: this workflow builds, lints and tests ONLY LeHoaLong/**. The path
+# filters below keep it off the other five students' work, and nothing here
+# reads or writes outside LeHoaLong/ and this file.
+#
+# No Ollama runs in CI, and none is needed. Every LLM path in LeHoaLong/tests
+# goes through the `fake_model` / `stub_ollama` fixtures in tests/conftest.py,
+# and an autouse `no_network` fixture monkeypatches socket.connect so any test
+# that tries to open a socket fails loudly instead of hanging. OLLAMA_BASE_URL
+# is additionally pointed at a dead port below as a second line of defence.
+
+name: lehoalong-ci
+
+on:
+  push:
+    branches:
+      - main
+      - 'LeHoaLong-**'
+    paths:
+      - 'LeHoaLong/**'
+      - '.github/workflows/LeHoaLong.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'LeHoaLong/**'
+      - '.github/workflows/LeHoaLong.yml'
+  # So the whole pipeline can be re-run by hand from the Actions tab without
+  # pushing an empty commit.
+  workflow_dispatch:
+
+# Least privilege: nothing here needs to write to the repository.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: lehoalong-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Python: lint, seed the database, run the suite.
+  # ---------------------------------------------------------------------
+  backend:
+    name: Backend (ruff + pytest, no Ollama)
+    runs-on: ubuntu-24.04
+    env:
+      # Deliberately unreachable. Nothing in the suite should ever open a
+      # socket to Ollama; if a future test regresses and tries, it fails fast
+      # here instead of silently passing on a machine that happens to run one.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+      OLLAMA_MODEL: qwen2.5:0.5b
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          # Matches python:3.11-slim in the backend and database Dockerfiles,
+          # so CI tests the interpreter the containers actually ship.
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            LeHoaLong/backend/requirements.txt
+            LeHoaLong/tests/requirements.txt
+
+      - name: Install test dependencies
+        # tests/requirements.txt, not backend/requirements.txt: it pins the
+        # same Flask and requests the backend imports, plus pytest, and
+        # leaves out gunicorn (which only the container needs).
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r LeHoaLong/tests/requirements.txt
+          pip install ruff==0.16.6
+
+      - name: Lint Python (ruff)
+        # Config is LeHoaLong/ruff.toml -- scoped to this directory so it
+        # imposes no style on anyone else's code.
+        run: ruff check LeHoaLong
+
+      - name: Build and seed the database
+        # init_db.py asserts every table carries at least MIN_ROWS_PER_TABLE
+        # rows and exits non-zero otherwise, so this step is the marking
+        # requirement ("every table has >=10 seeded rows") enforced in CI --
+        # and it proves schema.sql and seed.sql still load cleanly.
+        run: python LeHoaLong/database/init_db.py --db "${RUNNER_TEMP}/goals.db" --force
+
+      - name: Run pytest
+        run: pytest LeHoaLong/tests -v
+
+  # ---------------------------------------------------------------------
+  # JavaScript: lint and build the React app on the runner.
+  # ---------------------------------------------------------------------
+  frontend:
+    name: Frontend (eslint + vite build)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: LeHoaLong/frontend/package-lock.json
+
+      - name: Install from the committed lockfile
+        # `npm ci`, never `npm install`: it installs exactly what
+        # package-lock.json pins and fails if the lockfile and package.json
+        # have drifted apart, which is the property CI is here to protect.
+        working-directory: LeHoaLong/frontend
+        run: npm ci
+
+      - name: Lint JavaScript (eslint)
+        working-directory: LeHoaLong/frontend
+        run: npm run lint
+
+      - name: Build
+        # src/styles/app.css imports the team's shared stylesheet by a path
+        # relative to the repository root, so this also catches the theme
+        # going missing or moving -- the integration-drift risk in the risk
+        # management plan.
+        working-directory: LeHoaLong/frontend
+        run: npm run build
+
+  # ---------------------------------------------------------------------
+  # Docker: prove all three Dockerfiles still build.
+  # ---------------------------------------------------------------------
+  images:
+    name: Docker images build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build the database image
+        run: docker build -t lehoalong-db:ci LeHoaLong/database
+
+      - name: Build the backend image
+        run: docker build -t lehoalong-backend:ci LeHoaLong/backend
+
+      - name: Build the frontend image
+        # Build context is the repository root, not LeHoaLong/frontend: the
+        # app imports shared/styles.css, which sits outside the frontend
+        # directory and so cannot be reached from a narrower context. This is
+        # the same invocation the compose snippet in docs/compose-snippet.md
+        # uses.
+        run: docker build -f LeHoaLong/frontend/Dockerfile -t lehoalong-frontend:ci .
+
+      - name: Smoke test the database image
+        # Runs the image's own initialiser against a throwaway volume: it
+        # fails if the schema or seed is broken, or if the >=10-rows check
+        # does not pass. Same guarantee as the backend job's seed step, but
+        # exercised inside the container the stack actually runs.
+        #
+        # --entrypoint is required. The real entrypoint ends in
+        # `exec tail -f /dev/null` so compose sees a long-running service,
+        # which would hang this step forever; calling init_db.py directly
+        # does the same work and then exits with its own status code.
+        run: |
+          docker run --rm -v lehoalong-ci-db:/data             --entrypoint python lehoalong-db:ci             /app/init_db.py --db /data/goals.db --force
+          docker volume rm lehoalong-ci-db

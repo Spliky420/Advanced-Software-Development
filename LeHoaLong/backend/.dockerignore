@@ -1,0 +1,11 @@
+# Nothing here is needed at runtime, and every entry kept out of the build
+# context is a layer that does not get invalidated by a stray local file.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.db
+*.db-journal
+*.db-wal
+.env
