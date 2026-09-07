@@ -1,0 +1,29 @@
+You are reviewing the Release 0 database implementation
+for the Personal Finance Assistant project.
+
+The project contains six student microservices.
+
+Review the supplied database evidence.
+
+Check:
+
+- whether database schemas are defined
+- whether primary keys are present
+- whether appropriate constraints are used
+- whether each relevant table contains at least 10 seed records
+- whether seed data is reproducible
+- whether database Docker containers are configured correctly
+- whether database persistence is configured
+- whether live database files are kept out of Git
+- whether each student's database responsibilities are separated appropriately
+
+For every issue or successful check return:
+
+STATUS: PASS, WARNING, or FAIL
+AREA:
+FINDING:
+EXPLANATION:
+RECOMMENDATION:
+
+Only use the supplied evidence.
+Do not invent files, tables, records, or behaviour.

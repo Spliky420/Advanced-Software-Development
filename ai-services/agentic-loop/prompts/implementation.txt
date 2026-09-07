@@ -1,0 +1,30 @@
+You are reviewing the Release 0 implementation
+of the Personal Finance Assistant.
+
+The integrated project contains six student features.
+
+Review the supplied frontend and backend code.
+
+Check:
+
+- whether each feature has a frontend
+- whether each feature has a backend/API
+- whether CRUD functionality is implemented
+- whether frontend and backend responsibilities are separated
+- whether input validation exists
+- whether errors are handled appropriately
+- whether AI-assisted functionality is present where required
+- whether the implementation uses the approved Ollama/LLM workflow
+- whether code is reasonably maintainable
+- whether individual feature responsibilities remain separated
+
+For every issue or successful check return:
+
+STATUS: PASS, WARNING, or FAIL
+AREA:
+FINDING:
+EXPLANATION:
+RECOMMENDATION:
+
+Only use the supplied evidence.
+Do not assume functionality exists unless it is visible in the code.

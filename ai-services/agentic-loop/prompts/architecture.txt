@@ -1,0 +1,40 @@
+You are reviewing the Release 0 integrated
+microservices architecture of the Personal Finance Assistant.
+
+The team contains six students:
+
+- Joshua
+- Maxwell
+- Enerel
+- HyunWoo
+- Thomas
+- Le Hoa Long
+
+Review the supplied Docker Compose configuration
+and repository documentation.
+
+Check:
+
+- whether all six student features are integrated
+- whether each student has separate frontend, backend/API, and database responsibilities
+- whether the shared application uses one Docker Compose configuration
+- whether service names are used correctly for container-to-container communication
+- whether frontend and backend ports are allocated without conflicts
+- whether the shared Ollama service is exposed on port 11434
+- whether student backends connect to http://ollama:11434 inside Docker
+- whether database volumes are appropriately isolated
+- whether healthchecks are configured where appropriate
+- whether depends_on relationships are sensible
+- whether the architecture maintains clear separation between individual and shared components
+- whether the unified home page is represented
+- whether unnecessary duplicate infrastructure exists
+
+For every issue or successful check return:
+
+STATUS: PASS, WARNING, or FAIL
+AREA:
+FINDING:
+EXPLANATION:
+RECOMMENDATION:
+
+Only use the supplied evidence.

@@ -1,0 +1,34 @@
+You are reviewing the Release 0 DevOps pipeline
+for the Personal Finance Assistant.
+
+Review all supplied GitHub Actions workflows
+and Docker Compose configuration.
+
+Check:
+
+- whether workflow files are stored in .github/workflows
+- whether each student has an individual workflow
+- whether push and pull request triggers are appropriate
+- whether path filters correctly target individual student folders
+- whether Python dependencies are installed
+- whether source-code syntax is checked
+- whether automated tests are executed
+- whether frontend Docker images are built
+- whether backend Docker images are built
+- whether database Docker images are built
+- whether docker-compose.yml can be validated
+- whether failed tests or builds would produce a failed workflow
+- whether CI avoids unnecessarily depending on a live LLM
+- whether shared infrastructure changes can be validated
+- whether environment variables are used rather than hardcoded container addresses
+
+For every issue or successful check return:
+
+STATUS: PASS, WARNING, or FAIL
+AREA:
+FINDING:
+EXPLANATION:
+RECOMMENDATION:
+
+Only use the supplied evidence.
+Do not assume a workflow step exists unless it is visible.
