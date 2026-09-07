@@ -371,12 +371,6 @@ language query by meaning, not just keyword match. That endpoint is also the
 one other services on the compose network would call to pull research
 context for their own features, per the feature spec's RAG requirement.
 
-The architectural rule throughout is the same one Joshua's backend follows:
-**no numeric figure is ever computed by the model.** Summarization is
-different from that rule, not an exception to it — condensing text is a
-legitimate task to hand the model, the same way Joshua's backend hands it
-finished figures to narrate. What never happens here, in either backend, is
-asking the model to calculate something.
 
 ### Services and ports
 
