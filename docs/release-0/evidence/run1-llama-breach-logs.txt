@@ -1,0 +1,4 @@
+joshua-backend  | 2026-09-06 08:16:20,962 INFO drift | [agentic-loop 7855db5e] PLAN    | threshold=5.00pp | classes_to_examine=10
+joshua-backend  | 2026-09-06 08:16:20,963 INFO drift | [agentic-loop 7855db5e] ACT     | total_market_value=190033.00 | classes_evaluated=10
+joshua-backend  | 2026-09-06 08:16:20,963 INFO drift | [agentic-loop 7855db5e] OBSERVE | breaches=6 | within_threshold=4 | breached=ETFs +9.30pp overweight; Australian equities -8.34pp underweight; Crypto +8.26pp overweight; International equities -8.13pp underweight; REITs -7.35pp underweight; Term deposits +5.52pp overweight
+joshua-backend  | 2026-09-06 08:16:46,211 INFO drift | [agentic-loop 7855db5e] ADAPT   | llm_called=True | model=llama3.1:8b | prompt_chars=1306 | response_chars=392

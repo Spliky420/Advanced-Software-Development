@@ -1,0 +1,66 @@
+==============================================================================
+RUN 3 -- known-limitation evidence: qwen2.5:0.5b inverts a label it was
+         handed verbatim in the prompt.
+==============================================================================
+run_id          : 628152d6
+model           : qwen2.5:0.5b
+insight_log row : 30
+threshold       : 5.00 percentage points
+breaches        : 6
+
+------------------------------------------------------------------------------
+1. PYTHON'S GROUND TRUTH -- the OBSERVE log line
+------------------------------------------------------------------------------
+joshua-backend  | 2026-09-06 08:18:17,115 INFO drift | [agentic-loop 628152d6] PLAN    | threshold=5.00pp | classes_to_examine=10
+joshua-backend  | 2026-09-06 08:18:17,115 INFO drift | [agentic-loop 628152d6] ACT     | total_market_value=190033.00 | classes_evaluated=10
+joshua-backend  | 2026-09-06 08:18:17,115 INFO drift | [agentic-loop 628152d6] OBSERVE | breaches=6 | within_threshold=4 | breached=ETFs +9.30pp overweight; Australian equities -8.34pp underweight; Crypto +8.26pp overweight; International equities -8.13pp underweight; REITs -7.35pp underweight; Term deposits +5.52pp overweight
+joshua-backend  | 2026-09-06 08:18:20,213 INFO drift | [agentic-loop 628152d6] ADAPT   | llm_called=True | model=qwen2.5:0.5b | prompt_chars=1306 | response_chars=417
+
+------------------------------------------------------------------------------
+2. PROMPT SENT TO THE MODEL (insight_log.prompt_sent, verbatim)
+   Each breach line already states the direction in words.
+------------------------------------------------------------------------------
+You are a portfolio reporting assistant. You will be given a list of asset classes whose actual allocation has drifted away from its target allocation by at least a stated threshold. Each line states the asset class, its target percentage, its actual percentage, the size of the drift in percentage points, and whether it is overweight or underweight. Using only those figures, write a short plain-English paragraph naming which asset classes are overweight and which are underweight, and by how many percentage points. Describe only -- never recommend trades, never give advice, and never make predictions. Never perform arithmetic yourself, and never introduce, restate or recalculate any figure that is not given to you exactly as provided below.
+
+Drift threshold: 5.00 percentage points
+Asset classes breaching the threshold:
+- ETFs: target 15.00%, actual 24.30%, 9.30 percentage points overweight
+- Australian equities: target 20.00%, actual 11.66%, 8.34 percentage points underweight
+- Crypto: target 10.00%, actual 18.26%, 8.26 percentage points overweight
+- International equities: target 15.00%, actual 6.87%, 8.13 percentage points underweight
+- REITs: target 10.00%, actual 2.65%, 7.35 percentage points underweight
+- Term deposits: target 5.00%, actual 10.52%, 5.52 percentage points overweight
+
+------------------------------------------------------------------------------
+3. MODEL RESPONSE (insight_log.response_text, verbatim)
+------------------------------------------------------------------------------
+The asset classes with a drift exceeding the target allocation by at least 5 percentage points are:
+
+- ETFs: Overweight by 9.30 percentage points
+- Australian equities: Underweight by 8.34 percentage points
+- Crypto: Overweight by 8.26 percentage points
+- International equities: Underweight by 8.13 percentage points
+- REITs: Overweight by 7.35 percentage points
+- Term deposits: Overweight by 5.52 percentage points
+
+------------------------------------------------------------------------------
+4. SIDE BY SIDE -- direction given to the model vs direction it reported
+------------------------------------------------------------------------------
+ASSET CLASS             PYTHON SAID   DRIFT     MODEL SAID    VERDICT
+ETFs                    overweight    9.30pp    overweight    MATCH
+Australian equities     underweight   8.34pp    underweight   MATCH
+Crypto                  overweight    8.26pp    overweight    MATCH
+International equities  underweight   8.13pp    underweight   MATCH
+REITs                   underweight   7.35pp    overweight    *** INVERTED ***
+Term deposits           overweight    5.52pp    overweight    MATCH
+
+------------------------------------------------------------------------------
+5. FINDING
+------------------------------------------------------------------------------
+Inversion occurred on this run: 1 of 6 labels inverted.
+  - REITs: prompt said 'underweight', model reported 'overweight'. The magnitude (7.35pp) was copied correctly; only the direction word was changed.
+
+Every figure the model printed appears in the prompt. The defect is the
+direction word, not the arithmetic -- consistent with the architectural
+rule that Python computes and the model only narrates.
+==============================================================================

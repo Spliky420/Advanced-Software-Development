@@ -1,0 +1,4 @@
+joshua-backend  | 2026-09-06 08:17:36,612 INFO drift | [agentic-loop b3ef09bd] PLAN    | threshold=99.00pp | classes_to_examine=10
+joshua-backend  | 2026-09-06 08:17:36,612 INFO drift | [agentic-loop b3ef09bd] ACT     | total_market_value=190033.00 | classes_evaluated=10
+joshua-backend  | 2026-09-06 08:17:36,612 INFO drift | [agentic-loop b3ef09bd] OBSERVE | breaches=0 | within_threshold=10 | breached=none
+joshua-backend  | 2026-09-06 08:17:36,612 INFO drift | [agentic-loop b3ef09bd] ADAPT   | llm_called=False | reason=no breaches, LLM skipped
