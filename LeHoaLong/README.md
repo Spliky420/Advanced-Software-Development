@@ -311,7 +311,7 @@ malformed JSON.
 
 ## CI
 
-[`.github/workflows/LeHoaLong.yml`](../.github/workflows/LeHoaLong.yml) runs on
+[`.github/workflows/lehoalong-ci.yml`](../.github/workflows/lehoalong-ci.yml) runs on
 pushes to `main` and any `LeHoaLong-**` branch, and on pull requests to `main`,
 filtered to `LeHoaLong/**` and the workflow file itself — so it never runs on
 another student's work and never reports on it. Three parallel jobs:
