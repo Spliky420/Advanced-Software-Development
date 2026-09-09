@@ -19,13 +19,13 @@ on:
       - 'LeHoaLong-**'
     paths:
       - 'LeHoaLong/**'
-      - '.github/workflows/LeHoaLong.yml'
+      - '.github/workflows/lehoalong-ci.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'LeHoaLong/**'
-      - '.github/workflows/LeHoaLong.yml'
+      - '.github/workflows/lehoalong-ci.yml'
   # So the whole pipeline can be re-run by hand from the Actions tab without
   # pushing an empty commit.
   workflow_dispatch:
