@@ -14,6 +14,8 @@
 #   HyunWoo    8040-8049   CLAIMED
 #   Thomas     8050-8059   CLAIMED
 #   LeHoaLong  8060-8069   CLAIMED
+#   shared     8070        mcp-server (Flask test harness / htmx UI backend)
+#   shared     8071        mcp-server (real MCP protocol, streamable-http)
 #   shared     11434       ollama
 #
 # Model selection lives in .env (copy .env.example to .env). The :- defaults
@@ -447,6 +449,52 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  # =========================================================================
+  # MCP SERVER -- shared. Exposes the team's data (portfolio, glossary,
+  # documents, bills, transactions, goals) as MCP tools, calling each
+  # student backend over HTTP rather than touching any database directly.
+  # See mcp-server/tools.py for the tool implementations.
+  #
+  # Two processes, two ports (see mcp-server/entrypoint.sh):
+  #   8070 -> 5001  app.py    Flask test harness behind shared/mcp.html
+  #   8071 -> 5002  server.py the real MCP protocol (streamable-http), for
+  #                 an actual MCP client -- not for browser/curl use.
+  # =========================================================================
+  mcp-server:
+    build: ./mcp-server
+    container_name: mcp-server
+    restart: unless-stopped
+    ports:
+      - "8070:5001"
+      - "8071:5002"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434/v1
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      MCP_ENABLED: "true"
+      MCP_HTTP_HOST: "0.0.0.0"
+      MCP_HTTP_PORT: "5002"
+    depends_on:
+      ollama:
+        condition: service_started
+      joshua-backend:
+        condition: service_started
+      maxwell-backend:
+        condition: service_started
+      enerel-backend:
+        condition: service_started
+      hyunwoo-backend:
+        condition: service_started
+      thomas-backend:
+        condition: service_started
+      lehoalong-backend:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
 
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.

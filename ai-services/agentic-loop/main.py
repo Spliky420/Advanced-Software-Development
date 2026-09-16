@@ -2,6 +2,7 @@ from pathlib import Path
 
 from core.ai_runner import AIRunner
 from core.orchestrator import run_agentic_review
+from core.mcp_pipeline import run_mcp_review, run_boundary_analysis
 
 
 # Folder names must match the repository exactly
@@ -46,7 +47,9 @@ def print_main_menu():
     print("2. Review Implementation")
     print("3. Review Microservices Architecture")
     print("4. Review DevOps Pipeline")
-    print("5. Review Everything")
+    print("5. MCP Tool Assistant (ask a finance question)")
+    print("6. MCP Tool Boundary Analysis (no model call)")
+    print("7. Review Everything")
     print("0. Exit")
     print()
 
@@ -183,6 +186,61 @@ def run_everything(
         )
 
 
+def run_mcp_assistant(app_dir, ai):
+    """Ask a finance question; Ollama picks one of the six MCP tools,
+    Python calls it for real data, and the integration is validated
+    against the evidence it actually returned.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL ASSISTANT")
+    print("======================================")
+    print(
+        "Tools: portfolio_snapshot, glossary_lookup, document_search, "
+        "bill_summary, transaction_summary, goal_progress"
+    )
+    print()
+
+    user_request = input("Your question: ").strip()
+
+    if not user_request:
+        print("No question entered.")
+        return
+
+    result = run_mcp_review(user_request, app_dir, ai)
+
+    print()
+    print("======================================")
+    print("MCP INTEGRATION REVIEW")
+    print("======================================")
+    print(result.get("integration_review", "(no tool was selected)"))
+
+
+def run_mcp_boundary_analysis(app_dir):
+    """No model call: confirms tool_selection_prompt.txt and
+    core/mcp_collector.py's MCP_TOOLS registry actually agree.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL BOUNDARY ANALYSIS")
+    print("======================================")
+
+    analysis = run_boundary_analysis(app_dir)
+
+    print(f"In sync: {', '.join(analysis['in_sync']) or '(none)'}")
+    print(
+        "Documented but not implemented: "
+        f"{', '.join(analysis['documented_only']) or '(none)'}"
+    )
+    print(
+        "Implemented but not documented: "
+        f"{', '.join(analysis['implemented_only']) or '(none)'}"
+    )
+    print(f"Boundaries match: {analysis['boundaries_match']}")
+    print()
+    print("Written to reports/boundary-analysis.md")
+
+
 def main():
     app_dir, repo_root = get_paths()
 
@@ -212,10 +270,26 @@ def main():
             break
 
         # ----------------------------
-        # REVIEW EVERYTHING
+        # MCP TOOL ASSISTANT
         # ----------------------------
 
         if choice == "5":
+            run_mcp_assistant(app_dir, ai)
+            continue
+
+        # ----------------------------
+        # MCP TOOL BOUNDARY ANALYSIS
+        # ----------------------------
+
+        if choice == "6":
+            run_mcp_boundary_analysis(app_dir)
+            continue
+
+        # ----------------------------
+        # REVIEW EVERYTHING
+        # ----------------------------
+
+        if choice == "7":
             run_everything(
                 app_dir,
                 repo_root,

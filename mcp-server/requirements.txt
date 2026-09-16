@@ -1,0 +1,6 @@
+mcp==1.30.0
+flask==3.0.3
+flask-cors==4.0.1
+requests==2.32.3
+openai
+python-dotenv
