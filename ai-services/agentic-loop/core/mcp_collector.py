@@ -2,7 +2,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core import database_api
+from core import database_api, mcp_evidence
 
 
 # Single source of truth for which MCP tools this pipeline can actually
@@ -117,3 +117,40 @@ def analyse_tool_boundaries(app_dir: Path) -> dict:
         "in_sync": sorted(documented & implemented),
         "boundaries_match": documented == implemented,
     }
+
+
+# ============================================================
+# GENERIC-ORCHESTRATOR COLLECTOR -- lets mode="mcp" run through the same
+# core/orchestrator.py COLLECTORS registry as db/endpoints/architecture/
+# devops, instead of only through the bespoke run_mcp_review flow.
+# ============================================================
+
+
+def build_integration_evidence(app_dir: Path, repo_root: Path) -> str:
+    """Shared evidence text for both the generic "mcp" review mode and
+    core/mcp_pipeline.py's run_mcp_integration_review: the automated,
+    no-model tool validation (mcp_evidence.collect) plus the boundary
+    analysis. One place builds this so the two callers can't drift.
+    """
+    validation_passed, validation_message = mcp_evidence.collect(app_dir, repo_root)
+    boundaries = analyse_tool_boundaries(app_dir)
+
+    return f"""Tool validation: {"PASS" if validation_passed else "FAIL"}
+{validation_message}
+
+Tool boundary analysis:
+- In sync: {', '.join(boundaries['in_sync']) or '(none)'}
+- Documented but not implemented: {', '.join(boundaries['documented_only']) or '(none)'}
+- Implemented but not documented: {', '.join(boundaries['implemented_only']) or '(none)'}
+- Boundaries match: {boundaries['boundaries_match']}"""
+
+
+def collect(repo_root: Path, student: str) -> str:
+    """Matches the (repo_root, student) shape every other mode's collector
+    module uses. MCP evidence has no per-student concept -- one tool
+    registry spans all six backends -- so `student` is accepted but
+    unused, the same as core/collectors.py's collect_architecture does
+    for student="all".
+    """
+    app_dir = repo_root / "ai-services" / "agentic-loop"
+    return build_integration_evidence(app_dir, repo_root)

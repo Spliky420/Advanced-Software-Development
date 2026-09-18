@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core import mcp_collector
+from core import mcp_collector, mcp_evidence
 
 
 def _load_prompt_file(app_dir: Path, relative_path: str) -> str:
@@ -163,6 +163,153 @@ Boundaries match: {analysis['boundaries_match']}
     )
 
     return analysis
+
+
+def run_tool_validation(app_dir: Path, repo_root: Path) -> tuple[bool, str]:
+    """No model call: automates what the boundary analysis leaves out --
+    proof that every documented MCP tool is actually implemented AND
+    actually runs, not just named consistently in two files. Writes the
+    result to reports/mcp-evidence.md on every run.
+    """
+    passed, message = mcp_evidence.collect(app_dir, repo_root)
+
+    report_path = app_dir / "reports" / "mcp-evidence.md"
+    report_path.write_text(
+        f"""# MCP Tool Validation
+
+Generated: {_timestamp()}
+
+No model call -- pure Python: checks mcp-server/ has every required file,
+tools.py implements every required function, server.py declares every
+required tool, and then actually calls all six tools against the live
+team backends to confirm they run without raising.
+
+Result: {"PASS" if passed else "FAIL"}
+
+{message}
+""",
+        encoding="utf-8",
+    )
+
+    return passed, message
+
+
+DEFAULT_INTEGRATION_TASK_PROMPT = (
+    "You are reviewing the MCP Tool Integration for the Personal Finance "
+    "Assistant. The MCP server exposes six student backends' data "
+    "(portfolio, glossary, documents, bills, transactions, goals) as MCP "
+    "tools, calling each backend over HTTP rather than touching any "
+    "database directly."
+)
+
+
+def build_implementation_prompt(task_prompt: str, evidence: str) -> str:
+    return f"""
+{task_prompt}
+
+Review Scope:
+MCP Tool Integration
+
+Observed Evidence:
+{evidence}
+
+Validate that:
+1. All 6 MCP tools are defined and callable
+2. Tool boundaries are clear (what each tool does and does not do)
+3. MCP endpoints exist in routes/mcp_mode.py
+4. Prompts exist for tool selection and integration review
+
+Reply in at most 40 words and stay evidence-based.
+""".strip()
+
+
+def build_review_prompt(implementation_output: str, evidence: str) -> str:
+    return f"""
+Implementation Recommendation:
+{implementation_output}
+
+Observed Evidence:
+{evidence}
+
+Validate the MCP integration assessment against the evidence.
+Identify any gaps or risks in tool definitions or boundaries.
+
+Reply in at most 40 words and stay evidence-based.
+""".strip()
+
+
+def run_mcp_integration_review(
+    app_dir: Path,
+    repo_root: Path,
+    ai,
+    task_prompt: str = DEFAULT_INTEGRATION_TASK_PROMPT,
+) -> dict:
+    """The model-facing half of MCP tool validation: takes the automated,
+    no-model evidence from mcp_evidence.collect() and
+    mcp_collector.analyse_tool_boundaries(), then runs it through two
+    Ollama calls -- an implementation assessment, then a review pass that
+    cross-checks that assessment against the same evidence. Neither call
+    is asked for a number; both only ever see evidence Python already
+    computed.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL INTEGRATION REVIEW")
+    print("======================================")
+
+    # =====================================
+    # ACT (automated, no model call)
+    # =====================================
+    print()
+    print("[ACT]")
+
+    evidence = mcp_collector.build_integration_evidence(app_dir, repo_root)
+
+    # =====================================
+    # OBSERVE
+    # =====================================
+    print()
+    print("[OBSERVE]")
+
+    print("Asking Ollama for an implementation assessment...")
+    implementation_output = ai.run(build_implementation_prompt(task_prompt, evidence))
+
+    # =====================================
+    # ADAPT
+    # =====================================
+    print()
+    print("[ADAPT]")
+
+    print("Asking Ollama to review that assessment against the evidence...")
+    review_output = ai.run(build_review_prompt(implementation_output, evidence))
+
+    result = {
+        "evidence": evidence,
+        "implementation_output": implementation_output,
+        "review_output": review_output,
+    }
+
+    report_path = app_dir / "reports" / "mcp-integration-review.md"
+    report_path.write_text(
+        f"""# MCP Tool Integration Review
+
+Generated: {_timestamp()}
+
+## Evidence (Act -- no model call)
+```
+{evidence}
+```
+
+## Implementation Assessment (Observe)
+{implementation_output}
+
+## Review (Adapt)
+{review_output}
+""",
+        encoding="utf-8",
+    )
+
+    return result
 
 
 def _timestamp() -> str:
