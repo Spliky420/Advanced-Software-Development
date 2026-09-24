@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>MCP</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <style>
+        body { margin: 0; min-height: auto; background: transparent; }
+        .app-shell { max-width: none; padding: 0; }
+    </style>
+</head>
+<body>
+<main class="app-shell">
+    <section class="card">
+        <h2>MCP Mode</h2>
+
+        <div class="feature-toggle-row">
+            <label class="toggle-switch" for="mcp-mode-toggle">
+                <input id="mcp-mode-toggle" type="checkbox" checked>
+                <span class="toggle-label">MCP Enabled</span>
+            </label>
+            <span id="mcp-mode-state" class="feature-state feature-on">ON</span>
+        </div>
+
+        <h2>MCP Tools</h2>
+
+        <div class="feature-actions">
+            <button
+                type="button"
+                class="mcp-action"
+                hx-post="http://localhost:8070/mcp/portfolio-snapshot"
+                hx-target="#mcp-result"
+                hx-swap="innerHTML"
+            >Portfolio Snapshot</button>
+
+            <button
+                type="button"
+                class="mcp-action"
+                hx-post="http://localhost:8070/mcp/bill-summary"
+                hx-target="#mcp-result"
+                hx-swap="innerHTML"
+            >Bill Summary</button>
+
+            <button
+                type="button"
+                class="mcp-action"
+                hx-post="http://localhost:8070/mcp/transaction-summary"
+                hx-target="#mcp-result"
+                hx-swap="innerHTML"
+            >Transaction Summary</button>
+        </div>
+
+        <form
+            id="mcp-glossary-form"
+            class="feature-form"
+            hx-post="http://localhost:8070/mcp/glossary-lookup"
+            hx-target="#mcp-result"
+            hx-swap="innerHTML"
+        >
+            <label for="mcp_term">MCP: Glossary Lookup</label>
+            <input id="mcp_term" name="term" type="text" placeholder="Example: ETF">
+            <button type="submit" class="mcp-action">Run Tool</button>
+        </form>
+
+        <form
+            id="mcp-document-form"
+            class="feature-form"
+            hx-post="http://localhost:8070/mcp/document-search"
+            hx-target="#mcp-result"
+            hx-swap="innerHTML"
+        >
+            <label for="mcp_query">MCP: Document Search</label>
+            <input id="mcp_query" name="query" type="text" placeholder="Example: dividend reinvestment">
+            <label for="mcp_top_k">Top K</label>
+            <input id="mcp_top_k" name="top_k" type="number" min="1" value="5">
+            <button type="submit" class="mcp-action">Run Tool</button>
+        </form>
+
+        <form
+            id="mcp-goal-form"
+            class="feature-form"
+            hx-post="http://localhost:8070/mcp/goal-progress"
+            hx-target="#mcp-result"
+            hx-swap="innerHTML"
+        >
+            <label for="mcp_goal_id">MCP: Goal Progress</label>
+            <input id="mcp_goal_id" name="goal_id" type="number" min="1" placeholder="Example: 1">
+            <button type="submit" class="mcp-action">Run Tool</button>
+        </form>
+
+        <div id="mcp-result" class="panel panel-mcp">MCP tool responses will appear here.</div>
+    </section>
+</main>
+
+<script>
+const mcpModeToggle = document.getElementById("mcp-mode-toggle");
+const mcpModeState = document.getElementById("mcp-mode-state");
+const mcpResultPanel = document.getElementById("mcp-result");
+
+const MCP_STORAGE_KEY = "mcp_mode_enabled";
+
+function isMcpEnabled() {
+    return mcpModeToggle.checked;
+}
+
+function renderMcpState() {
+    if (isMcpEnabled()) {
+        mcpModeState.textContent = "ON";
+        mcpModeState.classList.add("feature-on");
+        mcpModeState.classList.remove("feature-off");
+    } else {
+        mcpModeState.textContent = "OFF";
+        mcpModeState.classList.add("feature-off");
+        mcpModeState.classList.remove("feature-on");
+    }
+}
+
+function renderMcpDisabledMessage() {
+    mcpResultPanel.innerHTML = "<p>MCP Mode is OFF. Enable MCP Mode to run MCP tools.</p>";
+}
+
+function saveMcpMode() {
+    localStorage.setItem(MCP_STORAGE_KEY, String(isMcpEnabled()));
+}
+
+function loadMcpMode() {
+    const persisted = localStorage.getItem(MCP_STORAGE_KEY);
+    if (persisted === null) {
+        mcpModeToggle.checked = true;
+    } else {
+        mcpModeToggle.checked = persisted === "true";
+    }
+    renderMcpState();
+}
+
+mcpModeToggle.addEventListener("change", () => {
+    saveMcpMode();
+    renderMcpState();
+
+    if (!isMcpEnabled()) {
+        renderMcpDisabledMessage();
+    }
+});
+
+document.body.addEventListener("htmx:configRequest", (event) => {
+    const trigger = event.detail.elt;
+    if (trigger && trigger.classList.contains("mcp-action")) {
+        event.detail.headers["X-MCP-Mode"] = isMcpEnabled() ? "on" : "off";
+    }
+});
+
+document.body.addEventListener("htmx:beforeRequest", (event) => {
+    const trigger = event.detail.elt;
+    if (!trigger || !trigger.classList.contains("mcp-action")) {
+        return;
+    }
+
+    if (!isMcpEnabled()) {
+        event.preventDefault();
+        renderMcpDisabledMessage();
+    }
+});
+
+loadMcpMode();
+if (!isMcpEnabled()) {
+    renderMcpDisabledMessage();
+}
+</script>
+</body>
+</html>

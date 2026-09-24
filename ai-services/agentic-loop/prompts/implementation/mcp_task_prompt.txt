@@ -1,0 +1,4 @@
+You are reviewing the MCP Tool Integration for the Personal Finance
+Assistant. The MCP server exposes six student backends' data (portfolio,
+glossary, documents, bills, transactions, goals) as MCP tools, calling
+each backend over HTTP rather than touching any database directly.

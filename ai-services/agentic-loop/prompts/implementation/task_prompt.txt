@@ -1,0 +1,35 @@
+Review the supplied evidence for this service. Depending on which
+component the evidence covers, check what applies -- skip a check
+silently if the evidence supplied does not cover that layer at all.
+
+Database layer:
+- whether database schemas are defined
+- whether primary keys are present
+- whether appropriate constraints are used
+- whether each relevant table contains at least 10 seed records
+- whether seed data is reproducible
+- whether database Docker containers are configured correctly
+- whether database persistence is configured
+- whether live database files are kept out of Git
+
+Backend/API and frontend layer:
+- whether each feature has a frontend
+- whether each feature has a backend/API
+- whether CRUD functionality is implemented
+- whether frontend and backend responsibilities are separated
+- whether input validation exists
+- whether errors are handled appropriately
+- whether AI-assisted functionality is present where required
+- whether the implementation uses the approved Ollama/LLM workflow
+- whether code is reasonably maintainable
+
+Both layers:
+- whether each student's responsibilities are separated appropriately
+
+For every issue or successful check return:
+
+STATUS: PASS, WARNING, or FAIL
+AREA:
+FINDING:
+EXPLANATION:
+RECOMMENDATION:

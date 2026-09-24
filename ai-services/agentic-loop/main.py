@@ -1,7 +1,14 @@
 from pathlib import Path
 
+from core import reporter
 from core.ai_runner import AIRunner
-from core.orchestrator import run_agentic_review
+from core.orchestrator import run_agentic_review, MODE_CONFIG
+from core.mcp_pipeline import (
+    run_mcp_review,
+    run_boundary_analysis,
+    run_tool_validation,
+    run_mcp_integration_review,
+)
 
 
 # Folder names must match the repository exactly
@@ -37,18 +44,34 @@ def get_paths():
     return app_dir, repo_root
 
 
-def print_main_menu():
-    print()
-    print("======================================")
-    print("PERSONAL FINANCE ASSISTANT AI REVIEW")
-    print("======================================")
-    print("1. Review Database")
-    print("2. Review Implementation")
-    print("3. Review Microservices Architecture")
-    print("4. Review DevOps Pipeline")
-    print("5. Review Everything")
-    print("0. Exit")
-    print()
+def _menu_choice_to_key(choice: str) -> str | None:
+    return {
+        "1": "db",
+        "2": "endpoints",
+        "3": "architecture",
+        "4": "devops",
+        "5": "mcp",
+    }.get(choice)
+
+
+def _print_mode_mapping(app_dir: Path) -> None:
+    """Diagnostic: which real prompt files feed each mode. Not
+    prompts/{family}/ folders -- this repo organises prompts by role
+    (implementation/, review/), not by family, so this reads the actual
+    paths out of MODE_CONFIG instead of a directory naming convention
+    that doesn't exist here.
+    """
+    prompt_map = {
+        config.label: ", ".join(
+            str(app_dir / "prompts" / relative_path)
+            for relative_path in (
+                *config.implementation_prompts,
+                *config.review_prompts,
+            )
+        )
+        for config in MODE_CONFIG.values()
+    }
+    reporter.print_prompt_map(prompt_map)
 
 
 def choose_student(mode):
@@ -152,12 +175,12 @@ def run_everything(
     print()
     print(
         "Select the student whose Database, "
-        "Implementation, Architecture and DevOps "
+        "Endpoints, Architecture and DevOps "
         "should be reviewed."
     )
 
     target = choose_student(
-        "implementation"
+        "endpoints"
     )
 
     if target is None:
@@ -166,8 +189,8 @@ def run_everything(
     student, student_label = target
 
     modes = (
-        "database",
-        "implementation",
+        "db",
+        "endpoints",
         "architecture",
         "devops",
     )
@@ -183,59 +206,128 @@ def run_everything(
         )
 
 
+def run_mcp_assistant(app_dir, ai):
+    """Ask a finance question; Ollama picks one of the six MCP tools,
+    Python calls it for real data, and the integration is validated
+    against the evidence it actually returned.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL ASSISTANT")
+    print("======================================")
+    print(
+        "Tools: portfolio_snapshot, glossary_lookup, document_search, "
+        "bill_summary, transaction_summary, goal_progress"
+    )
+    print()
+
+    user_request = input("Your question: ").strip()
+
+    if not user_request:
+        print("No question entered.")
+        return
+
+    result = run_mcp_review(user_request, app_dir, ai)
+
+    print()
+    print("======================================")
+    print("MCP INTEGRATION REVIEW")
+    print("======================================")
+    print(result.get("integration_review", "(no tool was selected)"))
+
+
+def run_mcp_tool_validation(app_dir, repo_root):
+    """Automates tool validation: proves every documented MCP tool is both
+    implemented and actually runnable, with no human clicking through the
+    UI and no model call involved.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL VALIDATION")
+    print("======================================")
+
+    passed, message = run_tool_validation(app_dir, repo_root)
+
+    print(f"Result: {'PASS' if passed else 'FAIL'}")
+    print(message)
+    print()
+    print("Written to reports/mcp-evidence.md")
+
+
+def run_mcp_integration_review_menu(app_dir, repo_root, ai):
+    """Runs the model-facing half of MCP validation: the automated
+    evidence (mcp_evidence.collect + boundary analysis) is fed to two
+    Ollama calls -- an implementation assessment, then a review pass that
+    cross-checks it against the same evidence.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL INTEGRATION REVIEW")
+    print("======================================")
+
+    result = run_mcp_integration_review(app_dir, repo_root, ai)
+
+    print()
+    print("======================================")
+    print("REVIEW")
+    print("======================================")
+    print(result["review_output"])
+    print()
+    print("Written to reports/mcp-integration-review.md")
+
+
+def run_mcp_boundary_analysis(app_dir):
+    """No model call: confirms tool_selection_prompt.txt and
+    core/mcp_collector.py's MCP_TOOLS registry actually agree.
+    """
+    print()
+    print("======================================")
+    print("MCP TOOL BOUNDARY ANALYSIS")
+    print("======================================")
+
+    analysis = run_boundary_analysis(app_dir)
+
+    print(f"In sync: {', '.join(analysis['in_sync']) or '(none)'}")
+    print(
+        "Documented but not implemented: "
+        f"{', '.join(analysis['documented_only']) or '(none)'}"
+    )
+    print(
+        "Implemented but not documented: "
+        f"{', '.join(analysis['implemented_only']) or '(none)'}"
+    )
+    print(f"Boundaries match: {analysis['boundaries_match']}")
+    print()
+    print("Written to reports/boundary-analysis.md")
+
+
 def main():
     app_dir, repo_root = get_paths()
 
     ai = AIRunner()
 
-    modes = {
-        "1": "database",
-        "2": "implementation",
-        "3": "architecture",
-        "4": "devops",
-    }
+    _print_mode_mapping(app_dir)
 
     while True:
-        print_main_menu()
+        reporter.print_menu()
 
         choice = input(
             "Choose a review target: "
         ).strip()
-
-        # ----------------------------
-        # EXIT
-        # ----------------------------
 
         if choice == "0":
             print()
             print("Agentic loop closed.")
             break
 
-        # ----------------------------
-        # REVIEW EVERYTHING
-        # ----------------------------
+        mode_key = _menu_choice_to_key(choice)
 
-        if choice == "5":
-            run_everything(
-                app_dir,
-                repo_root,
-                ai
-            )
-
-            continue
-
-        # ----------------------------
-        # SINGLE REVIEW CATEGORY
-        # ----------------------------
-
-        mode = modes.get(choice)
-
-        if not mode:
-            print("Invalid selection.")
+        if not mode_key:
+            print("Invalid choice. Select 0, 1, 2, 3, 4, or 5.")
             continue
 
         run_single_review(
-            mode,
+            mode_key,
             app_dir,
             repo_root,
             ai
