@@ -33,6 +33,17 @@ def transaction_summary():
         content_type=response.headers.get("Content-Type"),
     )
 
+@app.route("/api/transactions/mcp-summary", methods=["GET"])
+def mcp_transaction_summary():
+    response = requests.get(
+        f"{BACKEND_URL}/api/transactions/mcp-summary"
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type"),
+    )
 
 @app.route("/api/transactions", methods=["GET", "POST"])
 def transactions():

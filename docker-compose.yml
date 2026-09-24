@@ -206,6 +206,7 @@ services:
       DATABASE_PATH: /data/transactions.db
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      MCP_SERVER_URL: http://mcp-server:5002/mcp
 
     volumes:
       - thomas-db-data:/data

@@ -3,7 +3,10 @@ import sqlite3
 import os
 import json
 import requests
+import asyncio
 from werkzeug.utils import secure_filename
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
 
 app = Flask(__name__)
 
@@ -14,6 +17,11 @@ UPLOAD_FOLDER = "uploads/receipts"
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
+
+MCP_SERVER_URL = os.getenv(
+    "MCP_SERVER_URL",
+    "http://host.docker.internal:5002/mcp"
+)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -57,6 +65,84 @@ def init_db():
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "service": "transactions-backend"})
+
+async def call_mcp_transaction_summary():
+    async with streamable_http_client(MCP_SERVER_URL) as (
+        read_stream,
+        write_stream,
+    ):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            result = await session.call_tool(
+                "transaction_summary",
+                arguments={}
+            )
+
+            return result
+        
+        
+@app.route("/api/transactions/mcp-summary", methods=["GET"])
+def mcp_transaction_summary():
+
+    try:
+        result = asyncio.run(call_mcp_transaction_summary())
+
+        if result.is_error:
+            return jsonify({
+                "success": False,
+                "error": "MCP transaction_summary tool returned an error"
+            }), 502
+
+        if not result.content:
+            return jsonify({
+                "success": False,
+                "error": "MCP returned no content"
+            }), 502
+
+        data = json.loads(result.content[0].text)
+
+        return f"""
+    <div class="ai-suggestion">
+
+        <h4>MCP Transaction Summary</h4>
+
+        <p>
+            <strong>Total Income:</strong>
+            ${data['total_income']:,.2f}
+        </p>
+
+        <p>
+            <strong>Total Expenses:</strong>
+            ${data['total_expenses']:,.2f}
+        </p>
+
+        <p>
+            <strong>Potential Deductions:</strong>
+            ${data['potential_deductions']:,.2f}
+        </p>
+
+        <p class="ai-warning">
+            Retrieved through the shared MCP server
+            using the transaction_summary tool.
+        </p>
+
+    </div>
+"""
+
+    except json.JSONDecodeError:
+        return jsonify({
+            "success": False,
+            "error": "MCP returned invalid JSON"
+        }), 502
+
+    except Exception as error:
+        print("MCP transaction summary error:", error)
+
+        return jsonify({
+            "success": False,
+            "error": str(error)
+        }), 500
 
 
 @app.route("/api/transactions/ai-classify", methods=["POST"])
