@@ -34,12 +34,14 @@ class GlossaryTestCase(unittest.TestCase):
         # First, get a term that might not exist to trigger Ollama (but we don't want to rely on Ollama in test)
         # Instead, we can insert a term directly into the DB for testing, but that's more complex.
         # For simplicity, we'll just test that the endpoint returns 200 and has the expected fields.
+        # Note: Terms are now normalized to uppercase for storage and display
         response = self.client.get('/api/glossary/testterm')
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertIn('term', data)
         self.assertIn('definition', data)
-        self.assertEqual(data['term'], 'testterm')
+        # Term should be returned in uppercase due to normalization
+        self.assertEqual(data['term'], 'TESTTERM')
 
 if __name__ == '__main__':
     unittest.main()

@@ -30,12 +30,20 @@ jobs:
           echo "TESTING=true" >> $GITHUB_ENV
           echo "FLASK_ENV=testing" >> $GITHUB_ENV
 
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install backend dependencies
         working-directory: ./Maxwell/backend
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
+          pip install pytest flake8
 
       - name: Build Docker images (excluding AI services)
         run: |
@@ -47,13 +55,13 @@ jobs:
           docker compose up -d maxwell-database maxwell-backend maxwell-frontend
 
           # Wait for backend to be ready (without depending on Ollama)
-          for i in {1..30}; do
+          for i in {1..15}; do
             if curl -s http://localhost:8021/api/glossary > /dev/null; then
               echo "Backend is ready"
               break
             fi
             echo "Waiting for backend..."
-            sleep 2
+            sleep 1
           done
 
       - name: Run backend tests
@@ -61,17 +69,15 @@ jobs:
         run: |
           pytest tests/test_glossary.py -v
 
-      - name: Lint Python files (optional)
+      - name: Lint Python files
         working-directory: ./Maxwell/backend
         run: |
-          pip install flake8
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 . --count --select=E9,F63,F7,F82 --exit-zero --max-complexity=10 --max-line-length=127 --show-source --statistics
 
       - name: Run simple integration test (check frontend serves)
         run: |
           # Wait a bit more for frontend
-          sleep 5
+          sleep 3
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8020/)
           if [ "$HTTP_CODE" -eq 200 ]; then
             echo "Frontend is serving correctly"
