@@ -14,6 +14,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,14 +24,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Cache Ollama models
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.ollama
-          key: ${{ runner.os }}-ollama-${{ hashFiles('docker-compose.yml') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-ollama-
+      - name: Set environment variables for testing
+        run: |
+          echo "CI=true" >> $GITHUB_ENV
+          echo "TESTING=true" >> $GITHUB_ENV
+          echo "FLASK_ENV=testing" >> $GITHUB_ENV
 
       - name: Install backend dependencies
         working-directory: ./Maxwell/backend
@@ -39,38 +37,16 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
-      - name: Build Docker images
+      - name: Build Docker images (excluding AI services)
         run: |
           docker compose build maxwell-database maxwell-backend maxwell-frontend
 
-      - name: Start all services (Ollama, backend, frontend)
+      - name: Start services (excluding AI/Ollama services)
         run: |
-          docker compose up -d
-          # Wait for Ollama to be ready (up to 30 seconds)
-          for i in {1..30}; do
-            if curl -s http://localhost:11434/api/tags > /dev/null; then
-              echo "Ollama is ready"
-              break
-            fi
-            echo "Waiting for Ollama..."
-            sleep 2
-          done
+          # Start only non-AI services: database, backend, frontend
+          docker compose up -d maxwell-database maxwell-backend maxwell-frontend
 
-      - name: Pull Ollama model (qwen2.5:0.5b) - SKIP if cached
-        run: |
-          # Check if model already exists
-          if curl -s http://localhost:11434/api/tags | grep -q "qwen2.5:0.5b"; then
-            echo "Model qwen2.5:0.5b already pulled, skipping..."
-          else
-            echo "Pulling Ollama model (qwen2.5:0.5b)..."
-            curl -s -X POST http://localhost:11434/api/pull -d '{"model":"qwen2.5:0.5b"}' > /dev/null
-            echo "Ollama model pull initiated"
-            # Give it a moment to start pulling; actual pull may continue in background
-            sleep 10
-          fi
-
-      - name: Wait for backend to be ready
-        run: |
+          # Wait for backend to be ready (without depending on Ollama)
           for i in {1..30}; do
             if curl -s http://localhost:8021/api/glossary > /dev/null; then
               echo "Backend is ready"

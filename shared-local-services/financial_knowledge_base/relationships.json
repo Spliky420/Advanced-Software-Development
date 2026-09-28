@@ -1,0 +1,23 @@
+{
+  "hierarchical_relationships": {
+    "investment": ["stock", "bond", "mutual fund", "ETF", "option", "future"],
+    "portfolio management": ["asset allocation", "diversification", "rebalancing", "risk management"],
+    "financial metrics": ["ROI", "ROE", "EPS", "PE ratio", "yield", "volatility"],
+    "banking": ["loan", "mortgage", "interest rate", "APR", "APY", "liquidity"],
+    "valuation": ["market capitalization", "enterprise value", "book value", "EBITDA"]
+  },
+  "related_term_groups": {
+    "equity_markets": ["stock", "share", "equity", "ETF", "index fund"],
+    "fixed_income": ["bond", "debenture", "note", "bill", "certificate of deposit"],
+    "fund_structures": ["mutual fund", "ETF", "hedge fund", "index fund", "closed-end fund"],
+    "returns": ["dividend", "interest", "capital gain", "yield", "total return"],
+    "risk_measures": ["volatility", "standard deviation", "beta", "value at risk", "sharpe ratio"]
+  },
+  "inverse_relationships": {
+    "issued_by": "issues",
+    "owned_by": "owns",
+    "managed_by": "manages",
+    "backed_by": "backs",
+    "derived_from": "derives"
+  }
+}

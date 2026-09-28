@@ -1,0 +1,95 @@
+{
+  "financial_terms": [
+    {
+      "term": "ETF",
+      "definition": "Exchange-Traded Fund, a type of investment fund and exchange-traded product, i.e. they are traded on stock exchanges.",
+      "category": "investment",
+      "related_terms": ["mutual fund", "index fund", "stock", "bond"],
+      "confidence": 0.95
+    },
+    {
+      "term": "stock",
+      "definition": "A type of security that signifies ownership in a corporation and represents a claim on part of the corporation's assets and earnings.",
+      "category": "investment",
+      "related_terms": ["share", "equity", "ETF", "dividend"],
+      "confidence": 0.95
+    },
+    {
+      "term": "bond",
+      "definition": "A fixed income instrument that represents a loan made by an investor to a borrower (typically corporate or governmental).",
+      "category": "investment",
+      "related_terms": ["debt", "fixed income", "yield", "interest rate"],
+      "confidence": 0.95
+    },
+    {
+      "term": "mutual fund",
+      "definition": "An investment vehicle made up of a pool of money collected from many investors to invest in securities such as stocks, bonds, money market instruments and other assets.",
+      "category": "investment",
+      "related_terms": ["ETF", "portfolio", "diversification", "asset management"],
+      "confidence": 0.9
+    },
+    {
+      "term": "dividend",
+      "definition": "A distribution of a portion of a company's earnings, decided by the board of directors, paid to a class of its shareholders.",
+      "category": "investment",
+      "related_terms": ["stock", "share", "yield", "profit"],
+      "confidence": 0.9
+    },
+    {
+      "term": "asset allocation",
+      "definition": "An investment strategy that aims to balance risk and reward by apportioning a portfolio's assets according to an individual's goals, risk tolerance and investment horizon.",
+      "category": "portfolio management",
+      "related_terms": ["portfolio", "diversification", "risk management", "rebalancing"],
+      "confidence": 0.9
+    },
+    {
+      "term": "ROI",
+      "definition": "Return on Investment, a performance measure used to evaluate the efficiency of an investment or compare the efficiency of several different investments.",
+      "category": "financial metrics",
+      "related_terms": ["return", "profit", "gain", "investment"],
+      "confidence": 0.95
+    },
+    {
+      "term": "risk management",
+      "definition": "The process of identification, analysis and either acceptance or mitigation of uncertainty in investment decision-making.",
+      "category": "portfolio management",
+      "related_terms": ["asset allocation", "diversification", "hedging", "volatility"],
+      "confidence": 0.9
+    },
+    {
+      "term": "diversification",
+      "definition": "A risk management strategy that mixes a wide variety of investments within a portfolio.",
+      "category": "portfolio management",
+      "related_terms": ["asset allocation", "risk management", "portfolio", "volatility"],
+      "confidence": 0.9
+    },
+    {
+      "term": "volatility",
+      "definition": "A statistical measure of the dispersion of returns for a given security or market index.",
+      "category": "financial metrics",
+      "related_terms": ["risk", "standard deviation", "market fluctuation", "beta"],
+      "confidence": 0.9
+    },
+    {
+      "term": "liquidity",
+      "definition": "The availability of liquid assets to a company or market, or the degree to which an asset can be quickly bought or sold without affecting its price.",
+      "category": "banking",
+      "related_terms": ["cash flow", "current ratio", "working capital", "solvency"],
+      "confidence": 0.85
+    },
+    {
+      "term": "market capitalization",
+      "definition": "The total dollar market value of a company's outstanding shares of stock.",
+      "category": "valuation",
+      "related_terms": ["shares", "stock price", "equity value", "enterprise value"],
+      "confidence": 0.9
+    }
+  ],
+  "term_relationships": {
+    "ETF": ["tracks", "index", "sector", "commodity"],
+    "stock": ["represents", "ownership", "company", "equity"],
+    "bond": ["represents", "debt", "issuer", "creditor"],
+    "mutual fund": ["managed by", "fund manager", "invests in", "securities"],
+    "dividend": ["paid by", "company", "received by", "shareholder"]
+  }
+}

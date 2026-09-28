@@ -1,0 +1,70 @@
+{
+  "validation_rules": {
+    "financial_term_indicators": {
+      "strong_indicators": [
+        "stock", "bond", "fund", "invest", "portfolio", "asset", "liability",
+        "equity", "debt", "dividend", "interest", "yield", "return", "ROI",
+        "ETF", "mutual fund", "hedge fund", "option", "future", "derivative",
+        "swap", "warrant", "bond", "note", "bill", "certificate", "loan",
+        "mortgage", "credit", "interest rate", "APR", "APY", "inflation",
+        "deflation", "GDP", "CPI", "unemployment", "fiscal", "monetary",
+        "revenue", "expense", "income", "profit", "loss", "EBITDA", "capex",
+        "opex", "balance sheet", "income statement", "cash flow", "ledger",
+        "journal", "accrual", "depreciation", "amortization", "audit",
+        "tax", "tariff", "duty", "merger", "acquisition", "IPO", "venture capital",
+        "private equity", "valuation", "market cap", "enterprise value"
+      ],
+      "weak_indicators": [
+        "price", "cost", "value", "market", "trade", "exchange", "currency",
+        "forex", "bitcoin", "cryptocurrency", "blockchain", "wallet",
+        "finance", "financial", "economy", "economic", "capital", "money",
+        "bank", "account", "deposit", "withdrawal", "transfer", "payment",
+        "check", "card", "wallet", "insurance", "premium", "claim",
+        "policy", "coverage", "deductible", "underwriting", "actuarial",
+        "annuity", "real estate", "property", "rent", "lease", "landlord",
+        "tenant", "mortgage", "equity", "appraisal", "assessment"
+      ]
+    },
+    "non_financial_exclusions": {
+      "exact_matches": [
+        "cat", "dog", "bird", "fish", "horse", "cow", "pig", "sheep", "goat",
+        "lion", "tiger", "bear", "wolf", "fox", "rabbit", "deer", "elephant",
+        "zebra", "giraffe", "penguin", "ostrich", "kangaroo", "koala",
+        "apple", "banana", "orange", "bread", "milk", "cheese", "meat",
+        "vegetable", "fruit", "cake", "cookie", "pizza", "burger", "salad",
+        "red", "blue", "green", "yellow", "black", "white", "purple", "orange",
+        "pink", "brown", "gray", "table", "chair", "door", "window", "car",
+        "bike", "phone", "computer", "book", "pen", "paper", "clock", "watch",
+        "tree", "flower", "grass", "rock", "soil", "water", "air", "fire",
+        "mountain", "ocean", "river", "lake", "desert", "forest", "beach",
+        "man", "woman", "boy", "girl", "child", "baby", "king", "queen",
+        "president", "minister", "doctor", "lawyer", "teacher", "engineer",
+        "artist", "musician", "singer", "painter", "writer", "poet", "actor",
+        "athlete", "coach", "team", "game", "sport", "music", "movie", "film"
+      ],
+      "prefix_exclusions": [
+        "non-", "not ", "un-", "in-", "im-", "il-", "ir-", "dis-", "mis-"
+      ]
+    },
+    "scoring": {
+      "strong_indicator_weight": 0.4,
+      "weak_indicator_weight": 0.2,
+      "exact_non_financial_penalty": 0.5,
+      "length_normalization_factor": 0.1,
+      "minimum_confidence_threshold": 0.3
+    }
+  },
+  "context_enrichment": {
+    "financial_domains": [
+      "investment", "banking", "insurance", "real estate", "personal finance",
+      "corporate finance", "international finance", "public finance",
+      "behavioral finance", "quantitative finance", "financial engineering"
+    ],
+    "common_contexts": [
+      "market analysis", "investment strategy", "risk assessment",
+      "portfolio optimization", "financial planning", "wealth management",
+      "retirement planning", "tax planning", "estate planning",
+      "capital budgeting", "financial reporting", "financial analysis"
+    ]
+  }
+}

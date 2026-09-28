@@ -1,0 +1,27 @@
+# Shared Local Services Dependencies
+# These services are designed to have minimal dependencies
+# They use only Python standard library except for the HTTP server
+
+# For HTTP serving (built-in http.server)
+# No external dependencies required for basic operation
+
+# Optional: If you want to use a more robust framework like Flask:
+# flask==3.0.3
+
+# For JSON handling (standard library)
+# For math operations (standard library)
+# For UUID generation (standard library)
+# For datetime operations (standard library)
+# For path handling (standard library)
+
+# Actually, our implementation uses only Python standard library:
+# - http.server
+# - json
+# - os
+# - re
+# - threading
+# - pathlib
+# - urllib.parse
+# - math
+# - sqlite3 (for RAG server)
+# - datetime
