@@ -61,22 +61,37 @@ equities at 11.66% when ETFs at 24.30% was plainly larger. Both figures were
 supplied correctly; the model simply compared them badly.
 
 This is precisely why all arithmetic happens in Python and the LLM is given
-finished values. The guarantee the architecture provides is that **the model
-cannot introduce a figure of its own** — every number in a response traces back
-to `allocation.build_portfolio_report` or to the drift pipeline built on it.
-It does not, and cannot, guarantee the model reasons about those numbers well.
-`joshua/tests/test_no_invented_figures.py` locks in the guarantee that holds;
-interpretation quality is a model-choice question, not a code one.
+finished values. It does not, and cannot, guarantee the model reasons about
+those numbers well; interpretation quality is a model-choice question, not a
+code one. `llama3.1:8b` is the demo model for this reason — it reads the
+supplied figures reliably where the 0.5b model does not. Develop against
+`qwen2.5:0.5b` for speed, demo on `llama3.1:8b`.
 
-`llama3.1:8b` is the demo model for this reason — it reads the supplied figures
-reliably where the 0.5b model does not. Develop against `qwen2.5:0.5b` for
-speed, demo on `llama3.1:8b`.
+What the code does guarantee differs by endpoint:
 
-One caveat on that test: the model's prose is returned to clients verbatim
-(`response_text` on `/api/insights`, `adapt.summary` on `/api/drift-review`)
-and nothing at runtime filters a number out of it. The test asserts the
-property against a compliant stand-in model, so it catches a regression in
-what Python sends and reports — not a misbehaving model in production.
+- **`/api/drift-review` — enforced at runtime.** The ADAPT prompt has a
+  `PORTFOLIO FIGURES` block (the Python-computed breaches, to be used
+  verbatim) followed by an optional `REFERENCE MATERIAL` block: glossary
+  definitions from the shared MCP server and passages from the RAG server,
+  for wording only. Because that external text can contain numbers (a year,
+  a "5%"), the model's output is checked after generation: any number not
+  present in the figures block rejects it. The response then carries a
+  summary built in Python from the same figures (`summary_source:
+  "fallback"`), lists the rejected numbers in `unsupplied_figures`, and cites
+  nothing. The model's original text is still kept in the insight log. The
+  guarantee is that every figure in `adapt.summary` originates in
+  `allocation.py`, and no number from external text is ever presented as a
+  portfolio figure.
+- **`/api/insights` — no runtime check.** The model's prose is returned
+  verbatim as `response_text`. Its prompt holds only Python-computed figures,
+  and `joshua/tests/test_no_invented_figures.py` asserts that against a
+  compliant stand-in model. So a regression in what Python sends is caught,
+  but a misbehaving model in production is not.
+
+Limits of the drift-review check: it compares numbers, not meaning. A number
+from reference text that happens to equal a real figure (a "5%" when the
+threshold is 5.00) passes. And it is strict: a model that rounds a figure or
+adds a count ("3 classes") gets the fallback summary.
 
 ## Host port ranges — one block per student
 
@@ -139,6 +154,13 @@ every service at once.
   as an explicit parameter.
 - The seed data's `user_id = 1` matches `DEFAULT_USER_ID`; keep them in sync
   if either changes.
+- The drift review's CONTEXT step calls the shared MCP server
+  (`glossary_lookup` only — never `portfolio_snapshot`, which calls back into
+  this backend) and the RAG server (`/retrieve`). Both are optional: when
+  either is unreachable, the review still returns 200 and marks that source
+  `unavailable`. See the known-limitation section above for how their text
+  is kept from becoming a figure, and `joshua/RAG_INTEGRATION.md` for the RAG
+  contract.
 
 ### Maxwell's backend (`Maxwell/backend/`) — Financial Glossary
 
