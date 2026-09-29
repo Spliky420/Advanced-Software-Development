@@ -207,12 +207,14 @@ def create_app():
     @app.post("/api/drift-review")
     def create_drift_review():
         # PLAN -> ACT -> OBSERVE are deterministic Python; only ADAPT calls the LLM.
+        # CONTEXT is an optional MCP tool call and never fails the request.
         targets = db.list_targets(DEFAULT_USER_ID)
         report = allocation.build_portfolio_report(db.list_holdings(DEFAULT_USER_ID))
 
         plan_result = drift.plan(targets)
         act_result = drift.act(report["portfolio"], plan_result)
         observe_result = drift.observe(act_result, plan_result)
+        context_result = drift.gather_context(observe_result)
 
         try:
             adapt_result = drift.adapt(observe_result)
@@ -261,6 +263,14 @@ def create_app():
                     _round_drift_row(r) for r in observe_result["within_threshold"]
                 ],
                 "run_id": observe_result.get("run_id", "-"),
+            },
+            "context": {
+                "phase": context_result["phase"],
+                "description": context_result["description"],
+                "mcp_called": context_result["mcp_called"],
+                "reason": context_result["reason"],
+                "glossary": context_result["glossary"],
+                "run_id": context_result.get("run_id", "-"),
             },
             "adapt": {
                 "phase": adapt_result["phase"],

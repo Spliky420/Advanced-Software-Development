@@ -4,6 +4,11 @@ The four phases of the agentic loop are the four public functions below, in
 order. Plan, Act and Observe are pure Python and involve no LLM at all; only
 Adapt talks to the model, and only ever about breaches Observe already found.
 
+Between Observe and Adapt, gather_context is the loop's one tool call: when
+Observe found breaches, it looks the breached asset classes up through the
+shared MCP server's glossary_lookup tool. Its output goes to the client beside
+the summary, never into the Adapt prompt.
+
 No Flask imports here, and nothing in this module rounds: rounding belongs at
 the output layer, the same rule allocation.py follows.
 
@@ -18,10 +23,23 @@ import os
 import uuid
 
 import llm
+import mcp_client
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_DRIFT_THRESHOLD_PERCENT = 5.0
+
+GLOSSARY_TOOL = "glossary_lookup"
+
+# Asset class -> the term Maxwell's glossary is seeded with. The glossary
+# matches terms exactly, and on a miss Maxwell's backend has the LLM write a
+# definition, so only classes with a seeded counterpart are looked up at all.
+GLOSSARY_TERM_BY_ASSET_CLASS = {
+    "Australian equities": "Equity",
+    "International equities": "Equity",
+    "ETFs": "ETF",
+    "Commodities": "Commodity",
+}
 
 # Phase names are padded to the width of the longest ("OBSERVE") so the four
 # lines of a run align in a terminal.
@@ -250,6 +268,93 @@ def observe(act_result, plan_result):
         logging.INFO, "OBSERVE", _run_id(result, act_result, plan_result),
         "breaches=%d | within_threshold=%d | breached=%s",
         len(breaches), len(within_threshold), _breached_summary(breaches),
+    )
+    return result
+
+
+def _glossary_entry(term, asset_classes, result):
+    definition = result["data"].get("definition") if isinstance(result["data"], dict) else None
+    if result["ok"] and isinstance(definition, str) and definition.strip():
+        status, error = "found", None
+    else:
+        status = "unavailable"
+        definition = None
+        error = result["error"] or "glossary response had no definition"
+    return {
+        "term": term,
+        "asset_classes": asset_classes,
+        "status": status,
+        "definition": definition,
+        "error": error,
+        "source": f"mcp:{GLOSSARY_TOOL}",
+    }
+
+
+def gather_context(observe_result, call_tools_fn=None):
+    """CONTEXT: look up the breached asset classes in the shared glossary.
+
+    Runs only when Observe found a breach -- the same decision that gates the
+    LLM in Adapt -- and only for classes with a seeded glossary term. The
+    definitions are returned verbatim beside the summary and are deliberately
+    kept out of the Adapt prompt: they are another service's text (on a cache
+    miss, written by an LLM), so handing them to the model would let it quote
+    figures the Python layer never calculated.
+
+    Never raises. With the MCP server down, each term is reported as
+    "unavailable" and the loop carries on to Adapt unchanged.
+    """
+    run_id = _run_id(observe_result)
+    result = {
+        "phase": "context",
+        "run_id": run_id,
+        "description": (
+            "Look up plain-English definitions of the breached asset classes "
+            "through the shared MCP server's glossary tool."
+        ),
+        "mcp_called": False,
+        "reason": None,
+        "glossary": [],
+    }
+
+    if observe_result["breach_count"] == 0:
+        result["reason"] = "no breaches, glossary lookup skipped"
+        _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | reason=%s", result["reason"])
+        return result
+
+    # Term -> the breached classes it explains, in breach order, deduplicated
+    # so "Equity" is fetched once for both equity classes.
+    classes_by_term = {}
+    for breach in observe_result["breaches"]:
+        term = GLOSSARY_TERM_BY_ASSET_CLASS.get(breach.get("asset_class"))
+        if term is not None:
+            classes_by_term.setdefault(term, []).append(breach["asset_class"])
+
+    if not classes_by_term:
+        result["reason"] = "no breached asset class has a glossary term"
+        _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | reason=%s", result["reason"])
+        return result
+
+    call_tools = call_tools_fn if call_tools_fn is not None else mcp_client.call_tools
+    terms = list(classes_by_term)
+    try:
+        responses = call_tools([(GLOSSARY_TOOL, {"term": term}) for term in terms])
+    except Exception as exc:  # noqa: BLE001 -- context is optional to the loop
+        responses = [
+            {"tool": GLOSSARY_TOOL, "ok": False, "data": None, "error": f"MCP call failed: {exc}"}
+            for _ in terms
+        ]
+
+    result["mcp_called"] = True
+    result["glossary"] = [
+        _glossary_entry(term, classes_by_term[term], response)
+        for term, response in zip(terms, responses)
+    ]
+
+    found = sum(1 for entry in result["glossary"] if entry["status"] == "found")
+    _log(
+        logging.INFO, "CONTEXT", run_id,
+        "mcp_called=True | tool=%s | terms=%d | found=%d | unavailable=%d",
+        GLOSSARY_TOOL, len(terms), found, len(terms) - found,
     )
     return result
 
