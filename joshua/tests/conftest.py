@@ -9,7 +9,9 @@ if BACKEND_DIR not in sys.path:
 
 
 @pytest.fixture(autouse=True)
-def _mcp_off_by_default(monkeypatch):
-    """Keep every test off the network: an empty MCP_SERVER_URL switches the
-    MCP client off. Tests that exercise MCP set their own URL."""
+def _mcp_and_rag_off_by_default(monkeypatch):
+    """Keep every test off the network: an empty MCP_SERVER_URL or
+    RAG_SERVER_URL switches that client off. Tests that exercise either one
+    set their own URL."""
     monkeypatch.setenv("MCP_SERVER_URL", "")
+    monkeypatch.setenv("RAG_SERVER_URL", "")

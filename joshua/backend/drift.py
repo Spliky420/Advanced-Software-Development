@@ -4,10 +4,13 @@ The four phases of the agentic loop are the four public functions below, in
 order. Plan, Act and Observe are pure Python and involve no LLM at all; only
 Adapt talks to the model, and only ever about breaches Observe already found.
 
-Between Observe and Adapt, gather_context is the loop's one tool call: when
-Observe found breaches, it looks the breached asset classes up through the
-shared MCP server's glossary_lookup tool. Its output goes to the client beside
-the summary, never into the Adapt prompt.
+Between Observe and Adapt, gather_context fetches reference material when
+Observe found breaches: glossary definitions through the shared MCP server's
+glossary_lookup tool, and passages from the team's RAG server. Adapt puts that
+material in the prompt for wording only, then checks the model's text: any
+number that was not in the portfolio figures block rejects the summary in
+favour of one built in Python, so every figure that reaches the client still
+originates in allocation.py.
 
 No Flask imports here, and nothing in this module rounds: rounding belongs at
 the output layer, the same rule allocation.py follows.
@@ -20,10 +23,12 @@ app.create_app.
 
 import logging
 import os
+import re
 import uuid
 
 import llm
 import mcp_client
+import rag_client
 
 logger = logging.getLogger(__name__)
 
@@ -41,22 +46,39 @@ GLOSSARY_TERM_BY_ASSET_CLASS = {
     "Commodities": "Commodity",
 }
 
+# Passages requested from the RAG server, and the most characters of any one
+# reference item (passage or definition) that reaches the prompt.
+RAG_TOP_K = 3
+MAX_REFERENCE_CHARS = 600
+
+# Matches 12, 12.5, 1,234.56 -- the figures the output check compares.
+NUMBER_PATTERN = re.compile(r"\d[\d,]*(?:\.\d+)?")
+
 # Phase names are padded to the width of the longest ("OBSERVE") so the four
 # lines of a run align in a terminal.
 PHASE_NAME_WIDTH = 7
 
+FIGURES_HEADING = "PORTFOLIO FIGURES (use every figure verbatim):"
+REFERENCE_HEADING = "REFERENCE MATERIAL (for wording only -- contains no portfolio figures):"
+
 DRIFT_SYSTEM_PROMPT = (
-    "You are a portfolio reporting assistant. You will be given a list of "
-    "asset classes whose actual allocation has drifted away from its target "
-    "allocation by at least a stated threshold. Each line states the asset "
-    "class, its target percentage, its actual percentage, the size of the "
-    "drift in percentage points, and whether it is overweight or underweight. "
-    "Using only those figures, write a short plain-English paragraph naming "
-    "which asset classes are overweight and which are underweight, and by how "
-    "many percentage points. Describe only -- never recommend trades, never "
-    "give advice, and never make predictions. Never perform arithmetic "
-    "yourself, and never introduce, restate or recalculate any figure that is "
-    "not given to you exactly as provided below."
+    "You are a portfolio reporting assistant. The PORTFOLIO FIGURES block "
+    "lists asset classes whose actual allocation has drifted away from its "
+    "target allocation by at least a stated threshold. Each line states the "
+    "asset class, its target percentage, its actual percentage, the size of "
+    "the drift in percentage points, and whether it is overweight or "
+    "underweight. Using only those figures, write a short plain-English "
+    "paragraph naming which asset classes are overweight and which are "
+    "underweight, and by how many percentage points. Describe only -- never "
+    "recommend trades, never give advice, and never make predictions. Never "
+    "perform arithmetic yourself, and never introduce, restate or recalculate "
+    "any figure that is not given to you exactly as provided in PORTFOLIO "
+    "FIGURES. All portfolio figures are supplied in that block and must be "
+    "used verbatim. A REFERENCE MATERIAL block may follow: it is background "
+    "text from other services, for wording only, such as explaining what an "
+    "asset class is. It contains no portfolio figures. Never repeat any number "
+    "from it, and never present anything in it as a figure about this "
+    "portfolio."
 )
 
 
@@ -290,37 +312,21 @@ def _glossary_entry(term, asset_classes, result):
     }
 
 
-def gather_context(observe_result, call_tools_fn=None):
-    """CONTEXT: look up the breached asset classes in the shared glossary.
+def build_retrieval_query(observe_result):
+    """"Portfolio allocation drift: ETFs overweight; Cash underweight."
 
-    Runs only when Observe found a breach -- the same decision that gates the
-    LLM in Adapt -- and only for classes with a seeded glossary term. The
-    definitions are returned verbatim beside the summary and are deliberately
-    kept out of the Adapt prompt: they are another service's text (on a cache
-    miss, written by an LLM), so handing them to the model would let it quote
-    figures the Python layer never calculated.
-
-    Never raises. With the MCP server down, each term is reported as
-    "unavailable" and the loop carries on to Adapt unchanged.
+    Names and directions only -- no figures, so the query asks about the
+    concepts rather than matching on numbers.
     """
-    run_id = _run_id(observe_result)
-    result = {
-        "phase": "context",
-        "run_id": run_id,
-        "description": (
-            "Look up plain-English definitions of the breached asset classes "
-            "through the shared MCP server's glossary tool."
-        ),
-        "mcp_called": False,
-        "reason": None,
-        "glossary": [],
-    }
+    parts = [
+        f"{breach.get('asset_class', '?')} {breach.get('direction', '?')}"
+        for breach in observe_result["breaches"]
+    ]
+    return "Portfolio allocation drift: " + "; ".join(parts) + "."
 
-    if observe_result["breach_count"] == 0:
-        result["reason"] = "no breaches, glossary lookup skipped"
-        _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | reason=%s", result["reason"])
-        return result
 
+def _lookup_glossary(observe_result, call_tools_fn):
+    """(mcp_called, reason, glossary entries) for the breached classes."""
     # Term -> the breached classes it explains, in breach order, deduplicated
     # so "Equity" is fetched once for both equity classes.
     classes_by_term = {}
@@ -330,9 +336,7 @@ def gather_context(observe_result, call_tools_fn=None):
             classes_by_term.setdefault(term, []).append(breach["asset_class"])
 
     if not classes_by_term:
-        result["reason"] = "no breached asset class has a glossary term"
-        _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | reason=%s", result["reason"])
-        return result
+        return False, "no breached asset class has a glossary term", []
 
     call_tools = call_tools_fn if call_tools_fn is not None else mcp_client.call_tools
     terms = list(classes_by_term)
@@ -344,17 +348,75 @@ def gather_context(observe_result, call_tools_fn=None):
             for _ in terms
         ]
 
-    result["mcp_called"] = True
-    result["glossary"] = [
+    return True, None, [
         _glossary_entry(term, classes_by_term[term], response)
         for term, response in zip(terms, responses)
     ]
 
+
+def _retrieve_passages(observe_result, retrieve_fn):
+    """The retrieval section: query, status and chunks in server order."""
+    retrieve = retrieve_fn if retrieve_fn is not None else rag_client.retrieve
+    query = build_retrieval_query(observe_result)
+    try:
+        response = retrieve(query, RAG_TOP_K)
+    except Exception as exc:  # noqa: BLE001 -- context is optional to the loop
+        response = {"ok": False, "data": None, "error": f"RAG call failed: {exc}"}
+
+    chunks = response["data"]["chunks"] if response["ok"] else []
+    if not response["ok"]:
+        status = "unavailable"
+    elif chunks:
+        status = "found"
+    else:
+        status = "empty"
+    return {"query": query, "status": status, "error": response["error"], "chunks": chunks}
+
+
+def gather_context(observe_result, call_tools_fn=None, retrieve_fn=None):
+    """CONTEXT: fetch reference material about the breached asset classes.
+
+    Runs only when Observe found a breach -- the same decision that gates the
+    LLM in Adapt. Two sources, each optional: glossary definitions from the
+    shared MCP server, and passages from the team's RAG server. Both are
+    reference material for Adapt's wording; neither supplies a figure.
+
+    Never raises. With either server down, its part is reported as
+    "unavailable" and the loop carries on to Adapt.
+    """
+    run_id = _run_id(observe_result)
+    result = {
+        "phase": "context",
+        "run_id": run_id,
+        "description": (
+            "Fetch reference material about the breached asset classes: "
+            "glossary definitions through the shared MCP server and passages "
+            "from the RAG server."
+        ),
+        "mcp_called": False,
+        "rag_called": False,
+        "reason": None,
+        "glossary": [],
+        "retrieval": None,
+    }
+
+    if observe_result["breach_count"] == 0:
+        result["reason"] = "no breaches, context lookup skipped"
+        _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | rag_called=False | reason=%s", result["reason"])
+        return result
+
+    result["mcp_called"], result["reason"], result["glossary"] = _lookup_glossary(
+        observe_result, call_tools_fn
+    )
+    result["rag_called"] = True
+    result["retrieval"] = _retrieve_passages(observe_result, retrieve_fn)
+
     found = sum(1 for entry in result["glossary"] if entry["status"] == "found")
     _log(
         logging.INFO, "CONTEXT", run_id,
-        "mcp_called=True | tool=%s | terms=%d | found=%d | unavailable=%d",
-        GLOSSARY_TOOL, len(terms), found, len(terms) - found,
+        "mcp_called=%s | glossary_found=%d/%d | rag_called=True | rag_status=%s | passages=%d",
+        result["mcp_called"], found, len(result["glossary"]),
+        result["retrieval"]["status"], len(result["retrieval"]["chunks"]),
     )
     return result
 
@@ -374,13 +436,107 @@ def build_drift_prompt(observe_result):
     return "\n".join(lines)
 
 
-def adapt(observe_result, generate_fn=None):
+def _clip(text):
+    text = " ".join(str(text).split())
+    return text if len(text) <= MAX_REFERENCE_CHARS else text[:MAX_REFERENCE_CHARS].rstrip() + "..."
+
+
+def reference_items(context_result):
+    """(citation, text) pairs for the reference block, in citation order.
+
+    RAG passages first, in the order the server returned them; then the
+    glossary definitions that were found.
+    """
+    if not context_result:
+        return []
+
+    items = []
+    retrieval = context_result.get("retrieval") or {}
+    for chunk in retrieval.get("chunks") or []:
+        items.append((
+            {
+                "kind": "rag",
+                "rank": chunk.get("rank"),
+                "chunk_id": chunk.get("chunk_id"),
+                "source_id": chunk.get("source_id"),
+                "distance": chunk.get("distance"),
+            },
+            chunk["text"],
+        ))
+    for entry in context_result.get("glossary") or []:
+        if entry.get("status") == "found":
+            items.append((
+                {"kind": "glossary", "term": entry["term"], "source": entry["source"]},
+                entry["definition"],
+            ))
+    return items
+
+
+def build_reference_block(items):
+    """The REFERENCE MATERIAL block, or None when there is nothing to add."""
+    if not items:
+        return None
+    lines = [REFERENCE_HEADING]
+    for citation, text in items:
+        if citation["kind"] == "rag":
+            label = f"passage {citation.get('source_id') or '?'}#{citation.get('chunk_id') or '?'}"
+        else:
+            label = f"glossary: {citation['term']}"
+        lines.append(f"- [{label}] {_clip(text)}")
+    return "\n".join(lines)
+
+
+def _numbers(text):
+    """Every number in text, as floats rounded to 2dp, sign ignored."""
+    found = set()
+    for match in NUMBER_PATTERN.findall(text):
+        try:
+            found.add(round(float(match.rstrip(",").replace(",", "")), 2))
+        except ValueError:
+            continue
+    return found
+
+
+def unsupplied_figures(response_text, figures):
+    """Numbers in the model's text that the figures block did not contain."""
+    if not isinstance(response_text, str):
+        return []
+    return sorted(_numbers(response_text) - _numbers(figures))
+
+
+def build_fallback_summary(observe_result):
+    """A summary built entirely in Python from the observed breaches.
+
+    Used when the model's text fails the figures check. Every number is
+    formatted exactly as in the figures block the model was given.
+    """
+    parts = [
+        f"{breach['asset_class']} is {breach['drift_magnitude']:.2f} percentage points "
+        f"{breach['direction']} (target {breach['target_percent']:.2f}%, "
+        f"actual {breach['actual_percent']:.2f}%)"
+        for breach in observe_result["breaches"]
+    ]
+    return (
+        f"The following asset classes have drifted by at least "
+        f"{observe_result['threshold_percent']:.2f} percentage points from target: "
+        + "; ".join(parts) + "."
+    )
+
+
+def adapt(observe_result, generate_fn=None, context_result=None):
     """ADAPT: have the model describe the observed breaches in plain English.
 
-    Only the breaches are sent. When nothing breached, this says so directly
-    and never calls the LLM.
+    Only the breaches are sent as figures; context_result, when given, adds a
+    reference block for wording. The model's text is then checked: a number
+    not present in the figures block means it quoted the reference material
+    or invented a figure, so the text is replaced by build_fallback_summary.
+    When nothing breached, this says so directly and never calls the LLM.
     """
     run_id = _run_id(observe_result)
+    description = (
+        "Report the observed breaches in plain English, or state directly "
+        "that there were none."
+    )
 
     if observe_result["breach_count"] == 0:
         # The skip is the decision that makes this loop agentic rather than a
@@ -392,10 +548,7 @@ def adapt(observe_result, generate_fn=None):
         return {
             "phase": "adapt",
             "run_id": run_id,
-            "description": (
-                "Report the observed breaches in plain English, or state "
-                "directly that there were none."
-            ),
+            "description": description,
             "llm_called": False,
             "summary": (
                 f"No asset class has drifted by "
@@ -403,35 +556,58 @@ def adapt(observe_result, generate_fn=None):
                 f"from its target, so the portfolio is within the configured "
                 f"drift threshold."
             ),
+            "summary_source": "no_breaches",
+            "unsupplied_figures": [],
+            "citations": [],
+            "model_response": None,
             "prompt_sent": None,
             "model_name": None,
         }
 
     generate = generate_fn if generate_fn is not None else llm.generate
     figures = build_drift_prompt(observe_result)
-    response_text, model_name = generate(figures, system=DRIFT_SYSTEM_PROMPT)
+    items = reference_items(context_result)
+    reference = build_reference_block(items)
 
-    prompt_sent = DRIFT_SYSTEM_PROMPT + "\n\n" + figures
+    user_prompt = FIGURES_HEADING + "\n" + figures
+    if reference:
+        user_prompt += "\n\n" + reference
+
+    response_text, model_name = generate(user_prompt, system=DRIFT_SYSTEM_PROMPT)
+    prompt_sent = DRIFT_SYSTEM_PROMPT + "\n\n" + user_prompt
+
+    rejected = unsupplied_figures(response_text, figures)
+    verified = isinstance(response_text, str) and not rejected
+    if verified:
+        summary, summary_source = response_text, "model"
+        # Citations back the model's text, so a fallback cites nothing.
+        citations = [citation for citation, _ in items]
+    else:
+        summary, summary_source = build_fallback_summary(observe_result), "fallback"
+        citations = []
 
     _log(
         logging.INFO, "ADAPT", run_id,
-        "llm_called=True | model=%s | prompt_chars=%d | response_chars=%d",
+        "llm_called=True | model=%s | prompt_chars=%d | response_chars=%d | "
+        "reference_items=%d | summary_source=%s | unsupplied_figures=%d",
         model_name, _chars(prompt_sent), _chars(response_text),
+        len(items), summary_source, len(rejected),
     )
     # Full text at DEBUG only: prompt_sent runs to hundreds of characters and
-    # would bury the other three phases in a terminal.
+    # would bury the other phases in a terminal.
     _log(logging.DEBUG, "ADAPT", run_id, "prompt_sent=%s", prompt_sent)
     _log(logging.DEBUG, "ADAPT", run_id, "response_text=%s", response_text)
 
     return {
         "phase": "adapt",
         "run_id": run_id,
-        "description": (
-            "Report the observed breaches in plain English, or state "
-            "directly that there were none."
-        ),
+        "description": description,
         "llm_called": True,
-        "summary": response_text,
+        "summary": summary,
+        "summary_source": summary_source,
+        "unsupplied_figures": rejected,
+        "citations": citations,
+        "model_response": response_text,
         "prompt_sent": prompt_sent,
         "model_name": model_name,
     }

@@ -271,27 +271,37 @@ def test_drift_review_still_succeeds_with_the_mcp_server_unreachable(
     assert all(entry["status"] == "unavailable" for entry in body["context"]["glossary"])
 
 
-def test_glossary_definitions_reach_the_client_but_never_the_prompt(
+def test_a_number_from_a_glossary_definition_never_becomes_a_portfolio_figure(
     client, fake_mcp, monkeypatch
 ):
+    # Precondition: the definition's year is not a figure the pipeline
+    # calculates, so seeing it in the output can only mean it leaked.
+    allowed = _calculated_figures()
+    assert 1993.0 not in allowed
+
     prompts = []
 
-    def generate(prompt, system=None):
+    def quotes_the_reference_material(prompt, system=None):
         prompts.append(prompt)
-        return "Echo: " + prompt, "stub-model"
+        return "ETFs have been overweight since 1993.", "stub-model"
 
-    monkeypatch.setattr(llm, "generate", generate)
-    allowed = _calculated_figures()
+    monkeypatch.setattr(llm, "generate", quotes_the_reference_material)
 
     response = client.post("/api/drift-review")
 
     assert response.status_code == 200
     body = response.get_json()
-    found = {e["term"]: e for e in body["context"]["glossary"] if e["status"] == "found"}
-    assert found["ETF"]["definition"] == GLOSSARY["ETF"]
 
-    # The ETF definition carries a year (1993) that the Python layer never
-    # calculated; it must not have been handed to the model.
-    assert GLOSSARY["ETF"] not in prompts[0]
-    invented = set(_numbers_in(body["adapt"]["summary"])) - allowed
+    # The definition is grounding material now: it is in the prompt, inside
+    # the reference block, after the figures.
+    assert GLOSSARY["ETF"] in prompts[0]
+    assert prompts[0].index(drift.FIGURES_HEADING) < prompts[0].index(drift.REFERENCE_HEADING)
+
+    # The model presented the definition's year as a portfolio fact; the
+    # figures check caught it and the summary was rebuilt in Python.
+    adapt_section = body["adapt"]
+    assert adapt_section["summary_source"] == "fallback"
+    assert 1993.0 in adapt_section["unsupplied_figures"]
+    assert "1993" not in adapt_section["summary"]
+    invented = set(_numbers_in(adapt_section["summary"])) - allowed
     assert not invented, f"adapt.summary contains uncalculated figures: {sorted(invented)}"

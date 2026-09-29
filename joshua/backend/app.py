@@ -207,7 +207,7 @@ def create_app():
     @app.post("/api/drift-review")
     def create_drift_review():
         # PLAN -> ACT -> OBSERVE are deterministic Python; only ADAPT calls the LLM.
-        # CONTEXT is an optional MCP tool call and never fails the request.
+        # CONTEXT (MCP glossary + RAG passages) is optional and never fails the request.
         targets = db.list_targets(DEFAULT_USER_ID)
         report = allocation.build_portfolio_report(db.list_holdings(DEFAULT_USER_ID))
 
@@ -217,7 +217,7 @@ def create_app():
         context_result = drift.gather_context(observe_result)
 
         try:
-            adapt_result = drift.adapt(observe_result)
+            adapt_result = drift.adapt(observe_result, context_result=context_result)
         except llm.LLMUnavailableError as exc:
             return jsonify({"error": f"drift review is unavailable: {exc}"}), 503
 
@@ -229,7 +229,9 @@ def create_app():
                     "request_type": "drift-review",
                     "prompt_sent": adapt_result["prompt_sent"],
                     "model_name": adapt_result["model_name"],
-                    "response_text": adapt_result["summary"],
+                    # What the model actually said, even when the figures
+                    # check replaced it -- the log is the evidence trail.
+                    "response_text": adapt_result["model_response"],
                 },
                 DEFAULT_USER_ID,
             )
@@ -268,8 +270,10 @@ def create_app():
                 "phase": context_result["phase"],
                 "description": context_result["description"],
                 "mcp_called": context_result["mcp_called"],
+                "rag_called": context_result["rag_called"],
                 "reason": context_result["reason"],
                 "glossary": context_result["glossary"],
+                "retrieval": context_result["retrieval"],
                 "run_id": context_result.get("run_id", "-"),
             },
             "adapt": {
@@ -278,6 +282,9 @@ def create_app():
                 "llm_called": adapt_result["llm_called"],
                 "model_name": adapt_result["model_name"],
                 "summary": adapt_result["summary"],
+                "summary_source": adapt_result["summary_source"],
+                "unsupplied_figures": adapt_result["unsupplied_figures"],
+                "citations": adapt_result["citations"],
                 "run_id": adapt_result.get("run_id", "-"),
             },
             "insight_log_id": insight_log_id,
