@@ -1,0 +1,3 @@
+chromadb
+requests
+mcp
