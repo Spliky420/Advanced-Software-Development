@@ -22,12 +22,34 @@ const PHASES = [
 
 const STATUS_LABELS = {
   found: 'Found',
-  empty: 'No results',
+  insufficient_context: 'No relevant context',
   unavailable: 'Unavailable',
+  disabled: 'Disabled',
 }
 
-function StatusPill({ status }) {
-  return <span className={`status status-${status}`}>{STATUS_LABELS[status] ?? status}</span>
+// Why a source was unavailable -- kept distinct from "no relevant context",
+// which means the server answered but had nothing about these asset classes.
+const FAILURE_LABELS = {
+  unreachable: 'Server unreachable',
+  timeout: 'Timed out',
+  error: 'Server error',
+}
+
+function StatusPill({ status, failure }) {
+  const label = status === 'unavailable' && FAILURE_LABELS[failure]
+    ? FAILURE_LABELS[failure]
+    : STATUS_LABELS[status] ?? status
+  return <span className={`status status-${status}`}>{label}</span>
+}
+
+function InsufficientContextBanner({ reason, children }) {
+  return (
+    <div className="banner banner-insufficient" role="status">
+      <strong className="banner-title">Insufficient context</strong>
+      <p className="banner-message">{reason}</p>
+      {children}
+    </div>
+  )
 }
 
 const SUMMARY_SOURCES = {
@@ -99,15 +121,38 @@ function RetrievalSection({ retrieval }) {
         <div>
           <dt>Status</dt>
           <dd>
-            <StatusPill status={retrieval.status} />
+            <StatusPill status={retrieval.status} failure={retrieval.failure} />
           </dd>
         </div>
         <div>
-          <dt>Passages</dt>
+          <dt>Relevant passages</dt>
           <dd>{retrieval.chunks.length}</dd>
         </div>
+        {retrieval.dropped?.length > 0 && (
+          <div>
+            <dt>Dropped as off-topic</dt>
+            <dd>{retrieval.dropped.length}</dd>
+          </div>
+        )}
       </dl>
       {retrieval.status === 'unavailable' && <p className="context-error">{retrieval.error}</p>}
+      {retrieval.status === 'insufficient_context' && (
+        <p className="context-item-meta">
+          The RAG server answered, but nothing it returned mentions the breached asset classes,
+          so no passage was sent to the model.
+        </p>
+      )}
+      {retrieval.dropped?.length > 0 && (
+        <p className="context-item-meta">
+          Dropped:{' '}
+          {retrieval.dropped.map((chunk, index) => (
+            <span key={`${chunk.chunk_id}-${index}`}>
+              {index > 0 && ', '}
+              <code>{citationLabel({ kind: 'rag', ...chunk })}</code>
+            </span>
+          ))}
+        </p>
+      )}
       {retrieval.chunks.length > 0 && (
         <div className="table-scroll">
           {/* Server order, as returned. Distance is shown raw: its meaning
@@ -374,10 +419,14 @@ export default function DriftReviewPage() {
                   </div>
                 )}
               </dl>
-              <p className="ai-meta">
-                Reference material goes to the model for wording only. Portfolio figures are
-                supplied separately and must be used verbatim.
-              </p>
+              {review.context.insufficient_context ? (
+                <InsufficientContextBanner reason={review.context.insufficient_reason} />
+              ) : (
+                <p className="ai-meta">
+                  Reference material goes to the model for wording only. Portfolio figures are
+                  supplied separately and must be used verbatim.
+                </p>
+              )}
 
               <h4 className="phase-subheading">Glossary definitions (MCP)</h4>
               <GlossaryList entries={review.context.glossary} />
@@ -406,7 +455,26 @@ export default function DriftReviewPage() {
                   </dd>
                 </div>
               )}
+              {review.adapt.context_status && (
+                <div>
+                  <dt>Context</dt>
+                  <dd>
+                    <span className={`context-status context-status-${review.adapt.context_status}`}>
+                      {review.adapt.context_status === 'grounded' ? 'Grounded' : 'Insufficient'}
+                    </span>
+                  </dd>
+                </div>
+              )}
             </dl>
+
+            {review.adapt.context_status === 'insufficient_context' && (
+              <InsufficientContextBanner reason={review.context?.insufficient_reason}>
+                <p className="banner-hint">
+                  The model was told no reference material exists and to state the
+                  Python-computed figures only -- no explanation, background or sources.
+                </p>
+              </InsufficientContextBanner>
+            )}
 
             {review.adapt.summary_source === 'fallback' && (
               <WarningBanner>

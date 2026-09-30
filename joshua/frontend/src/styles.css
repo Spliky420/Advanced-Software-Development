@@ -803,6 +803,43 @@ code {
   color: var(--colour-loss);
 }
 
+/* The server answered but had nothing relevant -- not a fault, so amber
+   rather than the red of an unreachable or failing server. */
+.status-insufficient_context {
+  color: var(--colour-over);
+}
+
+.status-disabled {
+  color: var(--colour-text-muted);
+}
+
+.context-status {
+  display: inline-block;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.context-status-grounded {
+  color: var(--colour-gain);
+}
+
+/* Filled, in the accent colour: distinct from the amber fallback pill, so
+   "no context" and "model text rejected" never read as the same event. */
+.context-status-insufficient_context {
+  color: var(--colour-accent-text);
+  background: var(--colour-accent);
+  border-color: var(--colour-accent);
+}
+
+.banner-insufficient {
+  border-color: var(--colour-accent);
+  border-style: dashed;
+  border-left-style: solid;
+}
+
 /* The fallback is the evidence the figures check fired, so it is filled
    rather than outlined -- the one pill on the page meant to stand out. */
 .summary-source-fallback {

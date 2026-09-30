@@ -19,6 +19,7 @@ import drift
 import llm
 import rag_client
 
+from test_mcp_client import fake_mcp  # noqa: F401 -- pytest fixture
 from test_no_invented_figures import (  # noqa: F401 -- pytest fixtures
     _calculated_figures,
     _numbers_in,
@@ -140,6 +141,7 @@ def test_http_500_is_reported_as_unavailable(rag_server):
     result = rag_client.retrieve("anything")
 
     assert result["ok"] is False
+    assert result["status"] == "error"
     assert result["data"] is None
     assert result["error"] == "RAG server returned 500: collection missing"
 
@@ -153,6 +155,7 @@ def test_slow_server_times_out_instead_of_hanging(rag_server, monkeypatch):
 
     assert time.monotonic() - started < 1.2
     assert result["ok"] is False
+    assert result["status"] == "timeout"
     assert "did not respond within 0.2s" in result["error"]
 
 
@@ -218,7 +221,8 @@ def test_unreachable_server_degrades(monkeypatch):
     result = rag_client.retrieve("q")
 
     assert result["ok"] is False
-    assert "RAG server" in result["error"]
+    assert result["status"] == "unreachable"
+    assert "could not reach RAG server" in result["error"]
 
 
 def test_empty_server_url_disables_rag():
@@ -226,13 +230,14 @@ def test_empty_server_url_disables_rag():
     result = rag_client.retrieve("q")
 
     assert result["ok"] is False
-    assert "disabled" in result["error"]
+    assert result["status"] == "disabled"
 
 
-def test_unset_server_url_defaults_to_the_compose_address(monkeypatch):
+def test_unset_server_url_defaults_to_the_host_address(monkeypatch):
+    # Release 1 runs the RAG server on the host, not as a compose service.
     monkeypatch.delenv("RAG_SERVER_URL")
 
-    assert rag_client.get_server_url() == "http://rag-server:5003"
+    assert rag_client.get_server_url() == "http://host.docker.internal:5003"
 
 
 # --------------------------------------------------------------------------
@@ -273,6 +278,8 @@ def test_retrieved_passages_ground_the_prompt_and_are_cited_in_order(
 
     adapt_section = body["adapt"]
     assert adapt_section["summary_source"] == "model"
+    assert adapt_section["context_status"] == "grounded"
+    assert body["context"]["insufficient_context"] is False
     rag_citations = [c for c in adapt_section["citations"] if c["kind"] == "rag"]
     assert [(c["chunk_id"], c["distance"]) for c in rag_citations] == [
         ("pf_2", 0.91), ("pf_7", 0.12), ("eq_1", 0.55),
@@ -314,15 +321,19 @@ def test_a_number_from_retrieved_text_never_becomes_a_portfolio_figure(
     assert adapt_section["summary"] == drift.build_fallback_summary(observe_result)
 
 
-def test_empty_retrieval_leaves_the_reference_block_out(client, rag_server, recording_model):
+def test_empty_retrieval_is_insufficient_context(client, rag_server, recording_model):
     rag_server.respond("/retrieve", retrieve_payload([]))
 
     body = client.post("/api/drift-review").get_json()
 
-    assert drift.REFERENCE_HEADING not in recording_model[0]["prompt"]
-    assert body["context"]["retrieval"]["status"] == "empty"
+    prompt = recording_model[0]["prompt"]
+    assert drift.REFERENCE_HEADING not in prompt
+    assert drift.INSUFFICIENT_CONTEXT_NOTICE in prompt
+    assert body["context"]["retrieval"]["status"] == "insufficient_context"
+    assert body["context"]["insufficient_context"] is True
+    assert "returned no passages" in body["context"]["insufficient_reason"]
+    assert body["adapt"]["context_status"] == "insufficient_context"
     assert body["adapt"]["citations"] == []
-    assert body["adapt"]["summary_source"] == "model"
 
 
 def test_drift_review_succeeds_with_the_rag_server_returning_500(
@@ -335,6 +346,8 @@ def test_drift_review_succeeds_with_the_rag_server_returning_500(
     assert response.status_code == 200
     body = response.get_json()
     assert body["context"]["retrieval"]["status"] == "unavailable"
+    assert body["context"]["retrieval"]["failure"] == "error"
+    assert "returned an error" in body["context"]["insufficient_reason"]
     assert body["adapt"]["summary_source"] == "model"
 
 
@@ -347,4 +360,117 @@ def test_drift_review_succeeds_with_the_rag_server_timing_out(
     response = client.post("/api/drift-review")
 
     assert response.status_code == 200
-    assert response.get_json()["context"]["retrieval"]["status"] == "unavailable"
+    retrieval = response.get_json()["context"]["retrieval"]
+    assert retrieval["status"] == "unavailable"
+    assert retrieval["failure"] == "timeout"
+
+
+# --------------------------------------------------------------------------
+# Insufficient context: "no relevant context" versus "server unreachable"
+# --------------------------------------------------------------------------
+
+# The two chunks the real corpus on main produces: about transactions and tax
+# deductions, nothing about asset classes or allocation.
+OFF_TOPIC_PASSAGES = [
+    {"rank": 1, "chunk_id": "Thomas_personal_finance_knowledge_1",
+     "source_id": "Thomas_personal_finance_knowledge.txt",
+     "text": "Potential deductions are transactions that may be eligible to be claimed as "
+             "tax deductions. Receipts provide supporting evidence for transactions.",
+     "distance": 1.21},
+    {"rank": 2, "chunk_id": "Thomas_personal_finance_knowledge_2",
+     "source_id": "Thomas_personal_finance_knowledge.txt",
+     "text": "categories and potential deduction status.", "distance": 1.37},
+]
+
+
+def test_off_topic_passages_are_dropped_and_reported_as_insufficient_context(
+    client, rag_server, recording_model
+):
+    rag_server.respond("/retrieve", retrieve_payload(OFF_TOPIC_PASSAGES))
+
+    body = client.post("/api/drift-review").get_json()
+
+    retrieval = body["context"]["retrieval"]
+    assert retrieval["status"] == "insufficient_context"
+    assert retrieval["failure"] is None
+    assert retrieval["chunks"] == []
+    assert [d["chunk_id"] for d in retrieval["dropped"]] == [
+        "Thomas_personal_finance_knowledge_1", "Thomas_personal_finance_knowledge_2",
+    ]
+    assert body["context"]["insufficient_context"] is True
+    assert "none about the breached asset classes" in body["context"]["insufficient_reason"]
+
+    # The off-topic text never reaches the model, and nothing is cited.
+    prompt = recording_model[0]["prompt"]
+    assert "tax deductions" not in prompt
+    assert drift.INSUFFICIENT_CONTEXT_NOTICE in prompt
+    assert body["adapt"]["context_status"] == "insufficient_context"
+    assert body["adapt"]["citations"] == []
+
+
+def test_unreachable_rag_is_distinguished_from_no_relevant_context(
+    client, recording_model, monkeypatch
+):
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    monkeypatch.setenv("RAG_SERVER_URL", f"http://127.0.0.1:{port}")
+    monkeypatch.setenv("RAG_TIMEOUT_SECONDS", "3")
+
+    body = client.post("/api/drift-review").get_json()
+
+    retrieval = body["context"]["retrieval"]
+    assert retrieval["status"] == "unavailable"
+    assert retrieval["failure"] == "unreachable"
+    assert body["context"]["insufficient_context"] is True
+    assert "unreachable" in body["context"]["insufficient_reason"]
+    assert body["adapt"]["context_status"] == "insufficient_context"
+
+
+def test_disabled_rag_is_reported_as_disabled(client, recording_model):
+    # conftest leaves RAG_SERVER_URL empty.
+    body = client.post("/api/drift-review").get_json()
+
+    assert body["context"]["retrieval"]["status"] == "disabled"
+    assert "RAG is disabled" in body["context"]["insufficient_reason"]
+
+
+def test_relevant_passages_are_kept_in_server_order_among_off_topic_ones(
+    client, rag_server, recording_model
+):
+    rag_server.respond("/retrieve", retrieve_payload([
+        OFF_TOPIC_PASSAGES[0], PASSAGES[2], OFF_TOPIC_PASSAGES[1], PASSAGES[1],
+    ]))
+
+    body = client.post("/api/drift-review").get_json()
+
+    retrieval = body["context"]["retrieval"]
+    assert retrieval["status"] == "found"
+    assert [c["chunk_id"] for c in retrieval["chunks"]] == ["eq_1", "pf_7"]
+    assert len(retrieval["dropped"]) == 2
+    assert body["adapt"]["context_status"] == "grounded"
+
+
+def test_a_glossary_definition_alone_is_sufficient_context(
+    client, rag_server, fake_mcp, recording_model
+):
+    rag_server.respond("/retrieve", retrieve_payload(OFF_TOPIC_PASSAGES))
+
+    body = client.post("/api/drift-review").get_json()
+
+    assert body["context"]["retrieval"]["status"] == "insufficient_context"
+    assert body["context"]["insufficient_context"] is False
+    assert body["adapt"]["context_status"] == "grounded"
+    assert drift.INSUFFICIENT_CONTEXT_NOTICE not in recording_model[0]["prompt"]
+
+
+def test_direct_adapt_call_without_context_claims_nothing():
+    observe_result = {
+        "run_id": "t", "threshold_percent": 5.0, "breach_count": 1,
+        "breaches": [{"asset_class": "Cash", "target_percent": 10.0, "actual_percent": 20.0,
+                      "drift_magnitude": 10.0, "direction": "overweight"}],
+    }
+
+    result = drift.adapt(observe_result, generate_fn=lambda p, system=None: ("ok", "m"))
+
+    assert result["context_status"] is None

@@ -1,10 +1,15 @@
-"""Thin client for the team's RAG server (rag-server/ on thomas-release1).
+"""Thin client for the team's RAG server (rag-server/ on main).
 
-Coded against the contract in joshua/RAG_INTEGRATION.md -- the server is not
-containerised yet, so an unreachable server is the normal case and has to
-degrade to "unavailable", never to a 500. Same shape as mcp_client: every
-public call returns {"endpoint", "ok", "data", "error"} and never raises for
-a server-side problem.
+Coded against the contract in joshua/RAG_INTEGRATION.md. Per the Release 1
+brief the RAG server runs on the host, not as a compose service, so from
+inside the joshua-backend container it is reached through
+host.docker.internal -- and when nobody has started it, an unreachable server
+is the normal case. That has to degrade to "unavailable", never to a 500.
+
+Same shape as mcp_client, plus a machine-readable status: every public call
+returns {"endpoint", "ok", "status", "data", "error"}, where status is one of
+"ok", "disabled", "unreachable", "timeout" or "error", and never raises for a
+server-side problem.
 
 Retrieval distances are passed through untouched. The server decides what a
 distance means (L2 today, possibly cosine later), so this module never ranks,
@@ -18,7 +23,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_RAG_SERVER_URL = "http://rag-server:5003"
+DEFAULT_RAG_SERVER_URL = "http://host.docker.internal:5003"
 DEFAULT_TIMEOUT_SECONDS = 5.0
 DEFAULT_K = 5
 
@@ -26,7 +31,7 @@ DEFAULT_K = 5
 def get_server_url():
     """The RAG base URL from RAG_SERVER_URL, or None when RAG is switched off.
 
-    Unset means the compose default; set-but-empty is the off switch.
+    Unset means the default host address; set-but-empty is the off switch.
     """
     raw = os.environ.get("RAG_SERVER_URL")
     if raw is None:
@@ -53,28 +58,29 @@ def get_timeout_seconds():
 
 
 def _ok(endpoint, data):
-    return {"endpoint": endpoint, "ok": True, "data": data, "error": None}
+    return {"endpoint": endpoint, "ok": True, "status": "ok", "data": data, "error": None}
 
 
-def _unavailable(endpoint, reason):
-    logger.warning("RAG %s unavailable: %s", endpoint, reason)
-    return {"endpoint": endpoint, "ok": False, "data": None, "error": reason}
+def _unavailable(endpoint, status, reason):
+    if status != "disabled":
+        logger.warning("RAG %s unavailable (%s): %s", endpoint, status, reason)
+    return {"endpoint": endpoint, "ok": False, "status": status, "data": None, "error": reason}
 
 
 def _request(method, endpoint, payload=None):
-    """One HTTP call; returns (body, None) or (None, reason)."""
+    """One HTTP call; returns (body, None) or (None, (status, reason))."""
     base_url = get_server_url()
     if base_url is None:
-        return None, "RAG is disabled (RAG_SERVER_URL is empty)"
+        return None, ("disabled", "RAG is disabled (RAG_SERVER_URL is empty)")
 
     url = base_url + endpoint
     timeout = get_timeout_seconds()
     try:
         response = requests.request(method, url, json=payload, timeout=timeout)
     except requests.exceptions.Timeout:
-        return None, f"RAG server did not respond within {timeout:g}s"
+        return None, ("timeout", f"RAG server did not respond within {timeout:g}s")
     except requests.exceptions.RequestException as exc:
-        return None, f"could not reach RAG server at {url}: {type(exc).__name__}"
+        return None, ("unreachable", f"could not reach RAG server at {url}: {type(exc).__name__}")
 
     try:
         body = response.json()
@@ -83,11 +89,11 @@ def _request(method, endpoint, payload=None):
 
     if response.status_code != 200:
         detail = body.get("error") if isinstance(body, dict) else None
-        return None, f"RAG server returned {response.status_code}" + (f": {detail}" if detail else "")
+        return None, ("error", f"RAG server returned {response.status_code}" + (f": {detail}" if detail else ""))
     if not isinstance(body, dict):
-        return None, "RAG server returned a non-JSON response"
+        return None, ("error", "RAG server returned a non-JSON response")
     if body.get("status") == "error":
-        return None, f"RAG server reported an error: {body.get('error', 'no detail')}"
+        return None, ("error", f"RAG server reported an error: {body.get('error', 'no detail')}")
     return body, None
 
 
@@ -104,11 +110,11 @@ def _request_body(query, k):
 
 def health():
     """GET /health. ok only when the server says {"status": "ok"}."""
-    body, error = _request("GET", "/health")
-    if error:
-        return _unavailable("/health", error)
+    body, failure = _request("GET", "/health")
+    if failure:
+        return _unavailable("/health", *failure)
     if body.get("status") != "ok":
-        return _unavailable("/health", f"unexpected health status: {body.get('status')!r}")
+        return _unavailable("/health", "error", f"unexpected health status: {body.get('status')!r}")
     return _ok("/health", body)
 
 
@@ -120,15 +126,15 @@ def retrieve(query, k=DEFAULT_K):
     """
     query = _clean_query(query)
     if not query:
-        return _unavailable("/retrieve", "query is required")
+        return _unavailable("/retrieve", "error", "query is required")
 
-    body, error = _request("POST", "/retrieve", _request_body(query, k))
-    if error:
-        return _unavailable("/retrieve", error)
+    body, failure = _request("POST", "/retrieve", _request_body(query, k))
+    if failure:
+        return _unavailable("/retrieve", *failure)
 
     results = body.get("results")
     if not isinstance(results, list):
-        return _unavailable("/retrieve", "response had no results list")
+        return _unavailable("/retrieve", "error", "response had no results list")
 
     chunks = [
         {
@@ -152,15 +158,15 @@ def answer(query, k=DEFAULT_K):
     """
     query = _clean_query(query)
     if not query:
-        return _unavailable("/answer", "query is required")
+        return _unavailable("/answer", "error", "query is required")
 
-    body, error = _request("POST", "/answer", _request_body(query, k))
-    if error:
-        return _unavailable("/answer", error)
+    body, failure = _request("POST", "/answer", _request_body(query, k))
+    if failure:
+        return _unavailable("/answer", *failure)
 
     text = body.get("answer")
     if not isinstance(text, str):
-        return _unavailable("/answer", "response had no answer")
+        return _unavailable("/answer", "error", "response had no answer")
 
     citations = body.get("citations")
     return _ok("/answer", {

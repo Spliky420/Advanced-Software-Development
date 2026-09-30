@@ -274,6 +274,8 @@ def create_app():
                 "reason": context_result["reason"],
                 "glossary": context_result["glossary"],
                 "retrieval": context_result["retrieval"],
+                "insufficient_context": context_result["insufficient_context"],
+                "insufficient_reason": context_result["insufficient_reason"],
                 "run_id": context_result.get("run_id", "-"),
             },
             "adapt": {
@@ -283,6 +285,7 @@ def create_app():
                 "model_name": adapt_result["model_name"],
                 "summary": adapt_result["summary"],
                 "summary_source": adapt_result["summary_source"],
+                "context_status": adapt_result["context_status"],
                 "unsupplied_figures": adapt_result["unsupplied_figures"],
                 "citations": adapt_result["citations"],
                 "run_id": adapt_result.get("run_id", "-"),

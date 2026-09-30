@@ -46,6 +46,27 @@ GLOSSARY_TERM_BY_ASSET_CLASS = {
     "Commodities": "Commodity",
 }
 
+# A passage counts as relevant only if it mentions a breached asset class (or
+# a general allocation concept). The RAG server always returns its top k, so
+# without this a corpus about, say, tax deductions would be cited as grounding
+# for a portfolio drift summary.
+RELEVANCE_PATTERNS_BY_ASSET_CLASS = {
+    "Australian equities": (r"\bequit", r"\bshares?\b", r"\bstocks?\b"),
+    "International equities": (r"\bequit", r"\bshares?\b", r"\bstocks?\b"),
+    "ETFs": (r"\bETFs?\b", r"exchange[- ]traded", r"\bindex funds?\b"),
+    "REITs": (r"\bREITs?\b", r"\breal estate\b"),
+    "Government bonds": (r"\bbonds?\b", r"\bfixed[- ]income\b"),
+    "Corporate bonds": (r"\bbonds?\b", r"\bfixed[- ]income\b"),
+    "Cash": (r"\bcash\b",),
+    "Term deposits": (r"\bterm deposits?\b",),
+    "Commodities": (r"\bcommodit", r"\bgold\b"),
+    "Crypto": (r"\bcrypto", r"\bbitcoin\b"),
+}
+GENERAL_RELEVANCE_PATTERNS = (
+    r"\brebalanc", r"\basset allocation\b", r"\btarget allocation\b",
+    r"\bdiversif", r"\ballocation drift\b",
+)
+
 # Passages requested from the RAG server, and the most characters of any one
 # reference item (passage or definition) that reaches the prompt.
 RAG_TOP_K = 3
@@ -60,6 +81,14 @@ PHASE_NAME_WIDTH = 7
 
 FIGURES_HEADING = "PORTFOLIO FIGURES (use every figure verbatim):"
 REFERENCE_HEADING = "REFERENCE MATERIAL (for wording only -- contains no portfolio figures):"
+# Sent instead of a reference block when Context found nothing relevant, so the
+# model states the figures rather than filling the gap with unsupported
+# background of its own.
+INSUFFICIENT_CONTEXT_NOTICE = (
+    "REFERENCE MATERIAL: none available -- insufficient context. Describe only "
+    "the portfolio figures above. Do not explain what any asset class is, and "
+    "do not add background, definitions or reasons for the drift."
+)
 
 DRIFT_SYSTEM_PROMPT = (
     "You are a portfolio reporting assistant. The PORTFOLIO FIGURES block "
@@ -354,23 +383,95 @@ def _lookup_glossary(observe_result, call_tools_fn):
     ]
 
 
+def _relevance_patterns(observe_result):
+    """Word patterns a passage must contain to be relevant to this review."""
+    patterns = list(GENERAL_RELEVANCE_PATTERNS)
+    for breach in observe_result["breaches"]:
+        patterns.extend(RELEVANCE_PATTERNS_BY_ASSET_CLASS.get(breach.get("asset_class"), ()))
+    return [re.compile(pattern, re.IGNORECASE) for pattern in patterns]
+
+
+def is_relevant(text, patterns):
+    return any(pattern.search(text) for pattern in patterns)
+
+
 def _retrieve_passages(observe_result, retrieve_fn):
-    """The retrieval section: query, status and chunks in server order."""
+    """The retrieval section: query, status, relevant chunks, dropped chunks.
+
+    status is one of:
+      found                -- at least one relevant passage
+      insufficient_context -- the server answered, but nothing it returned
+                              is about the breached asset classes
+      unavailable          -- the server could not be used (failure says
+                              unreachable, timeout or error)
+      disabled             -- RAG_SERVER_URL is empty
+
+    Relevance is a word match against the breached asset classes, never the
+    distance: the server always returns its top k however poor the match, and
+    the distance's meaning is the server's business. Order is preserved.
+    """
     retrieve = retrieve_fn if retrieve_fn is not None else rag_client.retrieve
     query = build_retrieval_query(observe_result)
     try:
         response = retrieve(query, RAG_TOP_K)
     except Exception as exc:  # noqa: BLE001 -- context is optional to the loop
-        response = {"ok": False, "data": None, "error": f"RAG call failed: {exc}"}
+        response = {"ok": False, "status": "error", "data": None, "error": f"RAG call failed: {exc}"}
 
-    chunks = response["data"]["chunks"] if response["ok"] else []
+    section = {
+        "query": query,
+        "status": None,
+        "failure": None,
+        "error": response.get("error"),
+        "chunks": [],
+        "dropped": [],
+    }
+
     if not response["ok"]:
-        status = "unavailable"
-    elif chunks:
-        status = "found"
+        failure = response.get("status") or "error"
+        if failure == "disabled":
+            section["status"] = "disabled"
+        else:
+            section["status"], section["failure"] = "unavailable", failure
+        return section
+
+    patterns = _relevance_patterns(observe_result)
+    for chunk in response["data"]["chunks"]:
+        if is_relevant(chunk["text"], patterns):
+            section["chunks"].append(chunk)
+        else:
+            section["dropped"].append({
+                key: chunk.get(key) for key in ("rank", "chunk_id", "source_id", "distance")
+            })
+
+    section["status"] = "found" if section["chunks"] else "insufficient_context"
+    return section
+
+
+def _insufficient_reason(glossary, retrieval):
+    """Why there is no reference material, naming the RAG cause precisely."""
+    status = retrieval["status"]
+    if status == "insufficient_context":
+        if retrieval["dropped"]:
+            rag = (
+                f"the RAG server returned {len(retrieval['dropped'])} passage(s), "
+                f"none about the breached asset classes"
+            )
+        else:
+            rag = "the RAG server returned no passages"
+    elif status == "disabled":
+        rag = "RAG is disabled"
+    elif retrieval["failure"] == "timeout":
+        rag = "the RAG server did not respond in time"
+    elif retrieval["failure"] == "unreachable":
+        rag = "the RAG server is unreachable"
     else:
-        status = "empty"
-    return {"query": query, "status": status, "error": response["error"], "chunks": chunks}
+        rag = "the RAG server returned an error"
+
+    glossary_note = (
+        "no glossary definition was available"
+        if glossary else "no breached asset class has a glossary term"
+    )
+    return f"No relevant reference material: {rag}, and {glossary_note}."
 
 
 def gather_context(observe_result, call_tools_fn=None, retrieve_fn=None):
@@ -398,6 +499,10 @@ def gather_context(observe_result, call_tools_fn=None, retrieve_fn=None):
         "reason": None,
         "glossary": [],
         "retrieval": None,
+        # True when breaches exist but neither source produced anything
+        # relevant; Adapt then tells the model it has no reference material.
+        "insufficient_context": False,
+        "insufficient_reason": None,
     }
 
     if observe_result["breach_count"] == 0:
@@ -412,11 +517,17 @@ def gather_context(observe_result, call_tools_fn=None, retrieve_fn=None):
     result["retrieval"] = _retrieve_passages(observe_result, retrieve_fn)
 
     found = sum(1 for entry in result["glossary"] if entry["status"] == "found")
+    if found == 0 and not result["retrieval"]["chunks"]:
+        result["insufficient_context"] = True
+        result["insufficient_reason"] = _insufficient_reason(result["glossary"], result["retrieval"])
+
     _log(
         logging.INFO, "CONTEXT", run_id,
-        "mcp_called=%s | glossary_found=%d/%d | rag_called=True | rag_status=%s | passages=%d",
+        "mcp_called=%s | glossary_found=%d/%d | rag_status=%s | passages=%d | dropped=%d | "
+        "insufficient_context=%s",
         result["mcp_called"], found, len(result["glossary"]),
         result["retrieval"]["status"], len(result["retrieval"]["chunks"]),
+        len(result["retrieval"]["dropped"]), result["insufficient_context"],
     )
     return result
 
@@ -557,6 +668,7 @@ def adapt(observe_result, generate_fn=None, context_result=None):
                 f"drift threshold."
             ),
             "summary_source": "no_breaches",
+            "context_status": None,
             "unsupplied_figures": [],
             "citations": [],
             "model_response": None,
@@ -569,9 +681,20 @@ def adapt(observe_result, generate_fn=None, context_result=None):
     items = reference_items(context_result)
     reference = build_reference_block(items)
 
+    # None when no Context phase ran (a direct call), so the prompt is the
+    # figures alone and nothing is claimed either way.
+    if context_result is None:
+        context_status = None
+    elif reference:
+        context_status = "grounded"
+    else:
+        context_status = "insufficient_context"
+
     user_prompt = FIGURES_HEADING + "\n" + figures
     if reference:
         user_prompt += "\n\n" + reference
+    elif context_status == "insufficient_context":
+        user_prompt += "\n\n" + INSUFFICIENT_CONTEXT_NOTICE
 
     response_text, model_name = generate(user_prompt, system=DRIFT_SYSTEM_PROMPT)
     prompt_sent = DRIFT_SYSTEM_PROMPT + "\n\n" + user_prompt
@@ -589,9 +712,9 @@ def adapt(observe_result, generate_fn=None, context_result=None):
     _log(
         logging.INFO, "ADAPT", run_id,
         "llm_called=True | model=%s | prompt_chars=%d | response_chars=%d | "
-        "reference_items=%d | summary_source=%s | unsupplied_figures=%d",
+        "reference_items=%d | context_status=%s | summary_source=%s | unsupplied_figures=%d",
         model_name, _chars(prompt_sent), _chars(response_text),
-        len(items), summary_source, len(rejected),
+        len(items), context_status, summary_source, len(rejected),
     )
     # Full text at DEBUG only: prompt_sent runs to hundreds of characters and
     # would bury the other phases in a terminal.
@@ -606,6 +729,7 @@ def adapt(observe_result, generate_fn=None, context_result=None):
         "summary": summary,
         "summary_source": summary_source,
         "unsupplied_figures": rejected,
+        "context_status": context_status,
         "citations": citations,
         "model_response": response_text,
         "prompt_sent": prompt_sent,
