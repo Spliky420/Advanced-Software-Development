@@ -85,6 +85,13 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
+      MCP_SERVER_URL: http://mcp-server:5002/mcp
+      MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-5}
+      RAG_SERVER_URL: http://host.docker.internal:5003
+      RAG_TIMEOUT_SECONDS: ${RAG_TIMEOUT_SECONDS:-5}
+    extra_hosts:
+      # Resolves automatically on Docker Desktop; needed on Linux.
+      - "host.docker.internal:host-gateway"
     volumes:
       # Same volume as joshua-database: that service creates and seeds the
       # file, this one reads and writes it.
