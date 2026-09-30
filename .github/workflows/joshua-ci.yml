@@ -21,6 +21,7 @@ on:
   push:
     branches:
       - Joshua-Portfolio-Holdings
+      - Joshua-Release-0
     paths:
       - 'joshua/**'
       - '.github/workflows/joshua-ci.yml'
