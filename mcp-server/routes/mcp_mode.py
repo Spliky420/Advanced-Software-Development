@@ -1,7 +1,5 @@
-import json
 import os
-
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 
 from tools import (
     get_portfolio_snapshot,
@@ -26,18 +24,7 @@ def mcp_mode_is_enabled(req) -> bool:
 
 
 def mcp_disabled_response():
-    return "<p>MCP Mode is disabled.</p>", 403
-
-
-def mcp_render_json(title: str, payload):
-    return f"<h3>{title}</h3><pre>{json.dumps(payload, indent=2)}</pre>"
-
-
-def _status_for(result) -> int:
-    # tools.py never raises on a backend failure -- it returns {"error": ...}
-    # instead, so the HTTP status here is derived from the payload rather
-    # than from a caught exception.
-    return 503 if isinstance(result, dict) and "error" in result else 200
+    return jsonify({"error": "MCP Mode is disabled."}), 403
 
 
 @mcp_bp.post("/mcp/portfolio-snapshot")
@@ -46,7 +33,9 @@ def mcp_portfolio_snapshot():
         return mcp_disabled_response()
 
     result = get_portfolio_snapshot()
-    return mcp_render_json("MCP Tool: portfolio_snapshot", result), _status_for(result)
+    if isinstance(result, dict) and "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200
 
 
 @mcp_bp.post("/mcp/glossary-lookup")
@@ -56,10 +45,12 @@ def mcp_glossary_lookup():
 
     term = request.form.get("term", "").strip()
     if not term:
-        return "<p>term is required.</p>", 400
+        return jsonify({"error": "term is required."}), 400
 
     result = get_glossary_definition(term)
-    return mcp_render_json("MCP Tool: glossary_lookup", result), _status_for(result)
+    if isinstance(result, dict) and "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200
 
 
 @mcp_bp.post("/mcp/document-search")
@@ -69,7 +60,7 @@ def mcp_document_search():
 
     query = request.form.get("query", "").strip()
     if not query:
-        return "<p>query is required.</p>", 400
+        return jsonify({"error": "query is required."}), 400
 
     try:
         top_k = int(request.form.get("top_k", "5"))
@@ -77,7 +68,9 @@ def mcp_document_search():
         top_k = 5
 
     result = search_documents(query, top_k)
-    return mcp_render_json("MCP Tool: document_search", result), _status_for(result)
+    if isinstance(result, dict) and "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200
 
 
 @mcp_bp.post("/mcp/bill-summary")
@@ -86,7 +79,9 @@ def mcp_bill_summary():
         return mcp_disabled_response()
 
     result = get_bill_summary()
-    return mcp_render_json("MCP Tool: bill_summary", result), _status_for(result)
+    if isinstance(result, dict) and "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200
 
 
 @mcp_bp.post("/mcp/transaction-summary")
@@ -95,7 +90,9 @@ def mcp_transaction_summary():
         return mcp_disabled_response()
 
     result = get_transaction_summary()
-    return mcp_render_json("MCP Tool: transaction_summary", result), _status_for(result)
+    if isinstance(result, dict) and "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200
 
 
 @mcp_bp.post("/mcp/goal-progress")
@@ -105,7 +102,9 @@ def mcp_goal_progress():
 
     goal_id = request.form.get("goal_id", "").strip()
     if not goal_id.isdigit():
-        return "<p>goal_id is required and must be an integer.</p>", 400
+        return jsonify({"error": "goal_id is required and must be an integer."}), 400
 
     result = get_goal_progress(int(goal_id))
-    return mcp_render_json("MCP Tool: goal_progress", result), _status_for(result)
+    if isinstance(result, dict) and "error" in result:
+        return jsonify(result), 503
+    return jsonify(result), 200

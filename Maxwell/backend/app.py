@@ -1,9 +1,10 @@
 import os
 import sqlite3
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 import requests
 import json
 import re
+import sys
 
 # Flask application setup
 app = Flask(__name__)
@@ -11,9 +12,15 @@ app = Flask(__name__)
 # Enable CORS for all routes (allows frontend on port 8020 to call backend on 8021)
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    print(f"AFTER_REQUEST: Response headers before: {response.headers}", file=sys.stderr, flush=True)
+    if 'Access-Control-Allow-Origin' not in response.headers:
+        print(f"AFTER_REQUEST: Setting Access-Control-Allow-Origin to *", file=sys.stderr, flush=True)
+        response.headers.set('Access-Control-Allow-Origin', '*')
+    else:
+        print(f"AFTER_REQUEST: Access-Control-Allow-Origin already present: {response.headers.get('Access-Control-Allow-Origin')}", file=sys.stderr, flush=True)
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    print(f"AFTER_REQUEST: Response headers after: {response.headers}", file=sys.stderr, flush=True)
     return response
 
 # Financial term validator - basic check to prevent non-financial terms
@@ -128,8 +135,13 @@ def is_financial_term(term):
 
 # Database configuration
 DATABASE = os.environ.get('DATABASE', os.path.join(os.path.dirname(__file__), '..', 'database', 'glossary.sqlite'))
-OLLAMA_HOST = os.environ.get('OLLAMA_HOST', 'http://ollama:11434')
+OLLAMA_BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
 OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
+
+# CI/CD feature disabling flags
+DISABLE_AI_MODE = os.environ.get('DISABLE_AI_MODE', 'false').lower() == 'true'
+DISABLE_MCP_PROXY = os.environ.get('DISABLE_MCP_PROXY', 'false').lower() == 'true'
+DISABLE_RAG_PROXY = os.environ.get('DISABLE_RAG_PROXY', 'false').lower() == 'true'
 
 # Database connection helper ensuring directory exists
 def get_db():
@@ -182,8 +194,12 @@ def get_term_definition(term):
         }), 400
 
     # Term not found or previous generation failed, generate definition via Ollama
+    # Check if AI-Mode is disabled for CI/CD
+    if DISABLE_AI_MODE:
+        return jsonify({'term': term, 'definition': 'AI-Mode is disabled in CI/CD'}), 503
+
     prompt = f"Provide a concise definition for the financial term: {term}"
-    ollama_url = f"{OLLAMA_HOST}/api/generate"
+    ollama_url = f"{OLLAMA_BASE_URL}/api/generate"
     payload = {
         "model": OLLAMA_MODEL,
         "prompt": prompt,
@@ -267,7 +283,165 @@ def delete_term(term):
 
     return jsonify({'message': f'Term "{term}" deleted successfully'})
 
+
+
+# MCP Proxy Endpoints
+@app.route('/api/mcp/<path:subpath>', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+def mcp_proxy(subpath):
+    with open('/tmp/mcp_proxy.log', 'a') as f:
+        f.write(f"MCP_PROXY: Called with subpath={subpath}\\n")
+    # Check if MCP proxy is disabled for CI/CD
+    print(f"DEBUG: DISABLE_MCP_PROXY = {DISABLE_MCP_PROXY}", flush=True)
+    if DISABLE_MCP_PROXY:
+        return jsonify({'error': 'MCP proxy is disabled in CI/CD environment'}), 503
+
+    # Forward to MCP server Flask app (port 5001)
+    mcp_url = f"http://mcp-server:5001/mcp/{subpath}"
+
+    # Prepare headers to forward (excluding hop-by-hop headers)
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request to the MCP server
+    resp = requests.request(
+        method=request.method,
+        url=mcp_url,
+        headers=headers,
+        data=request.get_data(),
+        cookies=request.cookies,
+        allow_redirects=False)
+
+    # Create a Flask response with the proxied response's content, status, and headers
+    response = Response(
+        resp.content,
+        status=resp.status_code
+    )
+    # Copy headers from the MCP server response, excluding hop-by-hop and other headers that should not be proxied
+    # We will set CORS headers ourselves based on the request
+    skip_headers = {
+        'content-length', 'connection', 'keep-alive', 'public',
+        'proxy-authenticate', 'proxy-authorization', 'te', 'trailers',
+        'transfer-encoding', 'upgrade', 'server', 'date',
+        'access-control-origin', 'access-control-headers', 'access-control-methods'
+    }
+    for key, value in resp.headers.items():
+        if key.lower() not in skip_headers:
+            response.headers[key] = value
+    # Set CORS headers based on the request
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers.set('Access-Control-Allow-Origin', origin)
+        response.headers.set('Vary', 'Origin')
+    else:
+        response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    # Log the response headers to a file for debugging
+    try:
+        with open('/tmp/mcp_proxy_response_headers.log', 'a') as f:
+            f.write(f"Response headers: {dict(response.headers)}\\n")
+    except Exception as e:
+        pass
+    return response
+
+
+# RAG Proxy Endpoints
+@app.route('/api/rag/refresh', methods=['POST'])
+def rag_refresh_proxy():
+    # Check if RAG proxy is disabled for CI/CD
+    if DISABLE_RAG_PROXY:
+        return jsonify({'error': 'RAG proxy is disabled in CI/CD environment'}), 503
+
+    # Forward to RAG server (running on host port 5003)
+    rag_url = "http://rag-server:5003/refresh"
+
+    # Prepare headers
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request
+    resp = requests.request(
+        method=request.method,
+        url=rag_url,
+        headers=headers,
+        data=request.get_data(),
+        cookies=request.cookies,
+        allow_redirects=False)
+
+    # Create Flask response
+    response = Response(
+        resp.content,
+        status=resp.status_code,
+        headers=dict(resp.headers)
+    )
+    return response
+
+@app.route('/api/rag/retrieve', methods=['POST'])
+def rag_retrieve_proxy():
+    # Check if RAG proxy is disabled for CI/CD
+    if DISABLE_RAG_PROXY:
+        return jsonify({'error': 'RAG proxy is disabled in CI/CD environment'}), 503
+
+    rag_url = "http://rag-server:5003/retrieve"
+
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request
+    resp = requests.request(
+        method=request.method,
+        url=rag_url,
+        headers=headers,
+        data=request.get_data(),
+        cookies=request.cookies,
+        allow_redirects=False)
+
+    # Create Flask response
+    response = Response(
+        resp.content,
+        status=resp.status_code,
+        headers=dict(resp.headers)
+    )
+    return response
+
+@app.route('/api/rag/answer', methods=['POST'])
+def rag_answer_proxy():
+    # Check if RAG proxy is disabled for CI/CD
+    if DISABLE_RAG_PROXY:
+        return jsonify({'error': 'RAG proxy is disabled in CI/CD environment'}), 503
+
+    rag_url = "http://rag-server:5003/answer"
+
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request
+    resp = requests.request(
+        method=request.method,
+        url=rag_url,
+        headers=headers,
+        data=request.get_data(),
+        cookies=request.cookies,
+        allow_redirects=False)
+
+    # Create Flask response
+    response = Response(
+        resp.content,
+        status=resp.status_code,
+        headers=dict(resp.headers)
+    )
+    return response
+
+
+# Test route to verify routing is working
+@app.route('/api/test', methods=['GET'])
+def test_route():
+    with open('/tmp/test_route.log', 'a') as f:
+        f.write('test_route called\\n')
+    return jsonify({'message': 'Test route is working!'}), 200
+
+
 if __name__ == '__main__':
     # Initialize database and run Flask app
     init_db()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)

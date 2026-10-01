@@ -148,7 +148,7 @@ services:
     ports:
       - "8021:5000"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
       - DATABASE=/data/glossary.sqlite
     volumes:
       - maxwell-db-data:/data
@@ -167,7 +167,7 @@ services:
     ports:
       - "8020:80"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
     depends_on:
       - maxwell-backend
 
@@ -497,6 +497,28 @@ services:
       retries: 5
       start_period: 15s
 
+  # =========================================================================
+  # RAG SERVER -- shared. Provides retrieval‑augmented generation for the
+  # financial glossary and other textual sources.
+  # =========================================================================
+  rag-server:
+    build: ./rag-server
+    container_name: rag-server
+    restart: unless-stopped
+    ports:
+      - "5003:5003"   # expose host port 5003 so host.docker.internal still works if needed
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+    depends_on:
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:5003/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
   #

@@ -28,9 +28,21 @@
             <div class="tool-section">
                 <h3>MCP Tools</h3>
                 <div class="tool-item">
+                    <button id="mcp-portfolio-btn">Get Portfolio Snapshot</button>
+                </div>
+                <div class="tool-item">
                     <label for="mcp-term-input">MCP Glossary Lookup:</label>
                     <input type="text" id="mcp-term-input" placeholder="Enter term (e.g., ETF)">
-                    <button id="mcp-glossary-btn" class="edit-btn tool-btn">Lookup Term</button>
+                    <button id="mcp-glossary-btn">Lookup Term</button>
+                </div>
+                <div class="tool-item">
+                    <button id="mcp-bill-btn" class="mcp-action">Get Bill Summary</button>
+                </div>
+                <div class="tool-item">
+                    <button id="mcp-transaction-btn" class="mcp-action">Get Transaction Summary</button>
+                </div>
+                <div class="tool-item">
+                    <button id="mcp-goal-btn" class="mcp-action">Get Goal Progress</button>
                 </div>
             </div>
 
@@ -39,11 +51,16 @@
                 <div class="tool-item">
                     <label for="rag-query-input">Ask a Financial Question:</label>
                     <input type="text" id="rag-query-input" placeholder="e.g., What is diversification?">
-                    <button id="rag-answer-btn" class="edit-btn tool-btn">Get Answer</button>
+                    <button id="rag-answer-btn">Get Answer</button>
+                </div>
+                <div class="tool-item">
+                    <label for="rag-search-input">Search Documents:</label>
+                    <input type="text" id="rag-search-input" placeholder="Enter search query">
+                    <button id="rag-search-btn">Search</button>
                 </div>
             </div>
 
-            <div id="mcp-rag-results">
+            <div id="mcp-rag-results" style="margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 4px;">
                 <!-- Results will be displayed here -->
             </div>
         </div>
@@ -212,6 +229,21 @@
         });
 
         // MCP & RAG Tools Event Listeners
+        document.getElementById('mcp-portfolio-btn').addEventListener('click', async () => {
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = '<p>Loading portfolio snapshot...</p>';
+            try {
+                const response = await fetch('http://localhost:8021/api/mcp/portfolio-snapshot', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<h3>Portfolio Snapshot (via MCP)</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error calling MCP portfolio snapshot:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
         document.getElementById('mcp-glossary-btn').addEventListener('click', async () => {
             const term = document.getElementById('mcp-term-input').value.trim();
             if (!term) {
@@ -236,6 +268,29 @@
             }
         });
 
+        document.getElementById('rag-search-btn').addEventListener('click', async () => {
+            const query = document.getElementById('rag-search-input').value.trim();
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Searching documents for "${query}"...</p>`;
+            try {
+                const response = await fetch('http://localhost:8021/api/rag/retrieve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query, k: 5 })
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<h3>RAG Search Results for "${query}"</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error calling RAG search:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
 
         document.getElementById('rag-answer-btn').addEventListener('click', async () => {
             const query = document.getElementById('rag-query-input').value.trim();
@@ -273,6 +328,64 @@
                 `;
             } catch (error) {
                 console.error('Error calling RAG answer:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        // Bill summary
+        document.getElementById('mcp-bill-btn').addEventListener('click', async () => {
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = '<p>Loading bill summary...</p>';
+            try {
+                const response = await fetch('http://localhost:8021/api/mcp/bill_summary', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<h3>Bill Summary (via MCP)</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error calling MCP bill summary:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        // Transaction summary
+        document.getElementById('mcp-transaction-btn').addEventListener('click', async () => {
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = '<p>Loading transaction summary...</p>';
+            try {
+                const response = await fetch('http://localhost:8021/api/mcp/transaction_summary', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<h3>Transaction Summary (via MCP)</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error calling MCP transaction summary:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        // Goal progress
+        document.getElementById('mcp-goal-btn').addEventListener('click', async () => {
+            // We need a goal ID for this tool. For simplicity, we'll use a fixed goal ID or ask the user.
+            // Since the tool requires a goal_id, we'll prompt the user for it.
+            const goalId = prompt('Enter the goal ID:');
+            if (!goalId) {
+                return;
+            }
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Loading progress for goal ID ${goalId}...</p>`;
+            try {
+                const response = await fetch('http://localhost:8021/api/mcp/goal_progress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ goal_id: parseInt(goalId) })
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<h3>Goal Progress (via MCP)</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error calling MCP goal progress:', error);
                 resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
             }
         });

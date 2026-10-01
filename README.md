@@ -320,7 +320,8 @@ being sent to the model.
 
 Full CRUD is supported from the frontend: add a term (with an
 Ollama-generated definition where the term is financial), edit an existing
-definition, and delete a term.
+definition, and delete a term. The glossary is also exposed as an MCP tool
+via the shared mcp‑server (see the **MCP and RAG Tools** section).
 
 ### Services and ports
 
