@@ -38,6 +38,22 @@
       </section>
 
       <section class="rag-module">
+        <h3>💬 Ask the knowledge base <span class="mode-chip" id="rag-mode-chip">RAG</span></h3>
+        <p class="muted">
+          Answers come from the team's shared RAG server, grounded in the
+          project knowledge base, with sources and a confidence rating. If the
+          knowledge base doesn't cover the question, you'll get an
+          insufficient-context response instead of a guess.
+        </p>
+        <form id="ask-form" class="rag-form">
+          <input type="text" id="ask-question" maxlength="500"
+            placeholder="e.g. how does the research library summarize a long document?" required />
+          <button type="submit" class="btn">Ask</button>
+        </form>
+        <div id="ask-results" aria-live="polite"></div>
+      </section>
+
+      <section class="rag-module">
         <h3>🔎 Retrieval search</h3>
         <p class="muted">
           Searches indexed chunks across every document by meaning, not just
