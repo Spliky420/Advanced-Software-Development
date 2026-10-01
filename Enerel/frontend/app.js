@@ -476,50 +476,6 @@ async function submitForm(event) {
 }
 
 // --------------------------------------------------------------------------
-// RAG search
-// --------------------------------------------------------------------------
-
-async function runRagSearch(event) {
-  event.preventDefault();
-  const query = el("rag-query").value.trim();
-  if (!query) return;
-
-  const resultsEl = el("rag-results");
-  resultsEl.innerHTML = `<p class="muted spinner-text">Searching</p>`;
-
-  try {
-    const result = await apiFetch("/documents/search", {
-      method: "POST",
-      body: JSON.stringify({ query, top_k: 5 }),
-    });
-    renderRagResults(result.observe.results);
-  } catch (err) {
-    resultsEl.innerHTML = `<p class="banner error">Search failed: ${escapeHtml(err.message)}</p>`;
-  }
-}
-
-function renderRagResults(results) {
-  const resultsEl = el("rag-results");
-  if (!results || results.length === 0) {
-    resultsEl.innerHTML = `<p class="muted">No relevant chunks found. Documents need to be indexed first (this happens automatically when you add or edit them, once the embedding model is pulled).</p>`;
-    return;
-  }
-  resultsEl.innerHTML = results
-    .map(
-      (r) => `
-        <div class="rag-result">
-          <div class="rag-result-meta">
-            <span>${escapeHtml(r.title)} · ${labelForType(r.doc_type)}</span>
-            <span>score ${r.score}</span>
-          </div>
-          <div>${escapeHtml(r.chunk_text)}</div>
-        </div>
-      `
-    )
-    .join("");
-}
-
-// --------------------------------------------------------------------------
 // Release 1 -- shared MCP (glossary lookup) and RAG (grounded Q&A)
 // --------------------------------------------------------------------------
 
@@ -697,7 +653,6 @@ function init() {
 
   el("close-detail-btn").addEventListener("click", closeDetail);
 
-  el("rag-form").addEventListener("submit", runRagSearch);
   el("ask-form").addEventListener("submit", askLibrary);
 
   // The grid's column count is responsive, so how tall 8 rows' worth of
