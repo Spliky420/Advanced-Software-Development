@@ -1,6 +1,6 @@
 Bills and Subscriptions reference
 
-The Bills and Subscriptions feature stores recurring bills and subscriptions with a name, provider, category, amount, billing frequency, next due date, automatic renewal setting, optional trial end date, status and notes. Records can be created, read, updated and deleted. Release 1 uses one default local user. Provider cancellation policies are not included in this reference. The app does not connect to providers, pay bills or cancel subscriptions.
+The Bills and Subscriptions feature stores recurring bills and subscriptions with a name, provider, category, amount, billing frequency, next due date, automatic renewal setting, optional trial end date, status and notes. Records can be created, read, updated and deleted. Release 1 uses one default local user. Separate dated provider references cover selected Netflix and Spotify billing and cancellation questions. The app does not connect to providers, pay bills or cancel subscriptions.
 
 Bills cost calculation
 

@@ -1,10 +1,12 @@
 from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 import requests
 
 import integrations
 import llm
+import provider_references
 
 
 def tool_result(**changes):
@@ -181,3 +183,99 @@ def test_rag_unavailable_keeps_existing_api_working(client, monkeypatch):
     assert client.post("/api/bills/rag", json={"query": "Fortnightly monthly cost"}).status_code == 503
     assert client.get("/health").json["status"] == "healthy"
     assert len(client.get("/api/bills").json) == 10
+
+
+def provider_context(source):
+    path = Path(__file__).resolve().parents[2] / "rag-server" / "corpus" / source
+    return {"source_id": source, "chunk_id": f"{path.stem}_1", "text": path.read_text()}
+
+
+@pytest.mark.parametrize("source", provider_references.SOURCES)
+def test_provider_documents_keep_facts_and_metadata_in_one_chunk(source):
+    context = provider_context(source)
+    assert len(context["text"].split()) <= 80
+    assert f"Source: {provider_references.SOURCES[source]['source_url']}" in context["text"]
+    assert f"Checked: {provider_references.CHECKED_ON}" in context["text"]
+
+
+@pytest.mark.parametrize("query,source", [
+    ("How do I cancel Netflix?", "HyunWoo_provider_Netflix_cancel.txt"),
+    ("Where can I find my Netflix billing date?", "HyunWoo_provider_Netflix_billing.txt"),
+    ("Why is the Netflix cancel option missing?", "HyunWoo_provider_Netflix_partner.txt"),
+    ("Will I keep my Spotify playlists after cancelling?", "HyunWoo_provider_Spotify_cancel.txt"),
+    ("What happens if I cancel a Spotify free trial?", "HyunWoo_provider_Spotify_trial.txt"),
+    ("How can I change my Spotify billing date?", "HyunWoo_provider_Spotify_billing.txt"),
+])
+def test_provider_answers_include_checked_official_source(client, monkeypatch, query, source):
+    context = provider_context(source)
+    mock_rag(monkeypatch, contexts=[context], answer={
+        "answer": "The provider gives these instructions.", "citations": [context],
+    })
+    response = client.post("/api/bills/rag", json={"query": query})
+    assert response.json["status"] == "success"
+    citation = response.json["citations"][0]
+    assert citation["source_url"] == provider_references.SOURCES[source]["source_url"]
+    assert citation["checked_on"] == "2026-10-02"
+    assert response.json["source_excerpt_fallback_reason"] == "provider_grounding"
+    assert provider_references.reference_body(context["text"]) in response.json["answer"]
+    assert "Source:" not in response.json["answer"]
+
+
+@pytest.mark.parametrize("query", [
+    "What is Netflix's current price in Australia?",
+    "What is Netflix's cancellation fee?",
+    "Can I get a refund after cancelling Netflix?",
+    "What is Spotify's student discount?",
+    "What promotions does Spotify offer?",
+    "What is my Netflix password?",
+])
+def test_missing_provider_topics_never_generate_an_answer(client, monkeypatch, query):
+    contexts = [provider_context(source) for source in provider_references.SOURCES]
+    calls = mock_rag(monkeypatch, contexts=contexts)
+    response = client.post("/api/bills/rag", json={"query": query})
+    assert response.json["status"] == "insufficient_context"
+    assert response.json["llm_called"] is False
+    assert len(calls) == 1
+
+
+def test_provider_question_does_not_use_other_provider_or_app_facts(client, monkeypatch):
+    contexts = [provider_context("HyunWoo_provider_Netflix_cancel.txt"), {
+        "source_id": "HyunWoo_bills_knowledge.txt", "chunk_id": "bills_1",
+        "text": "Spotify cancellation is not performed by this app.",
+    }]
+    calls = mock_rag(monkeypatch, contexts=contexts)
+    response = client.post("/api/bills/rag", json={"query": "How do I cancel Spotify?"})
+    assert response.json["status"] == "insufficient_context"
+    assert len(calls) == 1
+
+
+def test_free_trial_question_requires_trial_context(client, monkeypatch):
+    calls = mock_rag(monkeypatch, contexts=[provider_context("HyunWoo_provider_Spotify_cancel.txt")])
+    response = client.post("/api/bills/rag", json={"query": "What happens if I cancel a Spotify free trial?"})
+    assert response.json["status"] == "insufficient_context"
+    assert len(calls) == 1
+
+
+def test_provider_policy_hallucination_uses_reference_instead(client, monkeypatch):
+    context = provider_context("HyunWoo_provider_Netflix_cancel.txt")
+    mock_rag(monkeypatch, contexts=[context], answer={
+        "answer": "After cancellation, Netflix stays free forever.",
+        "citations": [context],
+    })
+    response = client.post("/api/bills/rag", json={"query": "What happens when I cancel Netflix?"})
+    assert "forever" not in response.json["answer"]
+    assert "paid period" in response.json["answer"]
+    assert response.json["source_excerpt_fallback_used"] is True
+
+
+def test_model_cannot_choose_a_provider_source_link(client, monkeypatch):
+    context = provider_context("HyunWoo_provider_Spotify_cancel.txt")
+    mock_rag(monkeypatch, contexts=[context], answer={
+        "answer": provider_references.reference_body(context["text"]),
+        "citations": [{**context, "source_url": "javascript:alert(1)", "checked_on": "2099-01-01"}],
+    })
+    response = client.post("/api/bills/rag", json={"query": "How do I cancel Spotify?"})
+    assert response.json["source_excerpt_fallback_used"] is False
+    citation = response.json["citations"][0]
+    assert citation["source_url"] == provider_references.SPOTIFY_CANCEL_URL
+    assert citation["checked_on"] == provider_references.CHECKED_ON

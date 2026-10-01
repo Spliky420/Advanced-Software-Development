@@ -8,6 +8,7 @@ import requests
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
+import provider_references
 
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8071/mcp")
 RAG_SERVER_URL = os.getenv("RAG_SERVER_URL", "http://localhost:5003").rstrip("/")
@@ -91,12 +92,21 @@ def _rag_request(path, payload):
 STOP_WORDS = set(
     "a an the what which how why when where who is are does do can could should "
     "would will i my me we our you your it its this that these those to of in on "
-    "for from with about and or please explain tell get have has be much".split()
+    "for from with about and or please explain tell get have has be much "
+    "if after before during still then not s".split()
 )
+
+WORD_ALIASES = {
+    "cancellation": "cancel", "cancelling": "cancel", "canceling": "cancel",
+    "cancelled": "cancel", "canceled": "cancel", "watching": "watch",
+    "playlists": "playlist", "trials": "trial", "dates": "date",
+    "payments": "payment", "billed": "billing", "subscribed": "subscribe",
+    "deleting": "delete", "removing": "remove",
+}
 
 
 def _words(text):
-    return set(re.findall(r"[a-z0-9]+", text.lower())) - STOP_WORDS
+    return {WORD_ALIASES.get(word, word) for word in re.findall(r"[a-z0-9]+", text.lower())} - STOP_WORDS
 
 
 def insufficient(query, contexts):
@@ -116,13 +126,16 @@ def rag_answer(query, k):
     if not enabled("RAG"):
         raise ServiceError("RAG mode is disabled in this environment.")
 
+    terms = _words(query)
+    allowed_sources = provider_references.allowed_sources(terms)
     payload = {"query": query, "k": k, "caller": "hyunwoo"}
+    if allowed_sources is not None:
+        payload["source_ids"] = sorted(allowed_sources)
     retrieval = _rag_request("/retrieve", payload)
     contexts = retrieval.get("results")
     if not isinstance(contexts, list):
         raise ServiceError("The shared RAG server returned invalid retrieval results.")
 
-    terms = _words(query)
     relevant = {}
     for context in contexts:
         if not isinstance(context, dict):
@@ -131,6 +144,8 @@ def rag_answer(query, k):
         source = context.get("source_id")
         chunk = context.get("chunk_id")
         if not all(isinstance(value, str) and value for value in (text, source, chunk)):
+            continue
+        if allowed_sources is not None and source not in allowed_sources:
             continue
         overlap = terms & _words(text)
         # This is a relevance check, not a probability of correctness.
@@ -174,6 +189,7 @@ def rag_answer(query, k):
             verified.append({
                 "source_id": key[0], "chunk_id": key[1],
                 "excerpt": relevant[key]["text"],
+                **provider_references.citation_details(key[0]),
             })
 
     if not verified:
@@ -186,10 +202,15 @@ def rag_answer(query, k):
     ) else "Medium"
 
     # Quote the source if numerical wording cannot be matched to it.
-    source_text = "\n\n".join(item["excerpt"] for item in verified)
+    provider_answer = any(item["source_id"] in provider_references.SOURCES for item in verified)
+    source_text = "\n\n".join(
+        provider_references.reference_body(item["excerpt"])
+        if item["source_id"] in provider_references.SOURCES else item["excerpt"]
+        for item in verified
+    )
     normalised_answer = " ".join(answer.lower().split())
     normalised_source = " ".join(source_text.lower().split())
-    source_fallback = bool(re.search(r"\d", answer)) and normalised_answer not in normalised_source
+    source_fallback = (provider_answer or bool(re.search(r"\d", answer))) and normalised_answer not in normalised_source
     if source_fallback:
         answer = "The retrieved reference states:\n\n" + source_text
 
@@ -200,4 +221,6 @@ def rag_answer(query, k):
         "retrieval_summary": {"retrieved_count": len(contexts), "relevant_count": len(relevant)},
         "llm_called": True,
         "source_excerpt_fallback_used": source_fallback,
+        "source_excerpt_fallback_reason": "provider_grounding" if source_fallback and provider_answer
+        else "numerical_grounding" if source_fallback else None,
     }

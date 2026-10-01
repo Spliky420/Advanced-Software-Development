@@ -7,7 +7,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Flask application.
-COPY app.py db.py calculations.py review.py llm.py integrations.py ./
+COPY app.py db.py calculations.py review.py llm.py integrations.py provider_references.py ./
 
 ENV DB_PATH=/data/bills.db
 ENV OLLAMA_BASE_URL=http://host.docker.internal:11434

@@ -384,14 +384,15 @@ async function runRag(event) {
             body: JSON.stringify({ query: elements.ragQuery.value.trim(), k: 5 }),
         });
         const citations = result.citations.map((citation) => `
-            <li><strong>${escapeHtml(citation.source_id)}</strong> · ${escapeHtml(citation.chunk_id)}
+            <li><strong>${escapeHtml(citation.source_title || citation.source_id)}</strong> · ${escapeHtml(citation.chunk_id)}
+                ${citation.source_url ? `<p><a href="${escapeHtml(citation.source_url)}" target="_blank" rel="noopener noreferrer">Official provider source</a> · Checked ${escapeHtml(citation.checked_on)}</p>` : ""}
                 <blockquote>${escapeHtml(citation.excerpt)}</blockquote>
             </li>
         `).join("");
         elements.ragResult.innerHTML = `
             <p class="meta-chip">${result.status === "insufficient_context" ? "Insufficient context" : "Sourced answer"} · ${escapeHtml(result.confidence_category)} confidence</p>
             <p class="rag-answer">${escapeHtml(result.answer)}</p>
-            ${result.source_excerpt_fallback_used ? '<p class="assistant-note">The numerical explanation was replaced with the original source wording.</p>' : ""}
+            ${result.source_excerpt_fallback_used ? `<p class="assistant-note">${result.source_excerpt_fallback_reason === "provider_grounding" ? "Original reference wording is shown to keep provider details grounded in the source." : "The numerical explanation was replaced with the original source wording."}</p>` : ""}
             ${citations ? `<details open><summary>Sources and retrieved context</summary><ul class="citation-list">${citations}</ul></details>` : ""}
             <p class="assistant-note">Confidence describes source coverage, not a guarantee of correctness.</p>
         `;
