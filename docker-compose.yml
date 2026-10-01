@@ -207,6 +207,7 @@ services:
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       MCP_SERVER_URL: http://mcp-server:5002/mcp
+      RAG_SERVER_URL: http://host.docker.internal:5003
 
     volumes:
       - thomas-db-data:/data
