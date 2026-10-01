@@ -287,6 +287,7 @@ def create_app():
                 "summary_source": adapt_result["summary_source"],
                 "context_status": adapt_result["context_status"],
                 "unsupplied_figures": adapt_result["unsupplied_figures"],
+                "misattributed": adapt_result["misattributed"],
                 "citations": adapt_result["citations"],
                 "run_id": adapt_result.get("run_id", "-"),
             },

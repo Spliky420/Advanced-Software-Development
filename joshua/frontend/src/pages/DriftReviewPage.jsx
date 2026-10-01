@@ -479,15 +479,44 @@ export default function DriftReviewPage() {
             {review.adapt.summary_source === 'fallback' && (
               <WarningBanner>
                 <strong className="banner-title">Model summary rejected -- Python fallback shown</strong>
+                {review.adapt.unsupplied_figures?.length > 0 && (
+                  <p className="banner-message">
+                    The model&rsquo;s text contained{' '}
+                    {review.adapt.unsupplied_figures.length === 1 ? 'a figure' : 'figures'} that
+                    were not in the portfolio figures it was given:{' '}
+                    <strong className="rejected-figures">
+                      {formatRejected(review.adapt.unsupplied_figures)}
+                    </strong>
+                    .
+                  </p>
+                )}
+                {review.adapt.misattributed?.length > 0 && (
+                  <>
+                    <p className="banner-message">
+                      The model attached real figures or directions to the wrong asset class:
+                    </p>
+                    <ul className="banner-list">
+                      {review.adapt.misattributed.map((problem, index) => (
+                        <li key={index}>
+                          {problem.asset_class}:{' '}
+                          {problem.figure != null ? (
+                            <>
+                              <strong className="rejected-figures">{String(problem.figure)}</strong>{' '}
+                              is not one of its figures
+                            </>
+                          ) : (
+                            <>
+                              called <strong>{problem.direction}</strong>, which it is not
+                            </>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
                 <p className="banner-message">
-                  The model&rsquo;s text contained{' '}
-                  {review.adapt.unsupplied_figures.length === 1 ? 'a figure' : 'figures'} that
-                  were not in the portfolio figures it was given:{' '}
-                  <strong className="rejected-figures">
-                    {formatRejected(review.adapt.unsupplied_figures)}
-                  </strong>
-                  . The summary below was built in Python from the same figures, so every number
-                  in it comes from allocation.py.
+                  The summary below was built in Python from the same figures, so every number in
+                  it comes from allocation.py.
                 </p>
                 <p className="banner-hint">
                   The model&rsquo;s original text is kept in the insight log.

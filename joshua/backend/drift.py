@@ -615,6 +615,80 @@ def unsupplied_figures(response_text, figures):
     return sorted(_numbers(response_text) - _numbers(figures))
 
 
+DIRECTION_WORDS = ("overweight", "underweight")
+
+# Lines, sentences, and semicolon- or comma-separated clauses. A decimal
+# point or thousands separator is never followed by whitespace, so "9.30" and
+# "1,234.56" are not split.
+SEGMENT_SPLIT = re.compile(r"\n+|(?<=[.!?;,])\s+")
+
+
+def misattributed_figures(response_text, observe_result):
+    """Figures or directions the model attached to the wrong asset class.
+
+    unsupplied_figures only asks whether a number was supplied at all, so a
+    model that swaps two classes' drifts passes it. This checks the binding:
+    in any segment that names exactly one breached class, every number must
+    be that class's target, actual or drift (or the threshold), and any
+    overweight/underweight it states must be that class's direction. A
+    segment naming no class but one direction ("Overweight classes:") sets
+    the direction for the list lines that follow it. In a segment naming
+    two or more classes the numbers cannot be attributed and are not judged,
+    but a single direction word there ("ETFs and Crypto are overweight")
+    must hold for every class named.
+    """
+    if not isinstance(response_text, str):
+        return []
+
+    threshold = round(observe_result["threshold_percent"], 2)
+    by_class = {
+        breach["asset_class"]: (
+            {
+                round(breach["target_percent"], 2),
+                round(breach["actual_percent"], 2),
+                round(breach["drift_magnitude"], 2),
+                threshold,
+            },
+            breach["direction"],
+        )
+        for breach in observe_result["breaches"]
+    }
+
+    problems = []
+    heading_direction = None
+    for segment in SEGMENT_SPLIT.split(response_text):
+        lowered = segment.lower()
+        mentioned = [name for name in by_class if name.lower() in lowered]
+        directions = [word for word in DIRECTION_WORDS if word in lowered]
+
+        if not mentioned:
+            if len(directions) == 1:
+                heading_direction = directions[0]
+            continue
+        if len(mentioned) > 1:
+            if len(directions) == 1:
+                for asset_class in mentioned:
+                    if by_class[asset_class][1] != directions[0]:
+                        problems.append({"asset_class": asset_class, "figure": None, "direction": directions[0]})
+            continue
+
+        asset_class = mentioned[0]
+        allowed, actual_direction = by_class[asset_class]
+        for figure in sorted(_numbers(segment) - allowed):
+            problems.append({"asset_class": asset_class, "figure": figure, "direction": None})
+
+        if len(directions) == 1:
+            stated = directions[0]
+        elif not directions:
+            stated = heading_direction
+        else:
+            stated = None
+        if stated is not None and stated != actual_direction:
+            problems.append({"asset_class": asset_class, "figure": None, "direction": stated})
+
+    return problems
+
+
 def build_fallback_summary(observe_result):
     """A summary built entirely in Python from the observed breaches.
 
@@ -670,6 +744,7 @@ def adapt(observe_result, generate_fn=None, context_result=None):
             "summary_source": "no_breaches",
             "context_status": None,
             "unsupplied_figures": [],
+            "misattributed": [],
             "citations": [],
             "model_response": None,
             "prompt_sent": None,
@@ -700,7 +775,8 @@ def adapt(observe_result, generate_fn=None, context_result=None):
     prompt_sent = DRIFT_SYSTEM_PROMPT + "\n\n" + user_prompt
 
     rejected = unsupplied_figures(response_text, figures)
-    verified = isinstance(response_text, str) and not rejected
+    misattributed = misattributed_figures(response_text, observe_result)
+    verified = isinstance(response_text, str) and not rejected and not misattributed
     if verified:
         summary, summary_source = response_text, "model"
         # Citations back the model's text, so a fallback cites nothing.
@@ -712,9 +788,10 @@ def adapt(observe_result, generate_fn=None, context_result=None):
     _log(
         logging.INFO, "ADAPT", run_id,
         "llm_called=True | model=%s | prompt_chars=%d | response_chars=%d | "
-        "reference_items=%d | context_status=%s | summary_source=%s | unsupplied_figures=%d",
+        "reference_items=%d | context_status=%s | summary_source=%s | unsupplied_figures=%d | "
+        "misattributed=%d",
         model_name, _chars(prompt_sent), _chars(response_text),
-        len(items), context_status, summary_source, len(rejected),
+        len(items), context_status, summary_source, len(rejected), len(misattributed),
     )
     # Full text at DEBUG only: prompt_sent runs to hundreds of characters and
     # would bury the other phases in a terminal.
@@ -729,6 +806,7 @@ def adapt(observe_result, generate_fn=None, context_result=None):
         "summary": summary,
         "summary_source": summary_source,
         "unsupplied_figures": rejected,
+        "misattributed": misattributed,
         "context_status": context_status,
         "citations": citations,
         "model_response": response_text,

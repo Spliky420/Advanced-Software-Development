@@ -111,8 +111,9 @@ citations, and the UI shows an "Insufficient context" banner.
 - Relevant passages go into the ADAPT prompt under a `REFERENCE MATERIAL`
   heading, for wording only. Portfolio figures are in a separate
   `PORTFOLIO FIGURES` block and must be used verbatim.
-- After generation, any number in the model's text that was not in the
-  figures block rejects the text. The summary is then rebuilt in Python
+- After generation, the text is rejected if any number in it was not in the
+  figures block, or if a figure or overweight/underweight claim is attached
+  to the wrong asset class (`adapt.misattributed`). The summary is then rebuilt in Python
   (`summary_source: "fallback"`), so no number from retrieved text can reach
   the client as a portfolio figure.
 - `adapt.citations` lists the passages (then glossary definitions) that the
