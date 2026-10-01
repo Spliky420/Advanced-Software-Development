@@ -421,7 +421,16 @@ dialog#doc-modal::backdrop {
   overflow-wrap: anywhere;
 }
 
-.citations li { margin-bottom: 0.5rem; }
+.citations li { margin-bottom: 0.35rem; }
+
+.citations summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.citations summary:hover { color: var(--accent); }
+
+.citations details[open] summary { margin-bottom: 0.25rem; }
 .citations li .muted { display: block; font-size: 0.75rem; }
 
 .citation-snippet {

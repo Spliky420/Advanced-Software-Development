@@ -592,9 +592,11 @@ function renderAskResult(result) {
     .map(
       (c, i) => `
         <li>
-          <strong>[${i + 1}] ${escapeHtml(c.source_id)}</strong>
-          <span class="muted">${escapeHtml(c.chunk_id)} · matched: ${c.matched_terms.map(escapeHtml).join(", ")}</span>
-          <div class="citation-snippet">${escapeHtml(c.snippet)}</div>
+          <details>
+            <summary>[${i + 1}] ${escapeHtml(c.source_id)}</summary>
+            <span class="muted">${escapeHtml(c.chunk_id)} · matched: ${c.matched_terms.map(escapeHtml).join(", ")}</span>
+            <div class="citation-snippet">${escapeHtml(c.snippet)}</div>
+          </details>
         </li>
       `
     )

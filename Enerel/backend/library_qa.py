@@ -26,7 +26,14 @@ import re
 
 import rag_client
 
-DEFAULT_TOP_K = 8
+# Deliberately the maximum the endpoint allows. The shared RAG server's
+# hashed bag-of-words embedding ranks the right chunk poorly (punctuation
+# and stopwords dominate it), so a deep retrieval lets Observe's term
+# matching find the relevant chunk even when the server ranks it low --
+# measured on the investment-terms corpus: right chunk cited 7/12 at k=8,
+# 10/12 at k=20. Chroma returns every chunk if the corpus has fewer. Override
+# with RAG_TOP_K.
+DEFAULT_TOP_K = 20
 MAX_QUESTION_LENGTH = 500
 SNIPPET_CHARS = 220
 # A supporting chunk is cited only if it matches at least half the
@@ -165,16 +172,22 @@ def observe(plan_result, act_result):
         if not matched:
             continue
         covered.update(matched)
+        # How often the matched terms occur -- a chunk *about* ETFs says
+        # "ETF" many times, one that mentions ETFs in passing says it once.
+        term_hits = sum(1 for t in raw_tokens if any(_term_in(term, {t, _singular(t)}) for term in matched))
         supporting.append({
             "chunk_id": chunk.get("chunk_id"),
             "source_id": chunk.get("source_id"),
             "rank": chunk.get("rank"),
             "matched_terms": matched,
+            "term_hits": term_hits,
             "snippet": text[:SNIPPET_CHARS] + ("…" if len(text) > SNIPPET_CHARS else ""),
         })
 
-    # Most-matched chunk first; the server's own rank breaks ties.
-    supporting.sort(key=lambda c: (-len(c["matched_terms"]), c["rank"] or 0))
+    # Most distinct terms matched first, then most occurrences of them, then
+    # the server's own rank -- its ranking is weak (see DEFAULT_TOP_K), so it
+    # is only the last tie-break.
+    supporting.sort(key=lambda c: (-len(c["matched_terms"]), -c["term_hits"], c["rank"] or 0))
 
     coverage = round(len(covered) / len(terms), 2)
     confidence = confidence_for(coverage)

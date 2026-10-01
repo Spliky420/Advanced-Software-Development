@@ -126,6 +126,15 @@ def test_thin_coverage_still_cites_the_best_chunk():
     assert [c["chunk_id"] for c in result["citations"]] == ["a"]
 
 
+def test_chunk_about_the_term_outranks_one_that_mentions_it_once():
+    passing = {**UNRELATED_CHUNK, "rank": 1, "chunk_id": "liquidity", "text": "Shares and ETFs are liquid."}
+    about = {**LIBRARY_CHUNK, "rank": 2, "chunk_id": "etf", "text": "An ETF is a fund. ETFs trade on the ASX. Each ETF tracks an index."}
+    result = observe_for("What is an ETF?", passing, about)
+
+    assert [c["chunk_id"] for c in result["citations"]] == ["etf", "liquidity"]
+    assert result["supporting_chunks"][0]["term_hits"] == 3
+
+
 def test_observe_no_overlap_is_insufficient():
     result = observe_for("Who won the football world cup?", LIBRARY_CHUNK, UNRELATED_CHUNK)
 
