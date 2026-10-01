@@ -6,7 +6,7 @@ import requests
 # Shared Ollama service and selected model.
 OLLAMA_BASE_URL = os.environ.get(
     "OLLAMA_BASE_URL",
-    "http://ollama:11434",
+    "http://localhost:11434",
 ).rstrip("/")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:0.5b")
 
@@ -17,6 +17,8 @@ class LLMError(RuntimeError):
 
 # Ask Ollama for one complete response.
 def generate(prompt):
+    if os.getenv("AI_MODE_ENABLED", "true").lower() not in {"true", "1", "yes"}:
+        raise LLMError("AI mode is disabled in this environment.")
     try:
         response = requests.post(
             f"{OLLAMA_BASE_URL}/api/generate",

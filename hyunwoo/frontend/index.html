@@ -201,6 +201,33 @@
             </aside>
         </div>
 
+        <!-- Shared tool and sourced answers. -->
+        <section class="panel assistant-panel" aria-labelledby="assistant-heading">
+            <div class="panel-heading">
+                <p class="section-kicker">Shared finance assistant</p>
+                <h2 id="assistant-heading">Tools and sourced answers</h2>
+                <p>Check your saved commitments or ask a question using the project's reference documents.</p>
+            </div>
+            <div class="assistant-grid">
+                <article class="assistant-card">
+                    <h3>Bill summary tool <span class="meta-chip">MCP</span></h3>
+                    <p>Get your saved bills and current cost totals through the shared read-only tool.</p>
+                    <button class="button button-primary" type="button" id="run-mcp">Check bill summary</button>
+                    <div id="mcp-result" class="assistant-result" aria-live="polite"></div>
+                </article>
+                <article class="assistant-card">
+                    <h3>Ask about bills <span class="meta-chip">RAG</span></h3>
+                    <p>Answers include source excerpts and a confidence category. Provider policies need a supporting source.</p>
+                    <form id="rag-form">
+                        <label for="rag-query">Your question</label>
+                        <textarea id="rag-query" rows="3" minlength="3" maxlength="500" required placeholder="How are fortnightly bills converted to a monthly cost?"></textarea>
+                        <button class="button button-primary" type="submit" id="run-rag">Ask with sources</button>
+                    </form>
+                    <div id="rag-result" class="assistant-result" aria-live="polite"></div>
+                </article>
+            </div>
+        </section>
+
         <!-- Saved bill records. -->
         <section class="panel bills-panel" aria-labelledby="bills-heading">
             <div class="panel-heading bills-heading-row">

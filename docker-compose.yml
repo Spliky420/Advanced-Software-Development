@@ -323,15 +323,21 @@ services:
       - "8041:5000"
     environment:
       DB_PATH: /data/bills.db
-      OLLAMA_BASE_URL: http://ollama:11434
+      # Shared Release 1 services run on the host.
+      OLLAMA_BASE_URL: ${HYUNWOO_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      AI_MODE_ENABLED: ${AI_MODE_ENABLED:-true}
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      MCP_SERVER_URL: ${HYUNWOO_MCP_SERVER_URL:-http://host.docker.internal:8071/mcp}
+      RAG_SERVER_URL: ${HYUNWOO_RAG_SERVER_URL:-http://host.docker.internal:5003}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - hyunwoo-db-data:/data
     depends_on:
       hyunwoo-database:
         condition: service_healthy
-      ollama:
-        condition: service_started
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s

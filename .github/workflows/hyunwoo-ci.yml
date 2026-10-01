@@ -8,12 +8,14 @@ on:
     paths:
       - 'hyunwoo/**'
       - '.github/workflows/hyunwoo-ci.yml'
+      - 'rag-server/corpus/HyunWoo_bills_knowledge.txt'
   pull_request:
     branches:
       - main
     paths:
       - 'hyunwoo/**'
       - '.github/workflows/hyunwoo-ci.yml'
+      - 'rag-server/corpus/HyunWoo_bills_knowledge.txt'
 
 permissions:
   contents: read
@@ -22,13 +24,19 @@ concurrency:
   group: hyunwoo-ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Local AI services are not started in CI.
+env:
+  AI_MODE_ENABLED: "false"
+  MCP_ENABLED: "false"
+  RAG_ENABLED: "false"
+  OLLAMA_BASE_URL: http://127.0.0.1:1
+  MCP_SERVER_URL: http://127.0.0.1:1/mcp
+  RAG_SERVER_URL: http://127.0.0.1:1
+
 jobs:
   backend-tests:
     name: Backend tests
     runs-on: ubuntu-24.04
-    env:
-      # Tests replace the model response and do not use the network.
-      OLLAMA_BASE_URL: http://127.0.0.1:1
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
