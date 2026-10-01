@@ -1,0 +1,42 @@
+# Ruff configuration for Le Hoa Long's Python (LeHoaLong/backend, /database
+# and /tests).
+#
+# Scoped to this directory on purpose: ruff walks up from each file it is
+# given and uses the nearest config, so this lints my code without imposing a
+# style on the other five students' directories. CI runs:
+#
+#   ruff check LeHoaLong
+#
+# `ruff format` is deliberately NOT a CI gate. The rules below catch real
+# mistakes -- unused imports, undefined names, shadowed builtins, mutable
+# default arguments -- and formatting is left to the author.
+
+# Matches python:3.11-slim in the backend and database Dockerfiles, so ruff
+# judges the code against the interpreter the containers actually ship.
+target-version = "py311"
+
+# Wider than the 88 ruff defaults to. The SQL strings and the assertion
+# messages in this feature read worse broken across lines than run long.
+line-length = 120
+
+exclude = [
+    "frontend",       # JavaScript -- eslint's job, not ruff's.
+    ".pytest_cache",
+]
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes -- unused imports, undefined names
+    "I",    # isort -- import ordering
+    "UP",   # pyupgrade -- syntax that is outdated for target-version
+    "B",    # flake8-bugbear -- likely bugs, e.g. mutable default arguments
+    "C4",   # flake8-comprehensions
+]
+
+[lint.per-file-ignores]
+# The tests import `app` only after editing sys.path, so those imports
+# cannot come first. conftest.py already carries an inline noqa; this keeps
+# a future test file from tripping over the same unavoidable ordering.
+"tests/*" = ["E402"]

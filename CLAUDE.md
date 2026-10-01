@@ -105,10 +105,9 @@ this table and the header comment in `docker-compose.yml`.
 | 8010–8019   | **Joshua**  | 8010 frontend, 8011 backend (database has no port)   |
 | 8020–8029   | **Maxwell** | 8020 frontend, 8021 backend (database has no port)   |
 | 8030–8039   | **Enerel**  | 8030 frontend, 8031 backend (database has no port)   |
-| 8040–8049   | free        |                                                       |
-| 8030–8039   | free        |                                                       |
 | 8040–8049   | **HyunWoo** | 8040 frontend, 8041 backend (database has no port)   |
-| 8050–8059   | free        |                                                       |
+| 8050–8059   | **Tom**     | 8050 frontend, 8051 backend (database has no port)   |                                                |
+| 8060–8069   | **LeHoaLong** | 8060 frontend, 8061 backend (database has no port) |
 | 11434       | shared      | `ollama` (one instance serves every backend)          |
 
 Container-internal ports are not shared state — every backend can listen on
@@ -195,6 +194,48 @@ every service at once.
   built for it. Indexing a document (on create/update) is soft-fail: if the
   embedding model isn't pulled yet, the document still saves, only the
   search endpoint 503s until it is.
+
+### LeHoaLong's backend (`LeHoaLong/backend/`) — Goals and Budgeting
+
+- Deliberately single-user for this release, the same as Joshua's and
+  Enerel's backends: a `DEFAULT_USER_ID` constant (defined once in
+  `config.py`) supplies the user when the client does not name one.
+  `user_id` stays in the schema and every query layer function still takes
+  it as an explicit parameter. `GET /api/goals` and `/api/budget/*` do
+  accept an optional `user_id` filter, because the seed data spans several
+  users and the filter has to be demonstrable — but nothing writes a
+  client-supplied `user_id`.
+- The Plan → Act → Observe → Adapt loop is four endpoints rather than four
+  functions behind one, because each phase is a thing the user actually
+  does: `POST /api/goals/:id/plan`, `POST /api/goals/:id/contributions`,
+  `GET /api/goals/:id/progress`, `POST /api/goals/:id/replan`. Act and
+  Observe never call Ollama at all.
+- **The model is never asked for a number, not even indirectly.** Python
+  builds the whole instalment schedule first — how many instalments, how
+  much each is, what date each falls due — and the prompt states those as
+  settled fact. The response schema asks only for a `description` per step.
+  `parsing.merge_descriptions` then iterates over *Python's* schedule and
+  reads one field from the model's reply, so an amount or date the model
+  tried to return is discarded because it is never read. That is stronger
+  than checking the model's arithmetic afterwards.
+- A malformed response is not an error: one retry, then a deterministic
+  even-split plan stands in, flagged `fallback: true` and logged to
+  `ai_plan_log` with `note: "fallback"`. Ollama being *unreachable* is a
+  different case and is a clean 503.
+- `budget_settings` is a documented addition to the registration form —
+  the required budget summary panel needs somewhere to store a monthly
+  budget and the original four-table design had none. The form's
+  `/API/Goals` casing is standardised to `/api/goals` throughout.
+- `init_db.py`'s consistency checks distinguish structural corruption
+  (foreign key violations — fatal however the file got that way) from
+  seed-time invariants (≥10 rows per table, a goal's steps summing to its
+  target, achieved goals funded — fatal only on a freshly built database).
+  Replan legitimately breaks the second kind on a live database, because it
+  rebuilds the pending steps from `target − contributions` while completed
+  steps keep the amounts they were planned with. Treating that as fatal
+  crash-looped the database container and, through
+  `depends_on: service_healthy`, took the whole feature down with it.
+
 
 ## Working conventions
 

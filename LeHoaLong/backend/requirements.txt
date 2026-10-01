@@ -1,0 +1,8 @@
+# Backend runtime dependencies.
+#
+# gunicorn is the container's WSGI server and does not install on Windows --
+# to run the tests on a laptop install Flask and requests directly, or use
+# ../tests/requirements.txt.
+Flask==3.0.3
+requests==2.32.3
+gunicorn==22.0.0

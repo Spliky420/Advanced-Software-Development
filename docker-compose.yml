@@ -13,6 +13,9 @@
 #   Enerel     8030-8039   CLAIMED
 #   HyunWoo    8040-8049   CLAIMED
 #   Thomas     8050-8059   CLAIMED
+#   LeHoaLong  8060-8069   CLAIMED
+#   shared     8070        mcp-server (Flask test harness / htmx UI backend)
+#   shared     8071        mcp-server (real MCP protocol, streamable-http)
 #   shared     11434       ollama
 #
 # Model selection lives in .env (copy .env.example to .env). The :- defaults
@@ -36,7 +39,7 @@ services:
       # restarts. Models are NOT shared with a host Ollama install.
       - ollama-models:/root/.ollama
     healthcheck:
-      test: ["CMD", "ollama", "list"]
+      test: [ "CMD", "ollama", "list" ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -49,7 +52,7 @@ services:
     ports:
       - "8000:80"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -68,7 +71,7 @@ services:
       DB_FILE: /data/portfolio.db
     healthcheck:
       # Also proves the schema exists, not merely that the file does.
-      test: ["CMD", "sqlite3", "/data/portfolio.db", "SELECT COUNT(*) FROM holdings;"]
+      test: [ "CMD", "sqlite3", "/data/portfolio.db", "SELECT COUNT(*) FROM holdings;" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -107,8 +110,7 @@ services:
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -124,7 +126,7 @@ services:
       joshua-backend:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -176,11 +178,28 @@ services:
     depends_on:
       - maxwell-backend
 
-
   # =========================================================================
   # THOMAS -- ports 8050-8059
   # Transactions Ledger
   # =========================================================================
+
+  thomas-database:
+    build: ./Thomas/database
+    container_name: thomas-database
+    restart: unless-stopped
+
+    environment:
+      DB_FILE: /data/transactions.db
+
+    volumes:
+      - thomas-db-data:/data
+
+    healthcheck:
+      test: [ "CMD", "sqlite3", "/data/transactions.db", "SELECT COUNT(*) FROM transactions;" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   thomas-backend:
     build: ./Thomas/backend
@@ -194,28 +213,24 @@ services:
       DATABASE_PATH: /data/transactions.db
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      MCP_SERVER_URL: http://mcp-server:5002/mcp
 
     volumes:
       - thomas-db-data:/data
       - thomas-receipts:/app/uploads/receipts
 
     depends_on:
+      thomas-database:
+        condition: service_healthy
       ollama:
         condition: service_started
 
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)"
-        ]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
       start_period: 15s
-
 
   thomas-frontend:
     build: ./Thomas/frontend
@@ -233,13 +248,7 @@ services:
         condition: service_started
 
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5)"
-        ]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -258,7 +267,7 @@ services:
       DB_FILE: /data/library.db
     healthcheck:
       # Also proves the schema exists, not merely that the file does.
-      test: ["CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;"]
+      test: [ "CMD", "sqlite3", "/data/library.db", "SELECT COUNT(*) FROM documents;" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -275,7 +284,7 @@ services:
     environment:
       DB_FILE: /data/bills.db
     healthcheck:
-      test: ["CMD", "sqlite3", "/data/bills.db", "SELECT COUNT(*) FROM bills;"]
+      test: [ "CMD", "sqlite3", "/data/bills.db", "SELECT COUNT(*) FROM bills;" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -307,8 +316,7 @@ services:
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -332,8 +340,7 @@ services:
       ollama:
         condition: service_started
     healthcheck:
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -349,7 +356,7 @@ services:
       enerel-backend:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -365,11 +372,137 @@ services:
       hyunwoo-backend:
         condition: service_started
     healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  # =========================================================================
+  # LE HOA LONG -- ports 8060-8069 -- Goals and Budgeting
+  # =========================================================================
+  lehoalong-database:
+    build: ./LeHoaLong/database
+    container_name: lehoalong-database
+    restart: unless-stopped
+    volumes:
+      - lehoalong-db-data:/data
+    environment:
+      DB_FILE: /data/goals.db
+      # Set to 1 for one run to drop and re-seed the database -- a clean slate
+      # before a demo. Destructive: it discards every goal created live.
+      INIT_DB_FORCE: ${LEHOALONG_INIT_DB_FORCE:-0}
+    healthcheck:
+      # Queries a real table, so a present-but-unseeded file reads as
+      # unhealthy rather than passing. python:3.11-slim has no sqlite3 CLI,
+      # so this goes through the stdlib module instead.
+      test: ["CMD", "python", "-c",
+             "import sqlite3; sqlite3.connect('/data/goals.db').execute('SELECT COUNT(*) FROM goals')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  lehoalong-backend:
+    build: ./LeHoaLong/backend
+    container_name: lehoalong-backend
+    restart: unless-stopped
+    ports:
+      - "8061:5000"
+    environment:
+      DB_PATH: /data/goals.db
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      # Only used by `npm run dev`; in the container nginx makes /api
+      # same-origin and this layer never fires.
+      CORS_ORIGINS: http://localhost:8060,http://127.0.0.1:8060
+    volumes:
+      # Same volume as lehoalong-database: that service creates and seeds
+      # goals.db, this one reads and writes it.
+      - lehoalong-db-data:/data
+    depends_on:
+      lehoalong-database:
+        condition: service_healthy
+      ollama:
+        # service_started, not service_healthy: goals CRUD, progress and the
+        # budget summary are all useful before a model has been pulled, and
+        # /plan and /replan return a clean 503 until one is.
+        condition: service_started
+    healthcheck:
+      # /health returns 503 when the database is unreachable; urlopen raises
+      # on a non-2xx status, so this fails exactly when it should.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  lehoalong-frontend:
+    # Context is the repo root, not ./LeHoaLong/frontend: the app imports the
+    # team's shared stylesheet from shared/styles.css, which is outside the
+    # frontend directory. Same arrangement as maxwell-frontend.
+    build:
+      context: .
+      dockerfile: LeHoaLong/frontend/Dockerfile
+    container_name: lehoalong-frontend
+    restart: unless-stopped
+    ports:
+      - "8060:80"
+    depends_on:
+      lehoalong-backend:
+        condition: service_started
+    healthcheck:
       test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1/"]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  # =========================================================================
+  # MCP SERVER -- shared. Exposes the team's data (portfolio, glossary,
+  # documents, bills, transactions, goals) as MCP tools, calling each
+  # student backend over HTTP rather than touching any database directly.
+  # See mcp-server/tools.py for the tool implementations.
+  #
+  # Two processes, two ports (see mcp-server/entrypoint.sh):
+  #   8070 -> 5001  app.py    Flask test harness behind shared/mcp.html
+  #   8071 -> 5002  server.py the real MCP protocol (streamable-http), for
+  #                 an actual MCP client -- not for browser/curl use.
+  # =========================================================================
+  mcp-server:
+    build: ./mcp-server
+    container_name: mcp-server
+    restart: unless-stopped
+    ports:
+      - "8070:5001"
+      - "8071:5002"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434/v1
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      MCP_ENABLED: "true"
+      MCP_HTTP_HOST: "0.0.0.0"
+      MCP_HTTP_PORT: "5002"
+    depends_on:
+      ollama:
+        condition: service_started
+      joshua-backend:
+        condition: service_started
+      maxwell-backend:
+        condition: service_started
+      enerel-backend:
+        condition: service_started
+      hyunwoo-backend:
+        condition: service_started
+      thomas-backend:
+        condition: service_started
+      lehoalong-backend:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
 
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
@@ -416,3 +549,5 @@ volumes:
   # Thomas
   thomas-db-data:
   thomas-receipts:
+  # Le Hoa Long
+  lehoalong-db-data:

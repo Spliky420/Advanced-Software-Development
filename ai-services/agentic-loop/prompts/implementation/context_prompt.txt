@@ -1,0 +1,12 @@
+How to read the evidence below:
+
+- A "DATABASE REVIEW TARGET" section contains that student's Dockerfile,
+  init.sql, and seed.sql for the database layer.
+- An "IMPLEMENTATION REVIEW TARGET" section contains that student's
+  backend app.py and frontend app.py for the API/UI layer.
+- Evidence for more than one student may be concatenated, one section per
+  student -- review each student's evidence independently and do not
+  compare students against each other.
+- "FILE NOT FOUND" or "ERROR READING" in a section means that file is
+  genuinely missing or unreadable -- treat it as a finding, not as
+  evidence to skip silently.

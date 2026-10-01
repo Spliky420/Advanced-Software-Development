@@ -102,3 +102,8 @@ ehthumbs.db
 
 # --- Generated microservice databases ---
 Maxwell/database/glossary.sqlite
+
+
+
+# ---- MCP reports ------
+.reports

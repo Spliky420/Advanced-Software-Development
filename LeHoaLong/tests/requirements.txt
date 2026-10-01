@@ -1,0 +1,5 @@
+# Host-side test dependencies. Deliberately not ../backend/requirements.txt --
+# that file also pins gunicorn, which does not install on Windows.
+Flask==3.0.3
+requests==2.32.3
+pytest==8.3.3

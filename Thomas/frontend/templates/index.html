@@ -46,7 +46,36 @@
                 <strong>Loading...</strong>
             </div>
         </section>
+<!-- MCP TOOLS -->
+<section class="card">
 
+    <div class="section-heading">
+        <div>
+            <h2>MCP Financial Tools</h2>
+            <p>
+                Retrieve transaction information through the shared
+                Model Context Protocol server.
+            </p>
+        </div>
+    </div>
+
+    <div class="button-row">
+        <button
+            type="button"
+            class="button button-secondary"
+            hx-get="/api/transactions/mcp-summary"
+            hx-target="#mcp-result"
+            hx-swap="innerHTML"
+        >
+            Get MCP Transaction Summary
+        </button>
+    </div>
+
+    <div id="mcp-result" class="ai-result">
+        <p>Click the button to retrieve your transaction summary through MCP.</p>
+    </div>
+
+</section>
 
         <!-- ADD TRANSACTION -->
         <section class="card">

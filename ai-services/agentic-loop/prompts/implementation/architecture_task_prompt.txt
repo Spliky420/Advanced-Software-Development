@@ -1,0 +1,28 @@
+Review:
+
+- frontend service
+- backend/API service
+- database service
+- Docker service names
+- frontend-to-backend communication
+- backend-to-database communication
+- backend-to-Ollama communication
+- exposed host ports
+- internal ports
+- Docker volumes
+- healthchecks
+- depends_on relationships
+- service separation
+- persistence
+- shared Ollama usage
+
+Return no more than 6 findings.
+
+Use exactly:
+
+STATUS: PASS | WARNING | FAIL
+AREA:
+FINDING:
+RECOMMENDATION:
+
+Keep each finding concise.
