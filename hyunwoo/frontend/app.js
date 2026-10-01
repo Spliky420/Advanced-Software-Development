@@ -393,7 +393,7 @@ async function runRag(event) {
             <p class="meta-chip">${result.status === "insufficient_context" ? "Insufficient context" : "Sourced answer"} · ${escapeHtml(result.confidence_category)} confidence</p>
             <p class="rag-answer">${escapeHtml(result.answer)}</p>
             ${result.source_excerpt_fallback_used ? `<p class="assistant-note">${result.source_excerpt_fallback_reason === "provider_grounding" ? "Original reference wording is shown to keep provider details grounded in the source." : "The numerical explanation was replaced with the original source wording."}</p>` : ""}
-            ${citations ? `<details open><summary>Sources and retrieved context</summary><ul class="citation-list">${citations}</ul></details>` : ""}
+            ${citations ? `<details><summary>Sources and retrieved context</summary><ul class="citation-list">${citations}</ul></details>` : ""}
             <p class="assistant-note">Confidence describes source coverage, not a guarantee of correctness.</p>
         `;
     } catch (error) {
