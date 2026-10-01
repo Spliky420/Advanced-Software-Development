@@ -8,6 +8,12 @@
 # either monkeypatched (llm.requests.post, llm.generate, llm.embed) or
 # injected via summarize.adapt's / retrieval.act's generate_fn/embed_fn. The
 # whole suite has been verified to pass with all outbound sockets blocked.
+#
+# Release 1: the MCP and RAG integration code ships and is tested here, but
+# both modes are DISABLED for the run (MCP_ENABLED / RAG_ENABLED = false) --
+# the shared MCP and RAG servers run on a developer's host, never in CI. The
+# tests stub the MCP/RAG network legs, and a final step proves the running
+# app reports both modes off and refuses MCP/RAG requests with a 503.
 
 name: enerel-ci
 
@@ -15,6 +21,7 @@ on:
   push:
     branches:
       - Enerel-Research-Library
+      - enerel-release1
     paths:
       - 'Enerel/**'
       - '.github/workflows/enerel-ci.yml'
@@ -43,6 +50,12 @@ jobs:
       # socket to Ollama; if a future test regresses and tries, it fails fast
       # here instead of silently passing on a machine that happens to have one.
       OLLAMA_BASE_URL: http://127.0.0.1:1
+      # MCP and RAG disabled for CI/CD, with unreachable URLs as a second
+      # line of defence -- same reasoning as OLLAMA_BASE_URL above.
+      MCP_ENABLED: "false"
+      MCP_SERVER_URL: http://127.0.0.1:1/mcp
+      RAG_ENABLED: "false"
+      RAG_SERVER_URL: http://127.0.0.1:1
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
@@ -69,6 +82,42 @@ jobs:
 
       - name: Run pytest
         run: pytest Enerel/tests -v
+
+      - name: Confirm MCP and RAG modes are disabled
+        # Exercises the real app (Flask test client against a schema-only
+        # database) with the job's env: the integrations endpoint must report
+        # both modes off, and both MCP and RAG endpoints must refuse with 503
+        # without opening a connection.
+        working-directory: Enerel/backend
+        run: |
+          python - <<'PY'
+          import json, os, sqlite3, tempfile
+          import db
+          path = os.path.join(tempfile.mkdtemp(), "library.db")
+          conn = sqlite3.connect(path)
+          conn.executescript(open("../database/init.sql").read())
+          conn.execute(
+              "INSERT INTO documents (user_id, title, doc_type, body_text, created_at, updated_at) "
+              "VALUES (1, 'CI', 'other', 'ETF volatility', 'now', 'now')"
+          )
+          conn.commit(); conn.close()
+          db.DB_PATH = path
+          from app import create_app
+          client = create_app().test_client()
+
+          status = client.get("/api/library/integrations").get_json()
+          print(json.dumps(status, indent=2))
+          assert status["mcp"]["enabled"] is False, "MCP must be disabled in CI"
+          assert status["rag"]["enabled"] is False, "RAG must be disabled in CI"
+
+          mcp = client.post("/api/documents/1/glossary", json={"term": "ETF"})
+          rag = client.post("/api/library/ask", json={"question": "what is an ETF"})
+          print("MCP glossary lookup ->", mcp.status_code, mcp.get_json())
+          print("RAG ask             ->", rag.status_code, rag.get_json())
+          assert mcp.status_code == 503 and mcp.get_json()["mcp_enabled"] is False
+          assert rag.status_code == 503 and rag.get_json()["rag_enabled"] is False
+          print("MCP and RAG integration present and disabled for CI/CD.")
+          PY
 
   images:
     name: Docker images build
