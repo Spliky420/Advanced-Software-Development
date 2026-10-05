@@ -615,76 +615,141 @@ def unsupplied_figures(response_text, figures):
     return sorted(_numbers(response_text) - _numbers(figures))
 
 
-DIRECTION_WORDS = ("overweight", "underweight")
+DIRECTION_PATTERN = re.compile(r"\b(overweight|underweight)", re.IGNORECASE)
 
-# Lines, sentences, and semicolon- or comma-separated clauses. A decimal
-# point or thousands separator is never followed by whitespace, so "9.30" and
-# "1,234.56" are not split.
-SEGMENT_SPLIT = re.compile(r"\n+|(?<=[.!?;,])\s+")
+# Lines, sentences and semicolon-separated clauses. Commas are deliberately
+# not boundaries: "ETFs (target 15.00%, actual 24.30%, 9.30 points
+# overweight)" must stay one unit. A decimal point is never followed by
+# whitespace, so "9.30" is not split.
+SEGMENT_SPLIT = re.compile(r"\n+|(?<=[.!?;])\s+")
+
+# "overweight in ETFs" / "underweight in the REITs asset class".
+_BINDS_FORWARD = re.compile(r"\s+(?:in|on)\s+(?:the\s+)?$", re.IGNORECASE)
+
+
+def _segment_tokens(segment, class_pattern):
+    """Class mentions, numbers and direction words in reading order."""
+    tokens = []
+    for match in class_pattern.finditer(segment):
+        tokens.append((match.start(), match.end(), "class", match.group(0)))
+    for match in NUMBER_PATTERN.finditer(segment):
+        tokens.append((match.start(), match.end(), "number", match.group(0)))
+    for match in DIRECTION_PATTERN.finditer(segment):
+        tokens.append((match.start(), match.end(), "direction", match.group(1).lower()))
+    tokens.sort()
+    return tokens
 
 
 def misattributed_figures(response_text, observe_result):
     """Figures or directions the model attached to the wrong asset class.
 
     unsupplied_figures only asks whether a number was supplied at all, so a
-    model that swaps two classes' drifts passes it. This checks the binding:
-    in any segment that names exactly one breached class, every number must
-    be that class's target, actual or drift (or the threshold), and any
-    overweight/underweight it states must be that class's direction. A
-    segment naming no class but one direction ("Overweight classes:") sets
-    the direction for the list lines that follow it. In a segment naming
-    two or more classes the numbers cannot be attributed and are not judged,
-    but a single direction word there ("ETFs and Crypto are overweight")
-    must hold for every class named.
+    model that swaps two classes' drifts passes it. This checks the binding,
+    by position within each line or sentence:
+
+    - A number belongs to the class named most recently before it, and must
+      be that class's target, actual or drift (or the threshold). Numbers
+      after a run of several classes ("ETFs and Crypto ... 9.30 and 8.26")
+      cannot be attributed and are not judged.
+    - "overweight in X" binds the direction to X. Otherwise a direction word
+      binds to the class (or run of classes) named before it; with none
+      before it, to every class named after it in the same segment.
+    - A segment naming no class but one direction ("Overweight classes:")
+      is a heading: list lines below it that state no direction inherit it.
+
+    Every bound direction must be that class's actual direction.
     """
-    if not isinstance(response_text, str):
+    if not isinstance(response_text, str) or not observe_result["breaches"]:
         return []
 
     threshold = round(observe_result["threshold_percent"], 2)
-    by_class = {
-        breach["asset_class"]: (
-            {
-                round(breach["target_percent"], 2),
-                round(breach["actual_percent"], 2),
-                round(breach["drift_magnitude"], 2),
-                threshold,
-            },
-            breach["direction"],
-        )
-        for breach in observe_result["breaches"]
-    }
+    by_class = {}
+    for breach in observe_result["breaches"]:
+        figures = {
+            round(breach["target_percent"], 2),
+            round(breach["actual_percent"], 2),
+            round(breach["drift_magnitude"], 2),
+            threshold,
+        }
+        by_class[breach["asset_class"].lower()] = (breach["asset_class"], figures, breach["direction"])
+
+    names = sorted(by_class, key=len, reverse=True)
+    class_pattern = re.compile("|".join(re.escape(name) for name in names), re.IGNORECASE)
 
     problems = []
+
+    def check_direction(key, stated):
+        name, _, actual = by_class[key]
+        if stated != actual:
+            problems.append({"asset_class": name, "figure": None, "direction": stated})
+
+    def check_number(key, text):
+        name, figures, _ = by_class[key]
+        try:
+            value = round(float(text.rstrip(",").replace(",", "")), 2)
+        except ValueError:
+            return
+        if value not in figures:
+            problems.append({"asset_class": name, "figure": value, "direction": None})
+
     heading_direction = None
     for segment in SEGMENT_SPLIT.split(response_text):
-        lowered = segment.lower()
-        mentioned = [name for name in by_class if name.lower() in lowered]
-        directions = [word for word in DIRECTION_WORDS if word in lowered]
-
-        if not mentioned:
+        tokens = _segment_tokens(segment, class_pattern)
+        kinds = {kind for _, _, kind, _ in tokens}
+        if "class" not in kinds:
+            directions = {value for _, _, kind, value in tokens if kind == "direction"}
             if len(directions) == 1:
-                heading_direction = directions[0]
-            continue
-        if len(mentioned) > 1:
-            if len(directions) == 1:
-                for asset_class in mentioned:
-                    if by_class[asset_class][1] != directions[0]:
-                        problems.append({"asset_class": asset_class, "figure": None, "direction": directions[0]})
+                heading_direction = directions.pop()
             continue
 
-        asset_class = mentioned[0]
-        allowed, actual_direction = by_class[asset_class]
-        for figure in sorted(_numbers(segment) - allowed):
-            problems.append({"asset_class": asset_class, "figure": figure, "direction": None})
+        group = []              # the most recent run of consecutive classes
+        group_open = False      # still accepting classes into that run
+        pending = None          # direction stated before any class
+        bound = set()           # classes given a direction in this segment
+        for index, (start, end, kind, value) in enumerate(tokens):
+            if kind == "class":
+                key = value.lower()
+                if not group_open:
+                    group = []
+                group.append(key)
+                group_open = True
+                if pending is not None:
+                    check_direction(key, pending)
+                    bound.add(key)
+            elif kind == "number":
+                group_open = False
+                if len(group) == 1:
+                    check_number(group[0], value)
+            else:  # direction
+                group_open = False
+                following = tokens[index + 1] if index + 1 < len(tokens) else None
+                if (
+                    following is not None
+                    and following[2] == "class"
+                    and _BINDS_FORWARD.match(segment[end:following[0]])
+                ):
+                    key = following[3].lower()
+                    check_direction(key, value)
+                    bound.add(key)
+                    # The class is bound already; don't let it re-bind as
+                    # "pending" or as part of an older run.
+                    group, group_open = [], False
+                elif pending is not None:
+                    # Direction-first phrasing ("overweight are ETFs ...,
+                    # while underweight are REITs"): start a new run.
+                    pending = value
+                elif group:
+                    for key in group:
+                        check_direction(key, value)
+                        bound.add(key)
+                else:
+                    pending = value
 
-        if len(directions) == 1:
-            stated = directions[0]
-        elif not directions:
-            stated = heading_direction
-        else:
-            stated = None
-        if stated is not None and stated != actual_direction:
-            problems.append({"asset_class": asset_class, "figure": None, "direction": stated})
+        if heading_direction is not None:
+            for _, _, kind, value in tokens:
+                if kind == "class" and value.lower() not in bound:
+                    check_direction(value.lower(), heading_direction)
+                    bound.add(value.lower())
 
     return problems
 

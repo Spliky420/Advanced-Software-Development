@@ -92,17 +92,21 @@ The drift-review check also verifies **attribution**, because membership
 alone is not enough. In a live run on 2026-10-01, `qwen2.5:0.5b` returned a
 summary in which every number was a supplied figure, yet it gave ETFs
 Australian equities' drift and listed ETFs as both overweight and
-underweight. So in every line or clause that names exactly one breached
-class, each number must be that class's target, actual or drift (or the
-threshold), and any overweight/underweight it states must be that class's
-direction. Problems are listed in `adapt.misattributed`, and the summary
-falls back to Python as above. `joshua/tests/test_output_check.py` keeps
-that live output as a regression case.
+underweight. So, by position within each line or sentence, each number is
+attributed to the class named most recently before it and must be that
+class's target, actual or drift (or the threshold); each overweight/
+underweight is bound to its class ("overweight in X", "X ... overweight", or
+"the overweight classes are X and Y") and must be that class's direction.
+Problems are listed in `adapt.misattributed`, and the summary falls back to
+Python as above. `joshua/tests/test_output_check.py` keeps the live outputs
+from the 2026-10-01 and 2026-10-05 runs as regression cases.
 
 Limits of the drift-review check: it compares numbers and direction words,
 not meaning. A number from reference text that happens to equal a real
-figure (a "5%" when the threshold is 5.00) passes. Numbers in a clause naming
-several classes cannot be attributed and are not judged. It does not check
+figure (a "5%" when the threshold is 5.00) passes. Numbers after a run of
+several classes ("ETFs and Crypto ... 9.30 and 8.26") cannot be attributed
+and are not judged. Nor is reasoning: a sentence with the right figures but
+nonsense logic ("target exceeded by the actual") passes. It does not check
 completeness: a correct summary that leaves a breached class out passes
 (`llama3.1:8b` omitted Crypto in the same run). And it is strict: a model
 that rounds a figure or adds a count ("3 classes") gets the fallback summary.
