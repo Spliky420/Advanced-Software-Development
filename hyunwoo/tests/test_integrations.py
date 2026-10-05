@@ -114,6 +114,30 @@ def test_rag_returns_answer_with_verified_source_and_confidence(client, monkeypa
     assert response.json["citations"][0]["excerpt"] == CONTEXT["text"]
     assert [path for path, _ in calls] == ["/retrieve", "/answer"]
     assert calls[0][1]["caller"] == "hyunwoo"
+    assert all(payload["source_ids"] == [CONTEXT["source_id"]] for _, payload in calls)
+
+
+def test_bills_query_ignores_other_features_even_if_words_match(client, monkeypatch):
+    foreign = {**CONTEXT, "source_id": "Enerel_investment_terms_knowledge.txt"}
+    calls = mock_rag(monkeypatch, contexts=[foreign])
+    response = client.post("/api/bills/rag", json={"query": "Fortnightly monthly cost"})
+    assert response.json["status"] == "insufficient_context"
+    assert response.json["llm_called"] is False
+    assert len(calls) == 1
+
+
+def test_expanded_corpus_cannot_replace_the_bills_reference(client, monkeypatch):
+    foreign = {**CONTEXT, "source_id": "Enerel_investment_terms_knowledge.txt"}
+    calls = mock_rag(monkeypatch, contexts=[foreign, CONTEXT], answer={
+        "answer": CONTEXT["text"], "citations": [foreign, CONTEXT],
+    })
+    response = client.post("/api/bills/rag", json={
+        "query": "How are fortnightly bills converted to a monthly cost?",
+    })
+    assert response.json["status"] == "success"
+    assert response.json["answer"] == CONTEXT["text"]
+    assert [item["source_id"] for item in response.json["citations"]] == [CONTEXT["source_id"]]
+    assert all(payload["source_ids"] == [CONTEXT["source_id"]] for _, payload in calls)
 
 
 def test_unrelated_query_skips_answer_generation(client, monkeypatch):
@@ -145,6 +169,7 @@ def test_exact_source_quote_is_preserved(client, monkeypatch):
     })
     response = client.post("/api/bills/rag", json={"query": "Fortnightly monthly cost"})
     assert response.json["source_excerpt_fallback_used"] is False
+    assert response.json["answer_kind"] == "generated"
     assert response.json["answer"] == CONTEXT["text"]
 
 
@@ -159,6 +184,26 @@ def test_model_insufficient_evidence_is_displayed_as_insufficient_context(client
     response = client.post("/api/bills/rag", json={"query": "Fortnightly monthly cost"})
     assert response.json["status"] == "insufficient_context"
     assert response.json["llm_called"] is True
+
+
+def test_declined_bills_answer_can_show_strong_verified_source(client, monkeypatch):
+    mock_rag(monkeypatch, answer={"answer": "Insufficient evidence.", "citations": [CONTEXT]})
+    response = client.post("/api/bills/rag", json={"query": "Fortnightly monthly cost"})
+    assert response.json["status"] == "success"
+    assert response.json["answer_kind"] == "source_excerpt"
+    assert response.json["source_excerpt_fallback_reason"] == "model_abstention"
+    assert response.json["llm_called"] is True
+    assert "The model could not produce an answer" in response.json["answer"]
+    assert CONTEXT["text"] in response.json["answer"]
+
+
+@pytest.mark.parametrize("citation", [
+    {"source_id": "invented.txt", "chunk_id": "fake"},
+    {"source_id": [], "chunk_id": "fake"},
+])
+def test_declined_answer_cannot_bypass_citation_validation(client, monkeypatch, citation):
+    mock_rag(monkeypatch, answer={"answer": "Insufficient evidence.", "citations": [citation]})
+    assert client.post("/api/bills/rag", json={"query": "Fortnightly monthly cost"}).status_code == 503
 
 
 @pytest.mark.parametrize("citations", [[], [{"source_id": "invented.txt", "chunk_id": "fake"}], [{"source_id": [], "chunk_id": "fake"}]])
@@ -219,6 +264,55 @@ def test_provider_answers_include_checked_official_source(client, monkeypatch, q
     assert response.json["source_excerpt_fallback_reason"] == "provider_grounding"
     assert provider_references.reference_body(context["text"]) in response.json["answer"]
     assert "Source:" not in response.json["answer"]
+
+
+@pytest.mark.parametrize("query,source", [
+    ("How do I cancel Netflix?", "HyunWoo_provider_Netflix_cancel.txt"),
+    ("Where can I find my Netflix billing date?", "HyunWoo_provider_Netflix_billing.txt"),
+    ("Why is the Netflix cancel option missing?", "HyunWoo_provider_Netflix_partner.txt"),
+    ("Will I keep my Spotify playlists after cancelling?", "HyunWoo_provider_Spotify_cancel.txt"),
+    ("What happens if I cancel a Spotify free trial?", "HyunWoo_provider_Spotify_trial.txt"),
+    ("How can I change my Spotify billing date?", "HyunWoo_provider_Spotify_billing.txt"),
+])
+def test_supported_provider_refusals_show_labelled_reference(client, monkeypatch, query, source):
+    context = provider_context(source)
+    calls = mock_rag(monkeypatch, contexts=[context], answer={
+        "answer": "Insufficient evidence.", "citations": [context],
+    })
+    response = client.post("/api/bills/rag", json={"query": query})
+    assert response.json["status"] == "success"
+    assert response.json["answer_kind"] == "source_excerpt"
+    assert response.json["source_excerpt_fallback_reason"] == "model_abstention"
+    assert response.json["llm_called"] is True
+    assert "The model could not produce an answer" in response.json["answer"]
+    assert provider_references.reference_body(context["text"]) in response.json["answer"]
+    assert response.json["citations"][0]["source_url"] == provider_references.SOURCES[source]["source_url"]
+    assert all(payload["source_ids"] == [source] for _, payload in calls)
+
+
+@pytest.mark.parametrize("answer", [
+    {"answer": "Insufficient evidence."},
+    {"status": "insufficient_context", "answer": "The source cannot resolve this question."},
+])
+def test_weak_source_match_does_not_override_model_refusal(client, monkeypatch, answer):
+    context = provider_context("HyunWoo_provider_Spotify_cancel.txt")
+    mock_rag(monkeypatch, contexts=[context], answer={**answer, "citations": [context]})
+    response = client.post("/api/bills/rag", json={"query": "Spotify cancellation tax consequences"})
+    assert response.json["status"] == "insufficient_context"
+    assert response.json["citations"] == []
+    assert response.json["confidence_category"] == "Low"
+    assert response.json["llm_called"] is True
+
+
+def test_model_refusal_cannot_use_a_retrieved_but_wrong_provider_citation(client, monkeypatch):
+    spotify = provider_context("HyunWoo_provider_Spotify_cancel.txt")
+    netflix = provider_context("HyunWoo_provider_Netflix_cancel.txt")
+    mock_rag(monkeypatch, contexts=[spotify, netflix], answer={
+        "answer": "Insufficient evidence.", "citations": [netflix],
+    })
+    response = client.post("/api/bills/rag", json={"query": "Will I keep my Spotify playlists after cancelling?"})
+    assert response.json["status"] == "insufficient_context"
+    assert response.json["citations"] == []
 
 
 @pytest.mark.parametrize("query", [

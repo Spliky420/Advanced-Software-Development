@@ -14,6 +14,7 @@ MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8071/mcp")
 RAG_SERVER_URL = os.getenv("RAG_SERVER_URL", "http://localhost:5003").rstrip("/")
 MCP_TIMEOUT = 25
 RAG_TIMEOUT = 130
+BILLS_REFERENCE_SOURCE = "HyunWoo_bills_knowledge.txt"
 
 
 class ServiceError(RuntimeError):
@@ -128,9 +129,11 @@ def rag_answer(query, k):
 
     terms = _words(query)
     allowed_sources = provider_references.allowed_sources(terms)
-    payload = {"query": query, "k": k, "caller": "hyunwoo"}
-    if allowed_sources is not None:
-        payload["source_ids"] = sorted(allowed_sources)
+    # Keep app questions within the bills reference.
+    if allowed_sources is None:
+        allowed_sources = {BILLS_REFERENCE_SOURCE}
+    payload = {"query": query, "k": k, "caller": "hyunwoo",
+               "source_ids": sorted(allowed_sources)}
     retrieval = _rag_request("/retrieve", payload)
     contexts = retrieval.get("results")
     if not isinstance(contexts, list):
@@ -145,7 +148,7 @@ def rag_answer(query, k):
         chunk = context.get("chunk_id")
         if not all(isinstance(value, str) and value for value in (text, source, chunk)):
             continue
-        if allowed_sources is not None and source not in allowed_sources:
+        if source not in allowed_sources:
             continue
         overlap = terms & _words(text)
         # This is a relevance check, not a probability of correctness.
@@ -160,17 +163,18 @@ def rag_answer(query, k):
     answer = result.get("answer")
     if not isinstance(answer, str) or not answer.strip():
         raise ServiceError("The shared RAG server returned an empty answer.")
-    if result.get("status") == "insufficient_context" or re.search(
+    model_abstained = result.get("status") == "insufficient_context" or bool(re.search(
         r"insufficient (evidence|context)|not enough (evidence|context)|cannot answer",
         answer, re.IGNORECASE,
-    ):
-        output = insufficient(query, contexts)
-        output["llm_called"] = True
-        return output
+    ))
 
     # Keep citations that refer to the sources actually retrieved.
     citations = result.get("citations")
     if not isinstance(citations, list) or not citations:
+        if model_abstained:
+            output = insufficient(query, contexts)
+            output["llm_called"] = True
+            return output
         raise ServiceError("The shared RAG answer did not include source citations.")
     retrieved_keys = {
         (item.get("source_id"), item.get("chunk_id"))
@@ -192,6 +196,10 @@ def rag_answer(query, k):
                 **provider_references.citation_details(key[0]),
             })
 
+    # A declined answer needs stronger evidence before showing an excerpt.
+    if model_abstained:
+        verified = [item for item in verified
+                    if relevant[(item["source_id"], item["chunk_id"])]["coverage"] >= 0.75]
     if not verified:
         output = insufficient(query, contexts)
         output["llm_called"] = True
@@ -201,7 +209,7 @@ def rag_answer(query, k):
         for item in verified
     ) else "Medium"
 
-    # Quote the source if numerical wording cannot be matched to it.
+    # Quote verified sources when generated wording cannot be used.
     provider_answer = any(item["source_id"] in provider_references.SOURCES for item in verified)
     source_text = "\n\n".join(
         provider_references.reference_body(item["excerpt"])
@@ -210,9 +218,14 @@ def rag_answer(query, k):
     )
     normalised_answer = " ".join(answer.lower().split())
     normalised_source = " ".join(source_text.lower().split())
-    source_fallback = (provider_answer or bool(re.search(r"\d", answer))) and normalised_answer not in normalised_source
+    source_fallback = model_abstained or (
+        (provider_answer or bool(re.search(r"\d", answer)))
+        and normalised_answer not in normalised_source
+    )
     if source_fallback:
-        answer = "The retrieved reference states:\n\n" + source_text
+        introduction = "The model could not produce an answer. This is a retrieved reference excerpt:" \
+            if model_abstained else "The retrieved reference states:"
+        answer = introduction + "\n\n" + source_text
 
     return {
         "status": "success", "query": query, "answer": answer.strip(),
@@ -220,7 +233,9 @@ def rag_answer(query, k):
         "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
         "retrieval_summary": {"retrieved_count": len(contexts), "relevant_count": len(relevant)},
         "llm_called": True,
+        "answer_kind": "source_excerpt" if source_fallback else "generated",
         "source_excerpt_fallback_used": source_fallback,
-        "source_excerpt_fallback_reason": "provider_grounding" if source_fallback and provider_answer
+        "source_excerpt_fallback_reason": "model_abstention" if model_abstained
+        else "provider_grounding" if source_fallback and provider_answer
         else "numerical_grounding" if source_fallback else None,
     }

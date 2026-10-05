@@ -389,10 +389,15 @@ async function runRag(event) {
                 <blockquote>${escapeHtml(citation.excerpt)}</blockquote>
             </li>
         `).join("");
+        const fallbackNotes = {
+            model_abstention: "The model could not produce an answer. Relevant source wording is shown instead; check whether it answers your question.",
+            provider_grounding: "Original reference wording is shown to keep provider details grounded in the source.",
+            numerical_grounding: "The numerical explanation was replaced with the original source wording.",
+        };
         elements.ragResult.innerHTML = `
-            <p class="meta-chip">${result.status === "insufficient_context" ? "Insufficient context" : "Sourced answer"} · ${escapeHtml(result.confidence_category)} confidence</p>
+            <p class="meta-chip">${result.status === "insufficient_context" ? "Insufficient context" : result.source_excerpt_fallback_used ? "Source excerpt" : "Sourced answer"} · ${escapeHtml(result.confidence_category)} confidence</p>
             <p class="rag-answer">${escapeHtml(result.answer)}</p>
-            ${result.source_excerpt_fallback_used ? `<p class="assistant-note">${result.source_excerpt_fallback_reason === "provider_grounding" ? "Original reference wording is shown to keep provider details grounded in the source." : "The numerical explanation was replaced with the original source wording."}</p>` : ""}
+            ${result.source_excerpt_fallback_used ? `<p class="assistant-note">${escapeHtml(fallbackNotes[result.source_excerpt_fallback_reason] || "Original source wording is shown.")}</p>` : ""}
             ${citations ? `<details><summary>Sources and retrieved context</summary><ul class="citation-list">${citations}</ul></details>` : ""}
             <p class="assistant-note">Confidence describes source coverage, not a guarantee of correctness.</p>
         `;
