@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 DOC_TYPES = (
@@ -14,6 +15,13 @@ DOC_TYPES = (
 MAX_TITLE_LENGTH = 300
 MAX_SOURCE_LENGTH = 200
 MIN_BODY_LENGTH = 1
+
+MIN_TERM_LENGTH = 2
+MAX_TERM_LENGTH = 60
+# Letters, digits, spaces and the punctuation real financial terms use
+# (S&P, P/E, dollar-cost, 4.35). Anything else is refused before the MCP
+# tool is called -- part of this feature's MCP input boundary.
+TERM_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 &/.\-]*$")
 
 
 class ValidationError(Exception):
@@ -100,3 +108,46 @@ def validate_search_payload(data):
         raise ValidationError(errors)
 
     return {"query": query.strip(), "top_k": top_k}
+
+
+def normalise_glossary_term(term):
+    """Match the casing Maxwell's glossary stores terms in ('Market Cap',
+    'Volatility', 'ETF'): its lookup is an exact, case-sensitive match, and a
+    word selected from a document is usually lower-case mid-sentence. Words
+    already written in capitals (acronyms like ETF, RBA) are kept as-is.
+    """
+    def fix(match):
+        word = match.group(0)
+        return word if len(word) > 1 and word.isupper() else word.capitalize()
+
+    return re.sub(r"[A-Za-z]+", fix, term)
+
+
+def validate_glossary_payload(data, body_text):
+    """Validate a glossary lookup for a term found in one document.
+
+    The term must actually occur in the document's text -- this endpoint is
+    "look up a word in this document", not a general glossary proxy.
+    """
+    if not isinstance(data, dict):
+        raise ValidationError("request body must be a JSON object")
+
+    term = data.get("term")
+    if not isinstance(term, str) or not term.strip():
+        raise ValidationError("term is required and cannot be empty")
+
+    term = " ".join(term.split())
+    if not (MIN_TERM_LENGTH <= len(term) <= MAX_TERM_LENGTH):
+        raise ValidationError(
+            f"term must be between {MIN_TERM_LENGTH} and {MAX_TERM_LENGTH} characters"
+        )
+    if not TERM_RE.match(term):
+        raise ValidationError(
+            "term may only contain letters, digits, spaces and & / . -"
+        )
+
+    pattern = r"(?<![A-Za-z0-9])" + r"\s+".join(map(re.escape, term.split())) + r"(?![A-Za-z0-9])"
+    if not re.search(pattern, body_text, re.IGNORECASE):
+        raise ValidationError(f"'{term}' does not appear in this document")
+
+    return {"term": term, "lookup_term": normalise_glossary_term(term)}

@@ -770,3 +770,150 @@ code {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Drift review: context and grounding ---------- */
+
+.phase-context {
+  border-top-color: var(--colour-accent);
+}
+
+/* Status and summary-source pills share the .direction shape: outlined in
+   currentColor, so each variant only sets a colour. */
+.status,
+.summary-source {
+  display: inline-block;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-found,
+.summary-source-model {
+  color: var(--colour-gain);
+}
+
+.status-empty,
+.summary-source-no_breaches {
+  color: var(--colour-text-muted);
+}
+
+.status-unavailable {
+  color: var(--colour-loss);
+}
+
+/* The server answered but had nothing relevant -- not a fault, so amber
+   rather than the red of an unreachable or failing server. */
+.status-insufficient_context {
+  color: var(--colour-over);
+}
+
+.status-disabled {
+  color: var(--colour-text-muted);
+}
+
+.context-status {
+  display: inline-block;
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.context-status-grounded {
+  color: var(--colour-gain);
+}
+
+/* Filled, in the accent colour: distinct from the amber fallback pill, so
+   "no context" and "model text rejected" never read as the same event. */
+.context-status-insufficient_context {
+  color: var(--colour-accent-text);
+  background: var(--colour-accent);
+  border-color: var(--colour-accent);
+}
+
+.banner-insufficient {
+  border-color: var(--colour-accent);
+  border-style: dashed;
+  border-left-style: solid;
+}
+
+/* The fallback is the evidence the figures check fired, so it is filled
+   rather than outlined -- the one pill on the page meant to stand out. */
+.summary-source-fallback {
+  color: var(--colour-text);
+  background: var(--colour-warning-background);
+  border-color: var(--colour-warning-border);
+}
+
+.ai-result-label {
+  margin-bottom: var(--space-sm);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--colour-text-muted);
+}
+
+.ai-result-fallback {
+  background: var(--colour-warning-background);
+  border: 2px dashed var(--colour-warning-border);
+}
+
+.rejected-figures {
+  font-family: var(--font-mono);
+}
+
+.citation-list {
+  padding-left: var(--space-lg);
+}
+
+.context-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.context-item + .context-item,
+.citation-list li + li {
+  margin-top: var(--space-sm);
+}
+
+.context-item {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background: var(--colour-background);
+}
+
+.context-item > * + * {
+  margin-top: var(--space-xs);
+}
+
+.context-item-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.context-item-meta {
+  font-size: 0.8rem;
+  color: var(--colour-text-muted);
+}
+
+.context-text {
+  max-width: 70ch;
+}
+
+.context-error {
+  font-size: 0.9rem;
+  color: var(--colour-danger);
+}
+
+.citation-kind {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--colour-text-muted);
+}

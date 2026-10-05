@@ -369,3 +369,76 @@ dialog#doc-modal::backdrop {
 .spinner-text::after {
   content: "…";
 }
+
+/* ------------------------------------------------------------------------
+   Release 1 -- MCP glossary lookup and RAG grounded answers
+   ------------------------------------------------------------------------ */
+
+.mode-chip {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  text-transform: none;
+}
+
+.mode-chip.off {
+  color: var(--muted);
+  border-color: var(--border);
+}
+
+.confidence { text-transform: none; font-weight: 600; }
+.confidence-high { color: #1b5e20; background: #e8f5e9; border-color: #a5d6a7; }
+.confidence-medium { color: #8a5a00; background: #fff8e1; border-color: #ffe082; }
+.confidence-low { color: #b23c17; background: #fbe9e7; border-color: #ffab91; }
+.confidence-insufficient { color: var(--muted); }
+
+.rag-result.insufficient { border-style: dashed; }
+
+#ask-results .rag-result,
+#glossary-result .rag-result { font-size: 0.9rem; }
+
+.citations-heading {
+  margin: 0.75rem 0 0.3rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+
+.citations {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  /* Source ids are long underscore_joined filenames with no break points. */
+  overflow-wrap: anywhere;
+}
+
+.citations li { margin-bottom: 0.35rem; }
+
+.citations summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.citations summary:hover { color: var(--accent); }
+
+.citations details[open] summary { margin-bottom: 0.25rem; }
+.citations li .muted { display: block; font-size: 0.75rem; }
+
+.citation-snippet {
+  margin-top: 0.2rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+#detail-body-text { cursor: text; }

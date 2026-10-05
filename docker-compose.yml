@@ -88,6 +88,13 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
+      MCP_SERVER_URL: http://mcp-server:5002/mcp
+      MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-5}
+      RAG_SERVER_URL: http://host.docker.internal:5003
+      RAG_TIMEOUT_SECONDS: ${RAG_TIMEOUT_SECONDS:-5}
+    extra_hosts:
+      # Resolves automatically on Docker Desktop; needed on Linux.
+      - "host.docker.internal:host-gateway"
     volumes:
       # Same volume as joshua-database: that service creates and seeds the
       # file, this one reads and writes it.
@@ -207,6 +214,7 @@ services:
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       MCP_SERVER_URL: http://mcp-server:5002/mcp
+      RAG_SERVER_URL: http://host.docker.internal:5003
 
     volumes:
       - thomas-db-data:/data
@@ -294,6 +302,18 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      # Release 1: the shared MCP server (python mcp-server/server.py) and
+      # RAG server (python rag-server/rag_http_server.py) run on the host,
+      # not in compose, so the backend reaches them via host.docker.internal.
+      # Set MCP_ENABLED / RAG_ENABLED to false to switch either mode off.
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+      MCP_SERVER_URL: ${ENEREL_MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      RAG_SERVER_URL: ${ENEREL_RAG_SERVER_URL:-http://host.docker.internal:5003}
+    extra_hosts:
+      # Docker Desktop (macOS/Windows) resolves host.docker.internal on its
+      # own; this makes it resolve on Linux engines too.
+      - "host.docker.internal:host-gateway"
     volumes:
       # Same volume as enerel-database: that service creates and seeds the
       # file, this one reads and writes it.

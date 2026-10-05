@@ -260,11 +260,38 @@ function renderDetail(doc) {
         <div id="summary-block">${renderSummaryBlock(doc)}</div>
       </div>
       <div class="detail-block">
+        <h4>Glossary lookup <span class="mode-chip" id="mcp-mode-chip">MCP</span></h4>
+        <p class="muted">
+          Double-click a word in the document (or select a phrase) to define
+          it with the shared MCP server's <code>glossary_lookup</code> tool.
+        </p>
+        <form id="glossary-form" class="rag-form">
+          <input type="text" id="glossary-term" maxlength="60"
+            placeholder="e.g. volatility" required />
+          <button type="submit" class="btn">Define</button>
+        </form>
+        <div id="glossary-result" aria-live="polite"></div>
+      </div>
+      <div class="detail-block">
         <h4>Full document</h4>
-        <div class="body-text">${escapeHtml(doc.body_text)}</div>
+        <div class="body-text" id="detail-body-text">${escapeHtml(doc.body_text)}</div>
       </div>
     </div>
   `;
+
+  el("glossary-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    lookupGlossaryTerm(doc.id, el("glossary-term").value);
+  });
+  el("detail-body-text").addEventListener("mouseup", () => {
+    const selected = window.getSelection().toString().trim();
+    if (selected && selected.length <= 60) el("glossary-term").value = selected;
+  });
+  el("detail-body-text").addEventListener("dblclick", () => {
+    const selected = window.getSelection().toString().trim();
+    if (selected) lookupGlossaryTerm(doc.id, selected);
+  });
+  applyModeChips();
 
   el("summarize-btn").addEventListener("click", () => triggerSummarize(doc.id));
   el("edit-btn").addEventListener("click", () => openForm(doc));
@@ -449,47 +476,141 @@ async function submitForm(event) {
 }
 
 // --------------------------------------------------------------------------
-// RAG search
+// Release 1 -- shared MCP (glossary lookup) and RAG (grounded Q&A)
 // --------------------------------------------------------------------------
 
-async function runRagSearch(event) {
-  event.preventDefault();
-  const query = el("rag-query").value.trim();
-  if (!query) return;
+// Filled from GET /api/library/integrations; null until it loads, which
+// leaves the chips neutral rather than claiming a mode is on or off.
+let integrations = null;
 
-  const resultsEl = el("rag-results");
-  resultsEl.innerHTML = `<p class="muted spinner-text">Searching</p>`;
-
+async function loadIntegrations() {
   try {
-    const result = await apiFetch("/documents/search", {
-      method: "POST",
-      body: JSON.stringify({ query, top_k: 5 }),
-    });
-    renderRagResults(result.observe.results);
+    integrations = await apiFetch("/library/integrations");
   } catch (err) {
-    resultsEl.innerHTML = `<p class="banner error">Search failed: ${escapeHtml(err.message)}</p>`;
+    integrations = null;
+  }
+  applyModeChips();
+}
+
+function applyModeChips() {
+  const chips = [
+    ["mcp-mode-chip", "MCP", integrations && integrations.mcp],
+    ["rag-mode-chip", "RAG", integrations && integrations.rag],
+  ];
+  for (const [id, label, mode] of chips) {
+    const chip = el(id);
+    if (!chip || !mode) continue;
+    chip.textContent = mode.enabled ? label : `${label} off`;
+    chip.classList.toggle("off", !mode.enabled);
+    chip.title = mode.enabled ? `Shared ${label} server: ${mode.server_url}` : `${label} mode is disabled`;
   }
 }
 
-function renderRagResults(results) {
-  const resultsEl = el("rag-results");
-  if (!results || results.length === 0) {
-    resultsEl.innerHTML = `<p class="muted">No relevant chunks found. Documents need to be indexed first (this happens automatically when you add or edit them, once the embedding model is pulled).</p>`;
+// A double-clicked word often carries its trailing punctuation ("risk.").
+function cleanTerm(term) {
+  return term.trim().replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "");
+}
+
+async function lookupGlossaryTerm(documentId, rawTerm) {
+  const term = cleanTerm(rawTerm || "");
+  if (!term) return;
+  el("glossary-term").value = term;
+
+  const resultEl = el("glossary-result");
+  resultEl.innerHTML = `<p class="muted spinner-text">Calling glossary_lookup</p>`;
+
+  try {
+    const result = await apiFetch(`/documents/${documentId}/glossary`, {
+      method: "POST",
+      body: JSON.stringify({ term }),
+    });
+    renderGlossaryResult(result);
+  } catch (err) {
+    resultEl.innerHTML = `<p class="banner error">Glossary lookup failed: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function renderGlossaryResult(result) {
+  const body = result.found
+    ? `<div>${escapeHtml(result.definition)}</div>`
+    : `<div class="muted">${escapeHtml(result.message)}</div>`;
+  el("glossary-result").innerHTML = `
+    <div class="rag-result">
+      <div class="rag-result-meta">
+        <strong>${escapeHtml(result.input.term)}</strong>
+        <span>MCP tool: ${escapeHtml(result.tool)}</span>
+      </div>
+      ${body}
+    </div>
+  `;
+}
+
+async function askLibrary(event) {
+  event.preventDefault();
+  const question = el("ask-question").value.trim();
+  if (!question) return;
+
+  const resultsEl = el("ask-results");
+  resultsEl.innerHTML = `<p class="muted spinner-text">Retrieving context and answering</p>`;
+
+  try {
+    const result = await apiFetch("/library/ask", {
+      method: "POST",
+      body: JSON.stringify({ question }),
+    });
+    renderAskResult(result);
+  } catch (err) {
+    resultsEl.innerHTML = `<p class="banner error">Ask failed: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+function renderAskResult(result) {
+  const resultsEl = el("ask-results");
+  const confidenceClass = `confidence-${result.confidence_category.toLowerCase()}`;
+  const header = `
+    <div class="rag-result-meta">
+      <span>${result.status === "answered" ? "Grounded answer" : "Insufficient context"}</span>
+      <span class="badge confidence ${confidenceClass}">Confidence: ${escapeHtml(result.confidence_category)}</span>
+    </div>
+  `;
+
+  if (result.status !== "answered") {
+    const missing = result.observe.missing_terms.length
+      ? `<p class="muted">Not found in the knowledge base: ${result.observe.missing_terms.map(escapeHtml).join(", ")}</p>`
+      : "";
+    resultsEl.innerHTML = `
+      <div class="rag-result insufficient">
+        ${header}
+        <div>${escapeHtml(result.answer)}</div>
+        ${missing}
+      </div>
+    `;
     return;
   }
-  resultsEl.innerHTML = results
+
+  const citations = result.citations
     .map(
-      (r) => `
-        <div class="rag-result">
-          <div class="rag-result-meta">
-            <span>${escapeHtml(r.title)} · ${labelForType(r.doc_type)}</span>
-            <span>score ${r.score}</span>
-          </div>
-          <div>${escapeHtml(r.chunk_text)}</div>
-        </div>
+      (c, i) => `
+        <li>
+          <details>
+            <summary>[${i + 1}] ${escapeHtml(c.source_id)}</summary>
+            <span class="muted">${escapeHtml(c.chunk_id)} · matched: ${c.matched_terms.map(escapeHtml).join(", ")}</span>
+            <div class="citation-snippet">${escapeHtml(c.snippet)}</div>
+          </details>
+        </li>
       `
     )
     .join("");
+
+  resultsEl.innerHTML = `
+    <div class="rag-result">
+      ${header}
+      <div class="summary-text">${escapeHtml(result.answer)}</div>
+      <h4 class="citations-heading">Sources</h4>
+      <ul class="citations">${citations}</ul>
+      <p class="muted">Question coverage ${Math.round(result.observe.coverage * 100)}% · ${result.observe.supporting_count} of ${result.observe.retrieved_count} retrieved chunks support it</p>
+    </div>
+  `;
 }
 
 // --------------------------------------------------------------------------
@@ -534,7 +655,7 @@ function init() {
 
   el("close-detail-btn").addEventListener("click", closeDetail);
 
-  el("rag-form").addEventListener("submit", runRagSearch);
+  el("ask-form").addEventListener("submit", askLibrary);
 
   // The grid's column count is responsive, so how tall 8 rows' worth of
   // cards is changes with viewport width -- recompute the cap on resize.
@@ -545,6 +666,7 @@ function init() {
   });
 
   loadDocuments();
+  loadIntegrations();
 }
 
 document.addEventListener("DOMContentLoaded", init);
