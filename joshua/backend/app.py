@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
@@ -9,6 +11,42 @@ import drift
 import llm
 from db import DEFAULT_USER_ID
 from validation import ValidationError, validate_holding_payload, validate_targets_payload
+
+LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s | %(message)s"
+
+# Named so a second create_app() can recognise the handler it already added.
+LOG_HANDLER_NAME = "joshua-stdout"
+
+
+def configure_logging():
+    """Send the root logger to stdout at LOG_LEVEL (default INFO).
+
+    stdout, not stderr: it is what `docker compose logs joshua-backend` shows
+    alongside gunicorn's own output.
+
+    Idempotent. create_app() runs once per test in the suite and twice over in
+    development (module import plus the reloader), and without the name check
+    each call would stack another handler and print every line again.
+    """
+    level_name = (os.environ.get("LOG_LEVEL") or "INFO").strip().upper()
+    level = getattr(logging, level_name, None)
+    if not isinstance(level, int):
+        level = logging.INFO
+
+    root = logging.getLogger()
+    root.setLevel(level)
+
+    for handler in root.handlers:
+        if getattr(handler, "name", None) == LOG_HANDLER_NAME:
+            handler.setLevel(level)
+            return
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.name = LOG_HANDLER_NAME
+    handler.setLevel(level)
+    handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    root.addHandler(handler)
+
 
 INSIGHT_SYSTEM_PROMPT = (
     "You are a portfolio reporting assistant. You will be given a set of "
@@ -78,6 +116,7 @@ def _round_report(report):
 
 
 def create_app():
+    configure_logging()
     app = Flask(__name__)
 
     @app.get("/health")
@@ -168,15 +207,17 @@ def create_app():
     @app.post("/api/drift-review")
     def create_drift_review():
         # PLAN -> ACT -> OBSERVE are deterministic Python; only ADAPT calls the LLM.
+        # CONTEXT (MCP glossary + RAG passages) is optional and never fails the request.
         targets = db.list_targets(DEFAULT_USER_ID)
         report = allocation.build_portfolio_report(db.list_holdings(DEFAULT_USER_ID))
 
         plan_result = drift.plan(targets)
         act_result = drift.act(report["portfolio"], plan_result)
         observe_result = drift.observe(act_result, plan_result)
+        context_result = drift.gather_context(observe_result)
 
         try:
-            adapt_result = drift.adapt(observe_result)
+            adapt_result = drift.adapt(observe_result, context_result=context_result)
         except llm.LLMUnavailableError as exc:
             return jsonify({"error": f"drift review is unavailable: {exc}"}), 503
 
@@ -188,7 +229,9 @@ def create_app():
                     "request_type": "drift-review",
                     "prompt_sent": adapt_result["prompt_sent"],
                     "model_name": adapt_result["model_name"],
-                    "response_text": adapt_result["summary"],
+                    # What the model actually said, even when the figures
+                    # check replaced it -- the log is the evidence trail.
+                    "response_text": adapt_result["model_response"],
                 },
                 DEFAULT_USER_ID,
             )
@@ -203,12 +246,14 @@ def create_app():
                 "target_percent_by_class": {
                     k: _round(v) for k, v in plan_result["target_percent_by_class"].items()
                 },
+                "run_id": plan_result.get("run_id", "-"),
             },
             "act": {
                 "phase": act_result["phase"],
                 "description": act_result["description"],
                 "total_market_value": _round(act_result["total_market_value"]),
                 "drift_by_class": [_round_drift_row(r) for r in act_result["drift_by_class"]],
+                "run_id": act_result.get("run_id", "-"),
             },
             "observe": {
                 "phase": observe_result["phase"],
@@ -219,6 +264,19 @@ def create_app():
                 "within_threshold": [
                     _round_drift_row(r) for r in observe_result["within_threshold"]
                 ],
+                "run_id": observe_result.get("run_id", "-"),
+            },
+            "context": {
+                "phase": context_result["phase"],
+                "description": context_result["description"],
+                "mcp_called": context_result["mcp_called"],
+                "rag_called": context_result["rag_called"],
+                "reason": context_result["reason"],
+                "glossary": context_result["glossary"],
+                "retrieval": context_result["retrieval"],
+                "insufficient_context": context_result["insufficient_context"],
+                "insufficient_reason": context_result["insufficient_reason"],
+                "run_id": context_result.get("run_id", "-"),
             },
             "adapt": {
                 "phase": adapt_result["phase"],
@@ -226,8 +284,18 @@ def create_app():
                 "llm_called": adapt_result["llm_called"],
                 "model_name": adapt_result["model_name"],
                 "summary": adapt_result["summary"],
+                "summary_source": adapt_result["summary_source"],
+                "context_status": adapt_result["context_status"],
+                "unsupplied_figures": adapt_result["unsupplied_figures"],
+                "misattributed": adapt_result["misattributed"],
+                "citations": adapt_result["citations"],
+                "run_id": adapt_result.get("run_id", "-"),
             },
             "insight_log_id": insight_log_id,
+            # Same id the four [agentic-loop <run_id>] log lines carry, lifted
+            # to the top level so a response and a terminal capture can be
+            # matched up without opening a section.
+            "run_id": plan_result.get("run_id", "-"),
         }), 200
 
     return app
