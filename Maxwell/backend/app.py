@@ -4,7 +4,6 @@ from flask import Flask, jsonify, request, Response
 import requests
 import json
 import re
-import sys
 
 # Flask application setup
 app = Flask(__name__)
@@ -12,15 +11,10 @@ app = Flask(__name__)
 # Enable CORS for all routes (allows frontend on port 8020 to call backend on 8021)
 @app.after_request
 def after_request(response):
-    print(f"AFTER_REQUEST: Response headers before: {response.headers}", file=sys.stderr, flush=True)
     if 'Access-Control-Allow-Origin' not in response.headers:
-        print(f"AFTER_REQUEST: Setting Access-Control-Allow-Origin to *", file=sys.stderr, flush=True)
         response.headers.set('Access-Control-Allow-Origin', '*')
-    else:
-        print(f"AFTER_REQUEST: Access-Control-Allow-Origin already present: {response.headers.get('Access-Control-Allow-Origin')}", file=sys.stderr, flush=True)
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    print(f"AFTER_REQUEST: Response headers after: {response.headers}", file=sys.stderr, flush=True)
     return response
 
 # Financial term validator - basic check to prevent non-financial terms
@@ -142,6 +136,20 @@ OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
 DISABLE_AI_MODE = os.environ.get('DISABLE_AI_MODE', 'false').lower() == 'true'
 DISABLE_MCP_PROXY = os.environ.get('DISABLE_MCP_PROXY', 'false').lower() == 'true'
 DISABLE_RAG_PROXY = os.environ.get('DISABLE_RAG_PROXY', 'false').lower() == 'true'
+
+# The MCP and RAG servers are run on the host, not in this project's
+# containers (see docker-compose.yml). A backend running inside Docker reaches
+# them through host.docker.internal; a backend running on the host should set
+# these to http://localhost:<port>. MCP_SERVER_URL is the Flask harness root
+# (port 5001) -- the /mcp/ prefix is appended at the call site.
+MCP_SERVER_URL = os.environ.get('MCP_SERVER_URL', 'http://host.docker.internal:5001')
+RAG_SERVER_URL = os.environ.get('RAG_SERVER_URL', 'http://host.docker.internal:5003')
+
+# Upstream timeouts for the MCP/RAG proxies, in seconds. Named to match the
+# env vars the other backends use. RAG gets a longer budget because
+# /api/rag/answer runs model generation rather than a quick lookup.
+MCP_TIMEOUT_SECONDS = float(os.environ.get('MCP_TIMEOUT_SECONDS', '5'))
+RAG_TIMEOUT_SECONDS = float(os.environ.get('RAG_TIMEOUT_SECONDS', '60'))
 
 # Database connection helper ensuring directory exists
 def get_db():
@@ -285,31 +293,41 @@ def delete_term(term):
 
 
 
+# Liveness probe. The database container's entrypoint waits on this before it
+# seeds (see Maxwell/database/entrypoint.sh); it must stay cheap and must not
+# touch Ollama.
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'}), 200
+
+
 # MCP Proxy Endpoints
 @app.route('/api/mcp/<path:subpath>', methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 def mcp_proxy(subpath):
-    with open('/tmp/mcp_proxy.log', 'a') as f:
-        f.write(f"MCP_PROXY: Called with subpath={subpath}\\n")
     # Check if MCP proxy is disabled for CI/CD
-    print(f"DEBUG: DISABLE_MCP_PROXY = {DISABLE_MCP_PROXY}", flush=True)
     if DISABLE_MCP_PROXY:
         return jsonify({'error': 'MCP proxy is disabled in CI/CD environment'}), 503
 
-    # Forward to MCP server Flask app (port 5001)
-    mcp_url = f"http://mcp-server:5001/mcp/{subpath}"
+    # Forward to the MCP server's Flask harness (host, port 5001)
+    mcp_url = f"{MCP_SERVER_URL}/mcp/{subpath}"
 
     # Prepare headers to forward (excluding hop-by-hop headers)
     headers = {key: value for (key, value) in request.headers if key.lower() not in
                ['host', 'content-length']}
 
     # Make the request to the MCP server
-    resp = requests.request(
-        method=request.method,
-        url=mcp_url,
-        headers=headers,
-        data=request.get_data(),
-        cookies=request.cookies,
-        allow_redirects=False)
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=mcp_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=MCP_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"MCP server unreachable at {mcp_url}: {e}")
+        return jsonify({'error': f'MCP server unreachable at {mcp_url}'}), 503
 
     # Create a Flask response with the proxied response's content, status, and headers
     response = Response(
@@ -336,12 +354,6 @@ def mcp_proxy(subpath):
         response.headers.set('Access-Control-Allow-Origin', '*')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    # Log the response headers to a file for debugging
-    try:
-        with open('/tmp/mcp_proxy_response_headers.log', 'a') as f:
-            f.write(f"Response headers: {dict(response.headers)}\\n")
-    except Exception as e:
-        pass
     return response
 
 
@@ -353,20 +365,25 @@ def rag_refresh_proxy():
         return jsonify({'error': 'RAG proxy is disabled in CI/CD environment'}), 503
 
     # Forward to RAG server (running on host port 5003)
-    rag_url = "http://rag-server:5003/refresh"
+    rag_url = f"{RAG_SERVER_URL}/refresh"
 
     # Prepare headers
     headers = {key: value for (key, value) in request.headers if key.lower() not in
                ['host', 'content-length']}
 
     # Make the request
-    resp = requests.request(
-        method=request.method,
-        url=rag_url,
-        headers=headers,
-        data=request.get_data(),
-        cookies=request.cookies,
-        allow_redirects=False)
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=rag_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=RAG_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"RAG server unreachable at {rag_url}: {e}")
+        return jsonify({'error': f'RAG server unreachable at {rag_url}'}), 503
 
     # Create Flask response
     response = Response(
@@ -382,19 +399,24 @@ def rag_retrieve_proxy():
     if DISABLE_RAG_PROXY:
         return jsonify({'error': 'RAG proxy is disabled in CI/CD environment'}), 503
 
-    rag_url = "http://rag-server:5003/retrieve"
+    rag_url = f"{RAG_SERVER_URL}/retrieve"
 
     headers = {key: value for (key, value) in request.headers if key.lower() not in
                ['host', 'content-length']}
 
     # Make the request
-    resp = requests.request(
-        method=request.method,
-        url=rag_url,
-        headers=headers,
-        data=request.get_data(),
-        cookies=request.cookies,
-        allow_redirects=False)
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=rag_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=RAG_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"RAG server unreachable at {rag_url}: {e}")
+        return jsonify({'error': f'RAG server unreachable at {rag_url}'}), 503
 
     # Create Flask response
     response = Response(
@@ -410,25 +432,30 @@ def rag_answer_proxy():
     if DISABLE_RAG_PROXY:
         return jsonify({'error': 'RAG proxy is disabled in CI/CD environment'}), 503
 
-    rag_url = "http://rag-server:5003/answer"
+    rag_url = f"{RAG_SERVER_URL}/answer"
 
     headers = {key: value for (key, value) in request.headers if key.lower() not in
                ['host', 'content-length']}
 
     # Make the request
-    resp = requests.request(
-        method=request.method,
-        url=rag_url,
-        headers=headers,
-        data=request.get_data(),
-        cookies=request.cookies,
-        allow_redirects=False)
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=rag_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=RAG_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"RAG server unreachable at {rag_url}: {e}")
+        return jsonify({'error': f'RAG server unreachable at {rag_url}'}), 503
 
     # Create Flask response
     response = Response(
         resp.content,
         status=resp.status_code,
-        headers=dict(resp.headers)
+        headers=dict(response.headers)
     )
     return response
 

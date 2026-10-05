@@ -156,7 +156,16 @@ services:
       - "8021:5000"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:0.5b}
       - DATABASE=/data/glossary.sqlite
+      # MCP and RAG run on the host, not in this stack. Those servers are
+      # shared and unmodified; run them locally and this backend reaches them
+      # through host.docker.internal.
+      - MCP_SERVER_URL=http://host.docker.internal:5001
+      - RAG_SERVER_URL=http://host.docker.internal:5003
+    extra_hosts:
+      # Resolves automatically on Docker Desktop; needed on Linux engines.
+      - "host.docker.internal:host-gateway"
     volumes:
       - maxwell-db-data:/data
     depends_on:
@@ -175,6 +184,13 @@ services:
       - "8020:80"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      # Dev convenience only: serve these two files straight off the working
+      # tree, so a browser refresh picks up HTML/CSS edits without a rebuild.
+      # The Dockerfile still copies the same files into the image, so the
+      # image remains self-contained if these mounts are removed.
+      - ./Maxwell/frontend/index.html:/app/index.html
+      - ./Maxwell/frontend/styles.css:/app/styles.css
     depends_on:
       - maxwell-backend
 

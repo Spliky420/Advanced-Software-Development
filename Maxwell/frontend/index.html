@@ -22,31 +22,45 @@
             <!-- Glossary terms will be loaded here -->
         </div>
 
-        <div id="mcp-rag-section">
-            <h2>MCP & RAG Tools</h2>
+        <!-- MCP & RAG tools live in an off-canvas side panel, opened from a tab
+             on the right edge, instead of sitting in the page flow. -->
+        <button id="tools-tab" class="drawer-tab" aria-controls="tools-drawer" aria-expanded="false">
+            MCP &amp; RAG
+        </button>
 
-            <div class="tool-section">
-                <h3>MCP Tools</h3>
-                <div class="tool-item">
-                    <label for="mcp-term-input">MCP Glossary Lookup:</label>
-                    <input type="text" id="mcp-term-input" placeholder="Enter term (e.g., ETF)">
-                    <button id="mcp-glossary-btn" class="edit-btn tool-btn">Lookup Term</button>
+        <div id="tools-scrim" class="drawer-scrim"></div>
+
+        <aside id="tools-drawer" class="drawer" role="dialog" aria-modal="true"
+               aria-labelledby="tools-drawer-title" aria-hidden="true">
+            <header class="drawer-header">
+                <h2 id="tools-drawer-title">MCP &amp; RAG Tools</h2>
+                <button id="tools-close" class="drawer-close" aria-label="Close tools">&times;</button>
+            </header>
+
+            <div class="drawer-body">
+                <div class="tool-section">
+                    <h3>MCP Tools</h3>
+                    <div class="tool-item">
+                        <label for="mcp-term-input">MCP Glossary Lookup:</label>
+                        <input type="text" id="mcp-term-input" placeholder="Enter term (e.g., ETF)">
+                        <button id="mcp-glossary-btn" class="edit-btn tool-btn">Lookup Term</button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>RAG Tools</h3>
+                    <div class="tool-item">
+                        <label for="rag-query-input">Ask a Financial Question:</label>
+                        <input type="text" id="rag-query-input" placeholder="e.g., What is diversification?">
+                        <button id="rag-answer-btn" class="edit-btn tool-btn">Get Answer</button>
+                    </div>
+                </div>
+
+                <div id="mcp-rag-results">
+                    <!-- Results will be displayed here -->
                 </div>
             </div>
-
-            <div class="tool-section">
-                <h3>RAG Tools</h3>
-                <div class="tool-item">
-                    <label for="rag-query-input">Ask a Financial Question:</label>
-                    <input type="text" id="rag-query-input" placeholder="e.g., What is diversification?">
-                    <button id="rag-answer-btn" class="edit-btn tool-btn">Get Answer</button>
-                </div>
-            </div>
-
-            <div id="mcp-rag-results">
-                <!-- Results will be displayed here -->
-            </div>
-        </div>
+        </aside>
     </div>
     <script>
         // Fetch glossary terms from the backend API
@@ -274,6 +288,41 @@
             } catch (error) {
                 console.error('Error calling RAG answer:', error);
                 resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        // MCP & RAG side drawer. The tab reveals the tools; the scrim, the
+        // close button and Escape all dismiss them. The tool buttons above are
+        // untouched -- only the panel containing them moved.
+        const toolsDrawer = document.getElementById('tools-drawer');
+        const toolsScrim = document.getElementById('tools-scrim');
+        const toolsTab = document.getElementById('tools-tab');
+        const toolsClose = document.getElementById('tools-close');
+
+        function openTools() {
+            toolsDrawer.classList.add('open');
+            toolsScrim.classList.add('open');
+            toolsDrawer.setAttribute('aria-hidden', 'false');
+            toolsTab.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('drawer-open');
+            toolsClose.focus();
+        }
+
+        function closeTools() {
+            toolsDrawer.classList.remove('open');
+            toolsScrim.classList.remove('open');
+            toolsDrawer.setAttribute('aria-hidden', 'true');
+            toolsTab.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('drawer-open');
+            toolsTab.focus();
+        }
+
+        toolsTab.addEventListener('click', openTools);
+        toolsClose.addEventListener('click', closeTools);
+        toolsScrim.addEventListener('click', closeTools);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && toolsDrawer.classList.contains('open')) {
+                closeTools();
             }
         });
 
