@@ -8,6 +8,12 @@
 # either monkeypatched (llm.requests.post, llm.generate) or injected via
 # drift.adapt's generate_fn. The whole suite has been verified to pass with all
 # outbound sockets blocked.
+#
+# No MCP or RAG server runs in CI either: per the Release 1 brief both are
+# host-run services, not part of this build. The backend job switches both
+# clients off with empty MCP_SERVER_URL / RAG_SERVER_URL and prints and checks
+# that config before the tests run. (joshua/tests/conftest.py also blanks them
+# per test, so the suite never depends on the runner's environment.)
 
 name: joshua-ci
 
@@ -15,6 +21,7 @@ on:
   push:
     branches:
       - Joshua-Portfolio-Holdings
+      - Joshua-Release-0
     paths:
       - 'joshua/**'
       - '.github/workflows/joshua-ci.yml'
@@ -43,6 +50,10 @@ jobs:
       # socket to Ollama; if a future test regresses and tries, it fails fast
       # here instead of silently passing on a machine that happens to have one.
       OLLAMA_BASE_URL: http://127.0.0.1:1
+      # Empty -- not unset -- is the clients' off switch. Unset would fall
+      # back to their default host addresses.
+      MCP_SERVER_URL: ''
+      RAG_SERVER_URL: ''
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
@@ -66,6 +77,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r joshua/backend/requirements.txt
           pip install -r joshua/tests/requirements.txt
+
+      - name: Show AI service config (MCP and RAG disabled)
+        # Prints the raw values, then asks the clients themselves how they
+        # read them: both must report "disabled", or the step fails.
+        working-directory: joshua/backend
+        run: |
+          echo "MCP_SERVER_URL='${MCP_SERVER_URL-<unset>}'"
+          echo "RAG_SERVER_URL='${RAG_SERVER_URL-<unset>}'"
+          echo "OLLAMA_BASE_URL='${OLLAMA_BASE_URL}'"
+          python - <<'PY'
+          import mcp_client, rag_client
+          mcp_url, rag_url = mcp_client.get_server_url(), rag_client.get_server_url()
+          print(f"mcp_client -> {'disabled' if mcp_url is None else mcp_url}")
+          print(f"rag_client -> {'disabled' if rag_url is None else rag_url}")
+          assert mcp_url is None, "MCP must be disabled in CI"
+          assert rag_url is None, "RAG must be disabled in CI"
+          PY
 
       - name: Run pytest
         run: pytest joshua/tests -v
@@ -110,3 +138,8 @@ jobs:
 
       - name: Build the backend image
         run: docker build -t joshua-backend:ci joshua/backend
+
+      - name: Build the database image
+        # The third microservice. It owns portfolio.db and runs init.sql and
+        # seed.sql on first start, so a break here breaks the whole stack.
+        run: docker build -t joshua-database:ci joshua/database

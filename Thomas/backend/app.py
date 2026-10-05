@@ -23,6 +23,11 @@ MCP_SERVER_URL = os.getenv(
     "http://host.docker.internal:5002/mcp"
 )
 
+RAG_SERVER_URL = os.getenv(
+    "RAG_SERVER_URL",
+    "http://host.docker.internal:5003"
+)
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
@@ -143,6 +148,94 @@ def mcp_transaction_summary():
             "success": False,
             "error": str(error)
         }), 500
+
+@app.route("/api/transactions/rag", methods=["POST"])
+def rag_question():
+    try:
+        question = request.form.get("question", "").strip()
+
+        if not question:
+            return """
+                <div class="ai-suggestion">
+                    <p>Please enter a question.</p>
+                </div>
+            """, 400
+
+        response = requests.post(
+            f"{RAG_SERVER_URL}/answer",
+            json={
+                "query": question,
+                "k": 5,
+                "caller": "Thomas"
+            },
+            timeout=120
+        )
+
+        response.raise_for_status()
+        data = response.json()
+
+        answer = data.get("answer", "No answer returned.")
+        confidence = data.get("confidence_category", "Unknown")
+        citations = data.get("citations", [])
+
+        citation_html = ""
+
+        for citation in citations:
+            source = citation.get("source_id", "Unknown source")
+            chunk = citation.get("chunk_id", "")
+
+            citation_html += f"""
+                <li>
+                    {source}
+                    <small>({chunk})</small>
+                </li>
+            """
+
+        return f"""
+            <div class="ai-suggestion">
+
+                <h4>RAG Answer</h4>
+
+                <p>{answer}</p>
+
+                <p>
+                    <strong>Confidence:</strong>
+                    {confidence}
+                </p>
+
+                <p><strong>Sources:</strong></p>
+
+                <ul>
+                    {citation_html}
+                </ul>
+
+                <p class="ai-warning">
+                    Answer generated using retrieved context
+                    from the shared RAG server.
+                </p>
+
+            </div>
+        """
+
+    except requests.exceptions.RequestException as error:
+        print("RAG server error:", error)
+
+        return """
+            <div class="ai-suggestion">
+                <p>
+                    Could not connect to the shared RAG server.
+                </p>
+            </div>
+        """, 502
+
+    except Exception as error:
+        print("RAG error:", error)
+
+        return f"""
+            <div class="ai-suggestion">
+                <p>RAG Error: {str(error)}</p>
+            </div>
+        """, 500
 
 
 @app.route("/api/transactions/ai-classify", methods=["POST"])

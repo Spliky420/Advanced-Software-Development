@@ -45,6 +45,19 @@ def mcp_transaction_summary():
         content_type=response.headers.get("Content-Type"),
     )
 
+@app.route("/api/transactions/rag", methods=["POST"])
+def rag_question():
+    response = requests.post(
+        f"{BACKEND_URL}/api/transactions/rag",
+        data=request.form
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type"),
+    )
+
 @app.route("/api/transactions", methods=["GET", "POST"])
 def transactions():
     if request.method == "GET":
