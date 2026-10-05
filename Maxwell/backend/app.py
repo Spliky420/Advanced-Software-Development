@@ -455,7 +455,7 @@ def rag_answer_proxy():
     response = Response(
         resp.content,
         status=resp.status_code,
-        headers=dict(response.headers)
+        headers=dict(resp.headers)
     )
     return response
 
