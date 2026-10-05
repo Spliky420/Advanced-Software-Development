@@ -15,10 +15,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
+      # Deliberately unreachable. The unit tests mock every LLM call, so
+      # nothing here should ever open a socket to Ollama; if a test regresses
+      # and tries, it fails fast instead of silently passing on a machine that
+      # happens to have one.
       OLLAMA_BASE_URL: http://127.0.0.1:1
-      DISABLE_AI_MODE: true
-      DISABLE_MCP_PROXY: true
-      DISABLE_RAG_PROXY: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
