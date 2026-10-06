@@ -101,7 +101,31 @@ export const putBudgetSettings = (payload) =>
   request('/api/budget/settings', { method: 'PUT', ...jsonBody(payload) })
 
 // --- The agentic loop -------------------------------------------------------
-export const generatePlan = (goalId) => request(`/api/goals/${goalId}/plan`, { method: 'POST' })
+// `useMcp` chooses whether planning pulls cross-feature context over MCP
+// first. It is sent explicitly on every call rather than left to the
+// backend's default, because the whole point of the mode selector is that the
+// two behaviours can be compared side by side.
+export const generatePlan = (goalId, { useMcp = true } = {}) =>
+  request(`/api/goals/${goalId}/plan`, { method: 'POST', ...jsonBody({ use_mcp: useMcp }) })
 export const getProgress = (goalId) => request(`/api/goals/${goalId}/progress`)
-export const regeneratePlan = (goalId) => request(`/api/goals/${goalId}/replan`, { method: 'POST' })
+export const regeneratePlan = (goalId, { useMcp = true } = {}) =>
+  request(`/api/goals/${goalId}/replan`, { method: 'POST', ...jsonBody({ use_mcp: useMcp }) })
 export const getAiLog = (goalId) => request(`/api/goals/${goalId}/ai-log`)
+
+// --- MCP (Release 1) --------------------------------------------------------
+// Every one of these is served by this app's own backend. The browser never
+// talks to the MCP server: it is a host process on another port with no CORS
+// headers, and routing through the API is what gives every caller the same
+// audit trail, timeout policy and graceful degradation.
+export const getMcpHealth = () => request('/api/mcp/health')
+export const getMcpTools = () => request('/api/mcp/tools')
+export const callMcpTool = (payload) => request('/api/mcp/call', { method: 'POST', ...jsonBody(payload) })
+export const getMcpContext = (goalId, { useMcp = true } = {}) =>
+  request(`/api/goals/${goalId}/mcp-context${query({ use_mcp: useMcp })}`)
+
+// --- RAG (Release 1) --------------------------------------------------------
+// Likewise: the RAG server is never called from the browser.
+export const getRagHealth = () => request('/api/rag/health')
+export const askRag = (payload) => request('/api/rag/ask', { method: 'POST', ...jsonBody(payload) })
+export const explainGoal = (goalId, payload = {}) =>
+  request(`/api/goals/${goalId}/explain`, { method: 'POST', ...jsonBody(payload) })

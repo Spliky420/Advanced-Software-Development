@@ -37,6 +37,19 @@ def _float_env(name: str, default: float) -> float:
         return default
 
 
+# Anything other than these reads as false, so a typo disables a feature
+# loudly rather than enabling it by accident.
+_TRUTHY = ("1", "true", "yes", "on")
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    """Read a boolean environment variable. Absent or unparseable -> default."""
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    return raw.strip().lower() in _TRUTHY
+
+
 class Config:
     """Base configuration. Read once at app creation."""
 
@@ -67,6 +80,60 @@ class Config:
     # noise, not a trend. Floored at $1 so a tiny plan is not hair-triggered.
     PROGRESS_TOLERANCE_PERCENT = _float_env("PROGRESS_TOLERANCE_PERCENT", 1.0)
     PROGRESS_TOLERANCE_FLOOR = _float_env("PROGRESS_TOLERANCE_FLOOR", 1.0)
+
+    # --- MCP (Release 1) --------------------------------------------------
+    # The shared MCP server is a HOST process, not a container (see the brief
+    # and the README's "Two conflicts" note), so a containerised backend
+    # cannot reach it on a compose service name. On Docker Desktop the host is
+    # host.docker.internal; `extra_hosts: ["host.docker.internal:host-gateway"]`
+    # in the compose snippet makes the same name work on Linux. Running the
+    # backend outside Docker, point this at localhost instead.
+    #
+    # The path matters: /mcp is the streamable-http endpoint FastMCP serves
+    # (mcp-server/server.py). Port 5001 is a Flask harness that renders HTML
+    # for its author's own UI and is not an MCP endpoint at all.
+    MCP_ENABLED = _bool_env("MCP_ENABLED", True)
+    MCP_SERVER_URL = os.environ.get("MCP_SERVER_URL") or "http://host.docker.internal:5002/mcp"
+    # Bounds one whole MCP operation, connect to result, however many tools
+    # share the session. Measured against the shared server on the development
+    # laptop, assembling the budget context (two tools, one session):
+    #
+    #   both teammate backends healthy      2.8s
+    #   both refusing connections           6.8s   -> falls back, 2 error rows
+    #
+    # 15s is a bit over twice the worst measured case. Sizing it higher buys
+    # nothing: mcp-server/tools.py gives each teammate request its own 10s
+    # timeout and bill_summary makes two of them, so a single *hung* backend
+    # can burn 20s inside the tool alone. No deadline this side of the
+    # protocol can wait that out, so the deadline is sized for the cases it
+    # can actually distinguish, and a hung backend lands on the same clean
+    # fallback as a refused one.
+    MCP_TIMEOUT_SECONDS = _float_env("MCP_TIMEOUT_SECONDS", 15.0)
+
+    # --- RAG (Release 1) --------------------------------------------------
+    # The shared RAG server, also a host process (rag-server/rag_http_server.py
+    # on port 5003). Same host.docker.internal reasoning as MCP above.
+    #
+    # No path suffix: the server routes on /health, /retrieve, /answer and
+    # /refresh from the root.
+    RAG_ENABLED = _bool_env("RAG_ENABLED", True)
+    RAG_SERVER_URL = os.environ.get("RAG_SERVER_URL") or "http://host.docker.internal:5003"
+
+    # A grounded answer is a retrieval plus a full LLM generation inside the
+    # RAG server, which runs its own Ollama call with a 120s timeout of its
+    # own. This has to be generous enough not to abandon a request that is
+    # still working on a cold model, while staying under gunicorn's 180s.
+    RAG_TIMEOUT_SECONDS = _float_env("RAG_TIMEOUT_SECONDS", 150.0)
+
+    # How many chunks to retrieve. The shared server defaults to 5 and derives
+    # its confidence category from how many come back (>=3 reads as High), so
+    # lowering this below 3 would cap every answer at Medium -- see the
+    # README's known issues.
+    RAG_TOP_K = _int_env("RAG_TOP_K", 5)
+
+    # Identifies this backend in the RAG server's own audit log
+    # (rag-server/rag-audit.jsonl), which records a `caller` per request.
+    RAG_CALLER = os.environ.get("RAG_CALLER") or "lehoalong-goals-budgeting"
 
     # --- CORS -------------------------------------------------------------
     # The Vite dev server and the containerised frontend both live on 8060.

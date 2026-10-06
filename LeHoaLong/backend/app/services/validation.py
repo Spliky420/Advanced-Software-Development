@@ -435,3 +435,186 @@ def validate_budget_settings(payload: Any, default_user_id: int) -> dict:
     if errors:
         raise ValidationFailed(errors)
     return clean
+
+
+# ---------------------------------------------------------------------------
+# Release 1 payloads -- MCP and RAG
+# ---------------------------------------------------------------------------
+
+# A tool name long enough for anything the shared server advertises, short
+# enough that a junk body cannot be stored as one.
+MAX_TOOL_NAME_LENGTH = 80
+
+
+def validate_mcp_call(payload: Any) -> dict:
+    """Validate a POST /api/mcp/call body.
+
+    Deliberately NOT checked against a list of the six tool names that exist
+    today. This endpoint's purpose is to call whatever the shared server
+    advertises, and a hardcoded allow-list here would turn one teammate adding
+    a tool into a 400 from my backend. The server is the authority on which
+    tools exist; an unknown name comes back as an MCP error, which is the
+    honest answer.
+
+    `arguments` must be an object because that is what the protocol sends --
+    MCP arguments are named, never positional.
+
+    `goal_id` is optional and only decides which goal the audit row is
+    attributed to. It is never used to scope data.
+    """
+    payload = require_object(payload)
+    errors: list[str] = []
+
+    clean = {
+        "tool": clean_string(payload, "tool", errors, required=True, max_length=MAX_TOOL_NAME_LENGTH),
+        "goal_id": None,
+    }
+
+    arguments = payload.get("arguments")
+    if arguments is None:
+        clean["arguments"] = {}
+    elif isinstance(arguments, dict):
+        clean["arguments"] = arguments
+    else:
+        errors.append("arguments must be a JSON object")
+
+    if payload.get("goal_id") is not None:
+        goal_id = payload["goal_id"]
+        if isinstance(goal_id, bool) or not isinstance(goal_id, int):
+            errors.append("goal_id must be an integer")
+        elif goal_id <= 0:
+            errors.append("goal_id must be a positive integer")
+        else:
+            clean["goal_id"] = goal_id
+
+    if errors:
+        raise ValidationFailed(errors)
+    return clean
+
+
+# Query-string booleans. Accepted spellings are the same ones config.py takes
+# for environment variables, so "use_mcp=false" means the same thing on the
+# URL as MCP_ENABLED=false does in the environment.
+TRUE_WORDS = ("1", "true", "yes", "on")
+FALSE_WORDS = ("0", "false", "no", "off")
+
+
+def flag_value(field: str, *sources: Any, default: bool) -> bool:
+    """Read a boolean flag from the first source that mentions it.
+
+    Two sources, because the same switch is wanted in two places: a JSON body
+    for `POST /api/goals/<id>/plan {"use_mcp": false}`, and a query string for
+    `GET /api/goals/<id>/mcp-context?use_mcp=false` and for the curl sequence
+    the report uses as evidence. A real JSON boolean is taken as it is; a
+    query-string value is read by the same spellings config.py accepts for
+    environment variables, so `use_mcp=false` on a URL means what
+    `MCP_ENABLED=false` means in the environment.
+
+    An unrecognised value is a 400 rather than a silent default. `use_mcp=no`
+    and `use_mcp=flase` must not both mean "on": the first asks for the
+    fallback path and the second is a typo the caller needs to see, because
+    quietly ignoring it would make a demonstration of the fallback path show
+    the MCP path instead.
+    """
+    raw: Any = None
+    for source in sources:
+        if source is not None and hasattr(source, "get") and field in source:
+            raw = source.get(field)
+            break
+    else:
+        return default
+
+    if isinstance(raw, bool):
+        return raw
+    if raw is None or not str(raw).strip():
+        return default
+
+    value = str(raw).strip().lower()
+    if value in TRUE_WORDS:
+        return True
+    if value in FALSE_WORDS:
+        return False
+    raise ValidationFailed([f"{field} must be one of {', '.join(TRUE_WORDS + FALSE_WORDS)}"])
+
+
+def flag_arg(args: Any, field: str, *, default: bool) -> bool:
+    """Read a boolean query-string flag. See flag_value."""
+    return flag_value(field, args, default=default)
+
+
+# ---------------------------------------------------------------------------
+# RAG payloads
+# ---------------------------------------------------------------------------
+
+# Long enough for a real question, short enough that a pasted document is
+# rejected rather than embedded. The shared pipeline hashes the words of a
+# question into a 256-dimension vector, so a very long question retrieves
+# against everything and therefore against nothing in particular.
+MAX_QUESTION_LENGTH = 500
+
+# The shared server derives its confidence category from how many chunks came
+# back, so top_k is not a free parameter: below 3 caps every answer at Medium.
+# The ceiling is the corpus being small -- asking for 50 chunks would retrieve
+# the whole thing and ground every answer in all of it.
+MIN_TOP_K = 1
+MAX_TOP_K = 20
+
+
+def _clean_top_k(value: Any, errors: list[str]) -> int | None:
+    """Validate an optional top_k. None means "use the configured default"."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        errors.append("top_k must be an integer")
+        return None
+    if isinstance(value, str):
+        try:
+            value = int(value.strip())
+        except ValueError:
+            errors.append("top_k must be an integer")
+            return None
+    if not isinstance(value, int):
+        errors.append("top_k must be an integer")
+        return None
+    if not MIN_TOP_K <= value <= MAX_TOP_K:
+        errors.append(f"top_k must be between {MIN_TOP_K} and {MAX_TOP_K}")
+        return None
+    return value
+
+
+def validate_rag_question(payload: Any) -> dict:
+    """Validate a POST /api/rag/ask body."""
+    payload = require_object(payload)
+    errors: list[str] = []
+
+    clean = {
+        "question": clean_string(
+            payload, "question", errors, required=True, max_length=MAX_QUESTION_LENGTH
+        ),
+        "top_k": _clean_top_k(payload.get("top_k"), errors),
+    }
+
+    if errors:
+        raise ValidationFailed(errors)
+    return clean
+
+
+def validate_rag_options(payload: Any, args: Any = None) -> dict:
+    """Validate the options for an endpoint that builds its own question.
+
+    POST /api/goals/<id>/explain takes no question -- it writes one from the
+    goal's observed figures -- so the only option is retrieval depth, from
+    either a JSON body or the query string.
+    """
+    payload = payload if isinstance(payload, dict) else {}
+    errors: list[str] = []
+
+    raw = payload.get("top_k")
+    if raw is None and args is not None:
+        raw = args.get("top_k")
+
+    clean = {"top_k": _clean_top_k(raw, errors)}
+
+    if errors:
+        raise ValidationFailed(errors)
+    return clean

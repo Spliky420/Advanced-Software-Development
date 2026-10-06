@@ -25,6 +25,27 @@ the call is retried once, and if that also fails the deterministic even-split
 plan stands in. The endpoint still returns 201 with a real plan, flagged
 `fallback: true`. Ollama being unreachable is different -- that is
 infrastructure, and it is a clean 503.
+
+Release 1 adds cross-feature context to PLAN and ADAPT, and neither rule
+bends. What changed:
+
+  * the available-to-save figure is now net of the recurring bills another
+    student's backend reports over MCP, not only of this user's other goals
+    (app/mcp/context.py does the one subtraction, in Python)
+  * the prompt states that figure, the bills figure and the observed ledger
+    totals as settled facts, so the model's wording can acknowledge a
+    stretched budget
+  * the response carries an `mcp` block saying whether that happened, and a
+    Python-computed `shortfall` when the plan asks for more than is available
+
+What deliberately did NOT change: **the instalment amount.** It stays
+`remaining / months_remaining`. Re-cutting instalments to fit the available
+figure would silently miss the target date the user asked for, which is a
+worse answer than an honest "this is a stretch". MCP changes the verdict on a
+plan, not the arithmetic of it.
+
+And MCP is never load-bearing. Disabled, unreachable, or a teammate's backend
+down all fall back to the Release 0 figure from budget_settings, and say so.
 """
 
 from __future__ import annotations
@@ -38,6 +59,7 @@ from flask import current_app
 
 from ..ai import client, parsing, prompts
 from ..errors import ValidationFailed
+from ..mcp import context as mcp_context
 from ..models import ai_log as ai_log_model
 from ..models import contributions as contributions_model
 from ..models import steps as steps_model
@@ -354,12 +376,20 @@ def _write_exchange_log(
 # ---------------------------------------------------------------------------
 
 
-def _prepare(conn: sqlite3.Connection, goal_id: int, as_at: date | None) -> dict:
+def _prepare(
+    conn: sqlite3.Connection, goal_id: int, as_at: date | None, *, use_mcp: bool = True
+) -> dict:
     """The shared groundwork for both plan and replan.
 
     Both need the same things: the goal with its funding figures, a schedule
-    covering what is left, and how much monthly budget the user's *other*
-    goals have not already claimed.
+    covering what is left, and how much of the monthly budget is actually
+    free -- which in Release 1 means asking the MCP server what is already
+    committed elsewhere before answering.
+
+    `available` is the single figure everything downstream uses. It comes from
+    the MCP context when that worked and is Release 0's budget-settings figure
+    when it did not, so the plan code below needs no opinion about which
+    happened: it reads one number, and the `mcp` block explains its provenance.
     """
     goal = goals_service.get_goal_or_404(conn, goal_id)
     as_at = as_at or dates.today()
@@ -389,7 +419,17 @@ def _prepare(conn: sqlite3.Connection, goal_id: int, as_at: date | None) -> dict
     budget = budget_service.available_monthly(
         conn, goal["user_id"], exclude_goal_id=goal_id, as_at=as_at
     )
-    return {"goal": goal, "as_at": as_at, "schedule": schedule, "budget": budget}
+    context = mcp_context.assemble(
+        conn, goal_id=goal_id, budget=budget, as_at=as_at, use_mcp=use_mcp
+    )
+    return {
+        "goal": goal,
+        "as_at": as_at,
+        "schedule": schedule,
+        "budget": budget,
+        "context": context,
+        "available": context["available_to_save"],
+    }
 
 
 def _persist(conn: sqlite3.Connection, goal_id: int, merged: list[dict]) -> None:
@@ -414,16 +454,60 @@ def _persist(conn: sqlite3.Connection, goal_id: int, merged: list[dict]) -> None
         )
 
 
-def plan_goal(conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = None) -> dict:
+def _affordability(monthly_amount: float, available: float | None) -> dict:
+    """Does the plan fit inside what is actually available? Python decides.
+
+    `shortfall` is signed only in the sense that it is reported when positive:
+    how much more per month this plan needs than the user has spare. None when
+    no budget has been set, because there is then nothing to compare against
+    -- which is not the same as the plan being affordable, and the two must
+    not both read as `within_budget: true`.
+    """
+    if available is None:
+        return {"available_monthly_budget": None, "within_budget": None, "shortfall": None}
+    return {
+        "available_monthly_budget": available,
+        "within_budget": monthly_amount <= available,
+        "shortfall": round(max(monthly_amount - available, 0.0), 2),
+    }
+
+
+def _mcp_block(context: dict) -> dict:
+    """The `mcp` summary carried in a plan or replan response.
+
+    A summary, not the whole context: tool names and the outcome, with the
+    figures and the term-by-term calculation left in `mcp_context` at the top
+    level of the response. The frontend reads this block to decide what to
+    render, and `reason` is what it shows when MCP did not contribute.
+    """
+    status = context["mcp"]
+    return {
+        "enabled": status["enabled"],
+        "used": status["used"],
+        "partial": status["partial"],
+        "reason": status["reason"],
+        "server_url": status["server_url"],
+        "tools_called": [item["tool"] for item in status["tools_called"]],
+        "tools_failed": [item["tool"] for item in status["tools_called"] if item["is_error"]],
+        "available_to_save": context["available_to_save"],
+        "source": context["available_to_save_source"],
+    }
+
+
+def plan_goal(
+    conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = None, use_mcp: bool = True
+) -> dict:
     """PLAN: generate and persist an ordered schedule of savings steps."""
-    context = _prepare(conn, goal_id, as_at)
-    goal, schedule, budget = context["goal"], context["schedule"], context["budget"]
+    prepared = _prepare(conn, goal_id, as_at, use_mcp=use_mcp)
+    goal, schedule, budget = prepared["goal"], prepared["schedule"], prepared["budget"]
+    context, available = prepared["context"], prepared["available"]
 
     prompt = prompts.build_plan_prompt(
         goal=goal,
         schedule=schedule,
         currency=budget["currency"],
-        available_monthly=budget["available"],
+        available_monthly=available,
+        context=context,
     )
     outcome = _ask_model(prompt, prompts.PLAN_SYSTEM_PROMPT, [item["step_order"] for item in schedule])
     merged = parsing.merge_descriptions(schedule, outcome["descriptions"], default_description)
@@ -445,21 +529,22 @@ def plan_goal(conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = No
             "monthly_amount": merged[0]["step_amount"],
             "first_due_date": merged[0]["due_date"],
             "final_due_date": merged[-1]["due_date"],
-            "available_monthly_budget": budget["available"],
-            "within_budget": (
-                None if budget["available"] is None else merged[0]["step_amount"] <= budget["available"]
-            ),
+            **_affordability(merged[0]["step_amount"], available),
+            "mcp": _mcp_block(context),
             "model_name": outcome["model_name"],
             "llm_called": bool(outcome["attempts"]),
             "fallback": outcome["fallback"],
             "fallback_reason": outcome["fallback_reason"],
             "log_ids": log_ids,
         },
+        "mcp_context": context,
         "goal": goals_service.get_goal_detail(conn, goal_id),
     }
 
 
-def replan_goal(conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = None) -> dict:
+def replan_goal(
+    conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = None, use_mcp: bool = True
+) -> dict:
     """ADAPT: re-cut the remaining steps around the variance observe measured.
 
     Runs observe first so the model is told what actually happened, then
@@ -468,15 +553,17 @@ def replan_goal(conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = 
     every figure in it was calculated here.
     """
     observation = observe(conn, goal_id, as_at=as_at, log=True)
-    context = _prepare(conn, goal_id, as_at)
-    goal, schedule, budget = context["goal"], context["schedule"], context["budget"]
+    prepared = _prepare(conn, goal_id, as_at, use_mcp=use_mcp)
+    goal, schedule, budget = prepared["goal"], prepared["schedule"], prepared["budget"]
+    context, available = prepared["context"], prepared["available"]
 
     prompt = prompts.build_adapt_prompt(
         goal=goal,
         observation=observation,
         schedule=schedule,
         currency=budget["currency"],
-        available_monthly=budget["available"],
+        available_monthly=available,
+        context=context,
     )
     outcome = _ask_model(prompt, prompts.ADAPT_SYSTEM_PROMPT, [item["step_order"] for item in schedule])
     merged = parsing.merge_descriptions(schedule, outcome["descriptions"], default_description)
@@ -513,13 +600,15 @@ def replan_goal(conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = 
             "previous_monthly_amount": previous_monthly,
             "revised_monthly_amount": merged[0]["step_amount"],
             "final_due_date": merged[-1]["due_date"],
-            "available_monthly_budget": budget["available"],
+            **_affordability(merged[0]["step_amount"], available),
+            "mcp": _mcp_block(context),
             "model_name": outcome["model_name"],
             "llm_called": bool(outcome["attempts"]),
             "fallback": outcome["fallback"],
             "fallback_reason": outcome["fallback_reason"],
             "log_ids": log_ids,
         },
+        "mcp_context": context,
         "goal": goals_service.get_goal_detail(conn, goal_id),
     }
 

@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -45,6 +46,11 @@ TABLES = ("goals", "goal_steps", "contributions", "ai_plan_log", "budget_setting
 
 # The marking requirement: every table carries at least this many rows.
 MIN_ROWS_PER_TABLE = 10
+
+# Every phase ai_plan_log must accept. Release 0 shipped three; Release 1's MCP
+# and RAG integrations add two more, and an existing database file still has
+# the old three-phase CHECK constraint -- see migrate_ai_plan_log.
+REQUIRED_PHASES = ("plan", "observe", "adapt", "mcp", "rag")
 
 
 def resolve_db_path(cli_value: str | None) -> Path:
@@ -105,6 +111,112 @@ def build(db_path: Path, force: bool) -> bool:
     building.replace(db_path)
     print(f"[init_db] initialised {db_path}")
     return True
+
+
+# ---------------------------------------------------------------------------
+# Migration -- ai_plan_log's phase constraint
+# ---------------------------------------------------------------------------
+
+
+def phase_is_allowed(conn: sqlite3.Connection, phase: str) -> bool:
+    """Whether ai_plan_log's CHECK constraint currently accepts `phase`.
+
+    Probed with a real insert that is then rolled back, rather than by
+    pattern-matching the DDL in sqlite_master: the constraint is whatever
+    SQLite actually enforces, not whatever the stored text looks like.
+    """
+    try:
+        conn.execute(
+            "INSERT INTO ai_plan_log (goal_id, phase, model_name, prompt, response, created_at) "
+            "VALUES (NULL, ?, 'probe', 'constraint probe', NULL, '1970-01-01T00:00:00')",
+            (phase,),
+        )
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return False
+    conn.rollback()
+    return True
+
+
+def _ai_plan_log_ddl() -> tuple[str, list[str]]:
+    """The ai_plan_log table and index statements, read out of schema.sql.
+
+    Read rather than duplicated here on purpose. A migrated database and a
+    freshly seeded one have to end up with the same table, and the surest way
+    to guarantee that is for both to come from the same text.
+    """
+    text = SCHEMA_FILE.read_text(encoding="utf-8")
+
+    table = re.search(r"^CREATE TABLE ai_plan_log\b.*?;", text, re.DOTALL | re.MULTILINE)
+    if table is None:
+        raise ValueError(f"could not find the ai_plan_log table definition in {SCHEMA_FILE}")
+
+    indexes = re.findall(r"^CREATE INDEX\s+\w+\s+ON ai_plan_log\b[^;]*;", text, re.MULTILINE)
+    return table.group(0), indexes
+
+
+def migrate_ai_plan_log(conn: sqlite3.Connection) -> str | None:
+    """Rebuild ai_plan_log with the current CHECK constraint, preserving rows.
+
+    Returns a one-line description of what it did, or None if the table
+    already accepts every phase in REQUIRED_PHASES.
+
+    Why this exists: Release 1 logs MCP tool calls and RAG answers to this
+    table, and `phase` is constrained by a CHECK. A database created before
+    those phases existed -- which is every goals.db already sitting on the
+    lehoalong-db-data volume -- rejects them with an IntegrityError at the
+    moment of the first MCP call, i.e. live in front of a marker. The
+    alternative was `INIT_DB_FORCE=1`, which fixes the constraint by throwing
+    away every goal created since the volume was made.
+
+    SQLite cannot ALTER a CHECK constraint, so this is the table-rebuild
+    procedure from the SQLite documentation ("Making Other Kinds Of Table
+    Schema Changes"): foreign keys off, copy into a new table, swap the names,
+    recreate the indexes, foreign keys back on. log_id values are carried
+    across unchanged, so ai-log entries keep the ids any report already cites.
+    """
+    missing = [phase for phase in REQUIRED_PHASES if not phase_is_allowed(conn, phase)]
+    if not missing:
+        return None
+
+    table_sql, index_sql = _ai_plan_log_ddl()
+    preserved = conn.execute("SELECT COUNT(*) FROM ai_plan_log").fetchone()[0]
+
+    # Explicit transaction control: the pragma below only takes effect outside
+    # a transaction, so the implicit one the driver would otherwise open has to
+    # be out of the way.
+    previous_isolation = conn.isolation_level
+    conn.commit()
+    conn.isolation_level = None
+    try:
+        conn.execute("PRAGMA foreign_keys = OFF")
+        conn.execute("BEGIN")
+        try:
+            conn.execute(
+                table_sql.replace("CREATE TABLE ai_plan_log", "CREATE TABLE ai_plan_log_migrated", 1)
+            )
+            conn.execute(
+                "INSERT INTO ai_plan_log_migrated "
+                "(log_id, goal_id, phase, model_name, prompt, response, created_at) "
+                "SELECT log_id, goal_id, phase, model_name, prompt, response, created_at "
+                "FROM ai_plan_log"
+            )
+            conn.execute("DROP TABLE ai_plan_log")
+            conn.execute("ALTER TABLE ai_plan_log_migrated RENAME TO ai_plan_log")
+            for statement in index_sql:
+                conn.execute(statement)
+            conn.execute("COMMIT")
+        except sqlite3.Error:
+            conn.execute("ROLLBACK")
+            raise
+    finally:
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.isolation_level = previous_isolation
+
+    return (
+        f"ai_plan_log migrated to accept the {', '.join(missing)} phase(s) "
+        f"-- {preserved} existing row(s) preserved"
+    )
 
 
 def check(conn: sqlite3.Connection, *, fresh: bool) -> tuple[list[str], list[str]]:
@@ -268,6 +380,20 @@ def main(argv: list[str] | None = None) -> int:
 
     conn = connect(db_path)
     try:
+        if not (fresh or args.summary_only):
+            # A database built before Release 1 still has the three-phase CHECK
+            # constraint on ai_plan_log and would reject every MCP and RAG log
+            # row. Migrate it in place rather than demanding a destructive
+            # re-seed. A freshly built file already has the current schema, and
+            # --summary-only promises to touch nothing.
+            try:
+                migration = migrate_ai_plan_log(conn)
+            except (sqlite3.Error, ValueError) as exc:
+                print(f"[init_db] failed to migrate ai_plan_log: {exc}", file=sys.stderr)
+                return 1
+            if migration:
+                print(f"[init_db] {migration}")
+
         fatal, advisory = check(conn, fresh=fresh)
         if not args.quiet:
             summarise(conn)

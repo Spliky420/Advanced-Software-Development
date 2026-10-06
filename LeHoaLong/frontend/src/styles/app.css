@@ -539,3 +539,298 @@
     align-items: stretch;
   }
 }
+
+/* --------------------------------------------------------------------------
+ * Release 1 -- MCP and RAG
+ *
+ * Built from the same shared tokens as everything above. The only new colours
+ * are the three confidence tones, and they are deliberately NOT the existing
+ * .badge--high / --medium / --low: those mean priority, where high is red.
+ * High confidence is good news and has to read green, so the confidence
+ * badges get their own scale.
+ * -------------------------------------------------------------------------- */
+
+/* Header status lights ---------------------------------------------------- */
+.service-status {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-right: var(--spacing-sm);
+}
+.service-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+  background: var(--color-surface);
+  cursor: help;
+}
+.service-light__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-tertiary);
+  flex: none;
+}
+.service-light__word {
+  font-weight: normal;
+  color: var(--color-text-secondary);
+  text-transform: lowercase;
+}
+.service-light--ready .service-light__dot {
+  background: var(--color-success);
+}
+.service-light--unreachable .service-light__dot {
+  background: var(--color-warning);
+}
+.service-light--off .service-light__dot {
+  background: var(--color-border);
+}
+.service-light--unknown .service-light__dot {
+  background: var(--color-tertiary);
+  animation: service-pulse 1.4s ease-in-out infinite;
+}
+@keyframes service-pulse {
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .service-light--unknown .service-light__dot { animation: none; }
+}
+
+/* The mode selector ------------------------------------------------------- */
+.mode-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.mode-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 6px var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: bold;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.mode-tab:hover {
+  color: var(--color-text-primary);
+}
+.mode-tab--active {
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+  box-shadow: var(--shadow-card);
+}
+.mode-tabs__hint {
+  margin: var(--spacing-sm) 0 0;
+  font-size: var(--font-size-sm);
+}
+.mode-panel {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+/* The MCP context panel --------------------------------------------------- */
+.mcp-panel__heading,
+.grounded__heading,
+.citations__heading {
+  font-size: var(--font-size-base);
+  margin: var(--spacing-lg) 0 var(--spacing-sm);
+}
+.mcp-tool__owner,
+.mcp-calculation__origin {
+  font-size: 12px;
+}
+.mcp-tool__error {
+  color: var(--color-secondary);
+  font-size: var(--font-size-sm);
+}
+.mcp-panel__url {
+  font-size: 12px;
+  margin: var(--spacing-xs) 0 0;
+}
+.mcp-calculation {
+  max-width: 620px;
+}
+.mcp-calculation caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 12px;
+  padding-bottom: var(--spacing-xs);
+}
+.mcp-calculation__operator {
+  width: 1.5em;
+  color: var(--color-text-secondary);
+  font-weight: bold;
+}
+.mcp-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+.mcp-figures > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mcp-figures .muted {
+  font-size: 12px;
+}
+.table--compact th,
+.table--compact td {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+.code-block {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: #263238;
+  color: #eceff1;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 360px;
+  overflow: auto;
+}
+
+/* Grounded answers ------------------------------------------------------- */
+.grounded__form {
+  margin-top: var(--spacing-md);
+}
+.grounded__form label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: bold;
+}
+.grounded__row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.grounded__row input {
+  flex: 1 1 320px;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+.grounded__suggestions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--spacing-sm);
+}
+.grounded__answer {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+}
+.grounded__answer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.grounded__answer-header .grounded__heading {
+  margin: 0;
+}
+.grounded__question {
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  margin: var(--spacing-xs) 0 var(--spacing-md);
+  white-space: pre-line;
+}
+.grounded__text {
+  margin: 0 0 var(--spacing-md);
+  white-space: pre-line;
+}
+.grounded__situation {
+  margin-bottom: var(--spacing-xs);
+}
+.grounded__note,
+.grounded__meta {
+  font-size: 12px;
+}
+
+/* The confidence badge. Its own scale, not the priority one -- see above. */
+.confidence {
+  text-transform: none;
+}
+.confidence--high {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+.confidence--medium {
+  background: var(--color-warning-bg);
+  color: #a34a00;
+}
+.confidence--low {
+  background: var(--color-danger-bg);
+  color: var(--color-secondary-dark);
+}
+.confidence--unknown {
+  background: #eeeeee;
+  color: var(--color-tertiary-dark);
+}
+
+/* Citations. The ids are always visible; only the text is behind a toggle. */
+.citations {
+  margin-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-sm);
+}
+.citations__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.citations__header .citations__heading {
+  margin: 0;
+}
+.citations__list {
+  margin: var(--spacing-sm) 0 0;
+  padding-left: var(--spacing-lg);
+}
+.citations__list li {
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+.citations__source {
+  font-weight: bold;
+}
+.citations__chunk {
+  margin-left: var(--spacing-sm);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.citations__text {
+  margin: var(--spacing-xs) 0 var(--spacing-sm);
+  padding-left: var(--spacing-sm);
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.plan-outcome .budget-figures {
+  margin-top: var(--spacing-md);
+}
