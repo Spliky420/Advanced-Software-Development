@@ -1,5 +1,6 @@
 import json
 import hashlib
+import os
 from pathlib import Path
 
 import chromadb
@@ -14,8 +15,9 @@ CORPUS_JSON = CORPUS_DIR / "corpus.jsonl"
 COLLECTION_NAME = "personal_finance_context"
 EMBED_SIZE = 256
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "qwen2.5:0.5b"
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
+OLLAMA_URL = f"{OLLAMA_BASE_URL}/api/generate"
 
 _collection = None
 

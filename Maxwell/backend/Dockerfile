@@ -9,6 +9,9 @@ COPY app.py .
 
 EXPOSE 5000
 
-ENV OLLAMA_HOST=http://ollama:11434
+# Read by app.py (see its config block). Set here so the image also works when
+# run without docker-compose; compose passes the same values through.
+ENV OLLAMA_BASE_URL=http://ollama:11434 \
+    OLLAMA_MODEL=qwen2.5:0.5b
 
 CMD ["python", "app.py"]

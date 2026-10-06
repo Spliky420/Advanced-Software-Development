@@ -21,6 +21,46 @@
         <div id="glossary-list">
             <!-- Glossary terms will be loaded here -->
         </div>
+
+        <!-- MCP & RAG tools live in an off-canvas side panel, opened from a tab
+             on the right edge, instead of sitting in the page flow. -->
+        <button id="tools-tab" class="drawer-tab" aria-controls="tools-drawer" aria-expanded="false">
+            MCP &amp; RAG
+        </button>
+
+        <div id="tools-scrim" class="drawer-scrim"></div>
+
+        <aside id="tools-drawer" class="drawer" role="dialog" aria-modal="true"
+               aria-labelledby="tools-drawer-title" aria-hidden="true">
+            <header class="drawer-header">
+                <h2 id="tools-drawer-title">MCP &amp; RAG Tools</h2>
+                <button id="tools-close" class="drawer-close" aria-label="Close tools">&times;</button>
+            </header>
+
+            <div class="drawer-body">
+                <div class="tool-section">
+                    <h3>MCP Tools</h3>
+                    <div class="tool-item">
+                        <label for="mcp-term-input">MCP Glossary Lookup:</label>
+                        <input type="text" id="mcp-term-input" placeholder="Enter term (e.g., ETF)">
+                        <button id="mcp-glossary-btn" class="edit-btn tool-btn">Lookup Term</button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>RAG Tools</h3>
+                    <div class="tool-item">
+                        <label for="rag-query-input">Ask a Financial Question:</label>
+                        <input type="text" id="rag-query-input" placeholder="e.g., What is diversification?">
+                        <button id="rag-answer-btn" class="edit-btn tool-btn">Get Answer</button>
+                    </div>
+                </div>
+
+                <div id="mcp-rag-results">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </aside>
     </div>
     <script>
         // Fetch glossary terms from the backend API
@@ -182,6 +222,107 @@
                 statusDiv.textContent = `Failed to add term: ${error.message}`;
                 statusDiv.style.backgroundColor = '#ffebee';
                 statusDiv.style.color = '#c62828';
+            }
+        });
+
+        // MCP & RAG Tools Event Listeners
+        document.getElementById('mcp-glossary-btn').addEventListener('click', async () => {
+            const term = document.getElementById('mcp-term-input').value.trim();
+            if (!term) {
+                alert('Please enter a term');
+                return;
+            }
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Looking up term "${term}" via MCP...</p>`;
+            try {
+                const response = await fetch('http://localhost:8021/api/mcp/glossary-lookup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ term: term })
+                });
+                const data = await response.json();
+                resultsDiv.innerHTML = `<h3>MCP Glossary Lookup for "${term}"</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('Error calling MCP glossary lookup:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+
+        document.getElementById('rag-answer-btn').addEventListener('click', async () => {
+            const query = document.getElementById('rag-query-input').value.trim();
+            if (!query) {
+                alert('Please enter a question');
+                return;
+            }
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Getting grounded answer for "${query}"...</p>`;
+            try {
+                const response = await fetch('http://localhost:8021/api/rag/answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query, k: 5 })
+                });
+                const data = await response.json();
+                const answer = data.answer || 'No answer provided';
+                const citations = data.citations || [];
+                const confidence = data.confidence_category || 'Unknown';
+                let citationsHtml = '';
+                if (citations.length > 0) {
+                    citationsHtml = '<h4>Citations:</h4><ul>';
+                    citations.forEach(citation => {
+                        citationsHtml += `<li>${citation.source_id} (chunk ${citation.chunk_id})</li>`;
+                    });
+                    citationsHtml += '</ul>';
+                }
+                resultsDiv.innerHTML = `
+                    <h3>Grounded Answer (via RAG)</h3>
+                    <p><strong>Answer:</strong> ${answer}</p>
+                    ${citationsHtml}
+                    <p><strong>Confidence:</strong> ${confidence}</p>
+                `;
+            } catch (error) {
+                console.error('Error calling RAG answer:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        // MCP & RAG side drawer. The tab reveals the tools; the scrim, the
+        // close button and Escape all dismiss them. The tool buttons above are
+        // untouched -- only the panel containing them moved.
+        const toolsDrawer = document.getElementById('tools-drawer');
+        const toolsScrim = document.getElementById('tools-scrim');
+        const toolsTab = document.getElementById('tools-tab');
+        const toolsClose = document.getElementById('tools-close');
+
+        function openTools() {
+            toolsDrawer.classList.add('open');
+            toolsScrim.classList.add('open');
+            toolsDrawer.setAttribute('aria-hidden', 'false');
+            toolsTab.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('drawer-open');
+            toolsClose.focus();
+        }
+
+        function closeTools() {
+            toolsDrawer.classList.remove('open');
+            toolsScrim.classList.remove('open');
+            toolsDrawer.setAttribute('aria-hidden', 'true');
+            toolsTab.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('drawer-open');
+            toolsTab.focus();
+        }
+
+        toolsTab.addEventListener('click', openTools);
+        toolsClose.addEventListener('click', closeTools);
+        toolsScrim.addEventListener('click', closeTools);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && toolsDrawer.classList.contains('open')) {
+                closeTools();
             }
         });
 

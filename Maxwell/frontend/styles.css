@@ -138,6 +138,134 @@ h1 {
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
 }
+/* MCP & RAG side drawer */
+/* The tools sit in an off-canvas panel that slides in from the right edge,
+   opened from a tab. The scrim dims the rest of the page behind it. */
+.drawer-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: 40;
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  padding: var(--spacing-md) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: -4px 0 14px rgba(23, 32, 51, 0.18);
+  transition: background-color var(--transition-fast);
+}
+.drawer-tab:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(16, 42, 67, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-fast), visibility 0s linear var(--transition-fast);
+}
+.drawer-scrim.open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--transition-fast);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 90vw);
+  background: var(--color-surface);
+  box-shadow: -16px 0 40px rgba(23, 32, 51, 0.28);
+  transform: translateX(100%);
+  /* visibility keeps the closed panel out of the tab order; it flips after
+     the slide-out finishes so the exit animation still shows. */
+  visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.3s;
+}
+.drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+.drawer-header h2 {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+}
+.drawer-close {
+  padding: 0 var(--spacing-xs);
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+.drawer-close:hover {
+  color: var(--color-text-primary);
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+.tool-section + .tool-section {
+  margin-top: var(--spacing-lg);
+}
+.tool-section h3 {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tool-item label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* Lock the page behind the open drawer */
+body.drawer-open {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawer.open,
+  .drawer-scrim,
+  .drawer-scrim.open {
+    transition: none;
+  }
+}
 #add-term-section h2 {
   margin-top: 0;
   color: var(--color-primary);
@@ -156,6 +284,15 @@ h1 {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
+}
+#mcp-term-input,
+#rag-query-input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  box-sizing: border-box;
 }
 #add-term-form button {
   padding: var(--spacing-sm) var(--spacing-md);
@@ -223,9 +360,20 @@ h1 {
   font-size: var(--font-size-sm);
   transition: background-color var(--transition-fast);
 }
+
+/* Tool button style for MCP & RAG actions */
+.tool-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-fast);
+}
 .edit-btn, .save-btn {
   background-color: var(--color-primary);
   color: white;
+  border-radius: var(--radius-sm);
 }
 .edit-btn:hover, .save-btn:hover {
   background-color: var(--color-primary-dark);
@@ -233,6 +381,7 @@ h1 {
 .delete-btn {
   background-color: var(--color-secondary);
   color: white;
+  border-radius: var(--radius-sm);
 }
 .delete-btn:hover {
   background-color: var(--color-secondary-dark);
@@ -240,6 +389,7 @@ h1 {
 .cancel-btn {
   background-color: var(--color-tertiary);
   color: white;
+  border-radius: var(--radius-sm);
 }
 .cancel-btn:hover {
   background-color: var(--color-tertiary-dark);
@@ -255,6 +405,22 @@ h1 {
 #form-status.success {
   background-color: #e8f5e9;
   color: #2e7d32;
+}
+
+#mcp-rag-results {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  max-height: 400px;
+  overflow: auto;
+}
+#mcp-rag-results pre {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 #form-status.error {
   background-color: #ffebee;
@@ -447,4 +613,8 @@ textarea:focus-visible {
   .feature-form input {
     min-width: 100%;
   }
+}
+
+.tool-item button {
+  margin-top: var(--spacing-sm);
 }
