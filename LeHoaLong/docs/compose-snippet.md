@@ -1,5 +1,11 @@
 # docker-compose.yml — Le Hoa Long's service blocks
 
+> **Release 1 note.** This file records the Release 0 blocks as they were
+> raised. The Release 1 additions to `lehoalong-backend` — `extra_hosts` and
+> the MCP/RAG environment variables — are in
+> [`pull-requests.md`](pull-requests.md) (PR 1), together with the three
+> changes Release 1 needs in `rag-server/`.
+
 `docker-compose.yml` is a shared file: this snippet exists so the three blocks
 can go in via pull request rather than a direct commit (CLAUDE.md). Nothing
 above the block needs to change; the two edits are the `services:` block below

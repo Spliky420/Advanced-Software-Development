@@ -31,16 +31,36 @@ USER appuser
 EXPOSE 5000
 
 # Defaults so `docker run` alone produces a working container; compose
-# overrides all four. OLLAMA_MODEL is read from the environment and never
+# overrides them. OLLAMA_MODEL is read from the environment and never
 # hardcoded in code -- this is the image's fallback, not a code constant.
+#
+# The two Release 1 service URLs point at host.docker.internal because the
+# MCP and RAG servers are host processes, not containers. On Linux that name
+# needs `extra_hosts: ["host.docker.internal:host-gateway"]` on the service;
+# see docs/pull-requests.md. Both integrations are optional at runtime: if
+# either server is absent the feature falls back and says so.
 ENV DB_PATH=/data/goals.db \
     OLLAMA_BASE_URL=http://ollama:11434 \
     OLLAMA_MODEL=qwen2.5:0.5b \
+    MCP_ENABLED=true \
+    MCP_SERVER_URL=http://host.docker.internal:5002/mcp \
+    RAG_ENABLED=true \
+    RAG_SERVER_URL=http://host.docker.internal:5003 \
     CORS_ORIGINS=http://localhost:8060,http://127.0.0.1:8060
 
-# --timeout 180 must stay above config.py's OLLAMA_TIMEOUT_SECONDS (120) and
+# --timeout 180 must stay above every outbound timeout config.py sets, and it
 # matches nginx's proxy_read_timeout. The gunicorn default of 30s would kill
-# the worker mid-generation on POST /plan or POST /replan.
+# the worker mid-generation on POST /plan, /replan or /explain.
+#
+# The chain, longest first, and it has to stay in this order:
+#
+#   nginx proxy_read_timeout   180s   (frontend/nginx.conf)
+#   gunicorn --timeout         180s   this line
+#   RAG_TIMEOUT_SECONDS        150s   a grounded answer is a retrieval plus a
+#                                     full generation inside the RAG server,
+#                                     measured at 88s on a cold model
+#   OLLAMA_TIMEOUT_SECONDS     120s   one /plan or /replan generation
+#   MCP_TIMEOUT_SECONDS         15s   two tool calls over one session
 #
 # threads, not extra workers: the request that takes time is a blocking HTTP
 # call to Ollama, and threads share one SQLite connection pool per process

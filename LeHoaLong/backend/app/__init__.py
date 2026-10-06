@@ -35,6 +35,10 @@ def _register_blueprints(app: Flask) -> None:
     from .routes.contributions import bp as contributions_bp
     from .routes.goals import bp as goals_bp
     from .routes.health import bp as health_bp
+    from .routes.mcp import bp as mcp_bp
+    from .routes.mcp import goal_bp as mcp_goal_bp
+    from .routes.rag import bp as rag_bp
+    from .routes.rag import goal_bp as rag_goal_bp
     from .routes.steps import bp as steps_bp
 
     app.register_blueprint(health_bp)
@@ -43,6 +47,10 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(contributions_bp)
     app.register_blueprint(budget_bp)
     app.register_blueprint(agent_bp)
+    app.register_blueprint(mcp_bp)
+    app.register_blueprint(mcp_goal_bp)
+    app.register_blueprint(rag_bp)
+    app.register_blueprint(rag_goal_bp)
 
 
 def _register_cors(app: Flask) -> None:

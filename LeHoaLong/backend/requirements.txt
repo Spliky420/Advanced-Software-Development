@@ -6,3 +6,12 @@
 Flask==3.0.3
 requests==2.32.3
 gunicorn==22.0.0
+
+# Release 1: the official MCP client SDK. Pinned to the same version the
+# shared mcp-server pins, so client and server cannot drift apart. It brings
+# httpx and anyio with it, which app/mcp/client.py uses for transport only.
+#
+# The test suite does NOT need this package: tests replace the one transport
+# seam (app.mcp.client._invoke), so CI installs tests/requirements.txt and
+# never imports the SDK.
+mcp==1.30.0
