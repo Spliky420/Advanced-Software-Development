@@ -32,8 +32,10 @@ Agentic AI application.
 
 ## LLM access — hard rules
 
-- The **only** way to reach an LLM is via **Ollama**, reachable on the Docker
-  Compose network at `http://ollama:11434`. There is no other approved path.
+- The **only** way to reach an LLM is via **Ollama** (AI-Mode), which runs
+  on the host — not in compose — and which backends reach at
+  `http://host.docker.internal:11434` (`OLLAMA_BASE_URL`). There is no other
+  approved path.
 - **Never call a commercial/external AI API at runtime** (OpenAI, Anthropic,
   Google, etc.). This is a hard constraint, not a style preference.
 - The model tag must always be read from the `OLLAMA_MODEL` environment
@@ -42,7 +44,7 @@ Agentic AI application.
     fallback baked into `docker-compose.yml`, `llm.py` and the backend
     Dockerfile so a fresh clone with no `.env` still comes up working.
   - Demo model: `llama3.1:8b` (~4.9GB) — higher quality, and the model to run
-    the demo on. Pull it into the container before switching to it.
+    the demo on. Pull it (`ollama pull llama3.1:8b`) before switching to it.
 
 ## Arithmetic — hard architectural rule
 
@@ -126,27 +128,42 @@ this table and the header comment in `docker-compose.yml`.
 | 8040–8049   | **HyunWoo** | 8040 frontend, 8041 backend (database has no port)   |
 | 8050–8059   | **Tom**     | 8050 frontend, 8051 backend (database has no port)   |                                                |
 | 8060–8069   | **LeHoaLong** | 8060 frontend, 8061 backend (database has no port) |
-| 11434       | shared      | `ollama` (one instance serves every backend)          |
+| 11434       | shared      | Ollama / AI-Mode on the **host**, not in compose      |
+| 5001, 5002  | shared      | MCP server on the **host**, not in compose (5001 harness, 5002 MCP protocol) |
+| 5003        | shared      | RAG server on the **host**, not in compose            |
 
 Container-internal ports are not shared state — every backend can listen on
 5000 inside its own container. Only the left-hand side of a compose `ports:`
 mapping needs to be unique.
 
-### Ollama models live in a container volume
+### AI-Mode, MCP, RAG and the agentic loop are not containerised
 
-The `ollama` service keeps models in the `ollama-models` named volume. A model
-pulled on the host is **not** visible to the container; pull it into the
-container instead:
+The Release 1 brief requires these four to run as local processes on the
+host and never be defined as services in `docker-compose.yml`. Compose runs
+only each student's frontend, backend and database, plus the shared home
+page; backends reach the host services through `host.docker.internal`
+(`OLLAMA_BASE_URL`, `MCP_SERVER_URL`, `MCP_HARNESS_URL`, `RAG_SERVER_URL`).
+CI disables AI-Mode, MCP and RAG.
+
+There is one shared MCP server for every feature (`mcp-server/run.sh`). Every
+backend reaches it at `http://host.docker.internal:5002/mcp` (Maxwell's
+backend uses the harness at `:5001`); override with `MCP_SERVER_URL` /
+`MCP_HARNESS_URL` in `.env`. See `mcp-server/README.md`.
+
+### Ollama runs on the host
+
+Install Ollama on the host and pull models with its CLI:
 
 ```
-docker compose exec ollama ollama pull qwen2.5:0.5b   # default, fast
-docker compose exec ollama ollama pull llama3.1:8b    # demo model
+ollama pull qwen2.5:0.5b   # default, fast
+ollama pull llama3.1:8b    # demo model
 ```
 
-A tag that has never been pulled into the container makes Ollama answer 404,
-and the endpoint returns 503 naming the missing model and the pull command
-— distinct from the "could not reach Ollama" message, which means the
-container is genuinely unreachable.
+A tag that has never been pulled makes Ollama answer 404, and the endpoint
+returns 503 naming the missing model and the pull command — distinct from
+the "could not reach Ollama" message, which means the host Ollama is not
+running (on Linux, start it with `OLLAMA_HOST=0.0.0.0` so containers can
+reach it).
 
 Set `OLLAMA_MODEL` in `.env` (copy from `.env.example`) to switch the model for
 every service at once.
