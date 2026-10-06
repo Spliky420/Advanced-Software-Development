@@ -5,7 +5,7 @@ import re
 import requests
 
 
-MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://mcp-server:5001")
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:5001")
 
 REQUEST_TIMEOUT = 15  # seconds
 

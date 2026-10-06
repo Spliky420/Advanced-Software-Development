@@ -5,15 +5,15 @@ import requests
 
 REQUEST_TIMEOUT = 10  # seconds
 
-# Base URLs default to the container hostnames on the shared docker-compose
-# network (see docker-compose.yml). Override via env var to run mcp-server
-# outside Docker, e.g. JOSHUA_BACKEND_URL=http://localhost:8011.
-JOSHUA_BACKEND_URL = os.getenv("JOSHUA_BACKEND_URL", "http://joshua-backend:5000")
-MAXWELL_BACKEND_URL = os.getenv("MAXWELL_BACKEND_URL", "http://maxwell-backend:5000")
-ENEREL_BACKEND_URL = os.getenv("ENEREL_BACKEND_URL", "http://enerel-backend:5000")
-HYUNWOO_BACKEND_URL = os.getenv("HYUNWOO_BACKEND_URL", "http://hyunwoo-backend:5000")
-THOMAS_BACKEND_URL = os.getenv("THOMAS_BACKEND_URL", "http://thomas-backend:5001")
-LEHOALONG_BACKEND_URL = os.getenv("LEHOALONG_BACKEND_URL", "http://lehoalong-backend:5000")
+# The MCP server runs on the host, not in compose, so base URLs default to
+# each backend's published host port (see the port table in CLAUDE.md).
+# Override via env var, e.g. JOSHUA_BACKEND_URL=http://localhost:8011.
+JOSHUA_BACKEND_URL = os.getenv("JOSHUA_BACKEND_URL", "http://localhost:8011")
+MAXWELL_BACKEND_URL = os.getenv("MAXWELL_BACKEND_URL", "http://localhost:8021")
+ENEREL_BACKEND_URL = os.getenv("ENEREL_BACKEND_URL", "http://localhost:8031")
+HYUNWOO_BACKEND_URL = os.getenv("HYUNWOO_BACKEND_URL", "http://localhost:8041")
+THOMAS_BACKEND_URL = os.getenv("THOMAS_BACKEND_URL", "http://localhost:8051")
+LEHOALONG_BACKEND_URL = os.getenv("LEHOALONG_BACKEND_URL", "http://localhost:8061")
 
 
 def _request(method: str, base_url: str, path: str, **kwargs):
