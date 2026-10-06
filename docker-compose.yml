@@ -88,6 +88,13 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
+      MCP_SERVER_URL: http://mcp-server:5002/mcp
+      MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-5}
+      RAG_SERVER_URL: http://host.docker.internal:5003
+      RAG_TIMEOUT_SECONDS: ${RAG_TIMEOUT_SECONDS:-5}
+    extra_hosts:
+      # Resolves automatically on Docker Desktop; needed on Linux.
+      - "host.docker.internal:host-gateway"
     volumes:
       # Same volume as joshua-database: that service creates and seeds the
       # file, this one reads and writes it.
@@ -148,8 +155,17 @@ services:
     ports:
       - "8021:5000"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:0.5b}
       - DATABASE=/data/glossary.sqlite
+      # MCP and RAG run on the host, not in this stack. Those servers are
+      # shared and unmodified; run them locally and this backend reaches them
+      # through host.docker.internal.
+      - MCP_SERVER_URL=http://host.docker.internal:5001
+      - RAG_SERVER_URL=http://host.docker.internal:5003
+    extra_hosts:
+      # Resolves automatically on Docker Desktop; needed on Linux engines.
+      - "host.docker.internal:host-gateway"
     volumes:
       - maxwell-db-data:/data
     depends_on:
@@ -167,7 +183,14 @@ services:
     ports:
       - "8020:80"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      # Dev convenience only: serve these two files straight off the working
+      # tree, so a browser refresh picks up HTML/CSS edits without a rebuild.
+      # The Dockerfile still copies the same files into the image, so the
+      # image remains self-contained if these mounts are removed.
+      - ./Maxwell/frontend/index.html:/app/index.html
+      - ./Maxwell/frontend/styles.css:/app/styles.css
     depends_on:
       - maxwell-backend
 
@@ -207,6 +230,7 @@ services:
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       MCP_SERVER_URL: http://mcp-server:5002/mcp
+      RAG_SERVER_URL: http://host.docker.internal:5003
 
     volumes:
       - thomas-db-data:/data
@@ -294,6 +318,18 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      # Release 1: the shared MCP server (python mcp-server/server.py) and
+      # RAG server (python rag-server/rag_http_server.py) run on the host,
+      # not in compose, so the backend reaches them via host.docker.internal.
+      # Set MCP_ENABLED / RAG_ENABLED to false to switch either mode off.
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+      MCP_SERVER_URL: ${ENEREL_MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      RAG_SERVER_URL: ${ENEREL_RAG_SERVER_URL:-http://host.docker.internal:5003}
+    extra_hosts:
+      # Docker Desktop (macOS/Windows) resolves host.docker.internal on its
+      # own; this makes it resolve on Linux engines too.
+      - "host.docker.internal:host-gateway"
     volumes:
       # Same volume as enerel-database: that service creates and seeds the
       # file, this one reads and writes it.
@@ -323,15 +359,21 @@ services:
       - "8041:5000"
     environment:
       DB_PATH: /data/bills.db
-      OLLAMA_BASE_URL: http://ollama:11434
+      # Shared Release 1 services run on the host.
+      OLLAMA_BASE_URL: ${HYUNWOO_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      AI_MODE_ENABLED: ${AI_MODE_ENABLED:-true}
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      MCP_SERVER_URL: ${HYUNWOO_MCP_SERVER_URL:-http://host.docker.internal:8071/mcp}
+      RAG_SERVER_URL: ${HYUNWOO_RAG_SERVER_URL:-http://host.docker.internal:5003}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - hyunwoo-db-data:/data
     depends_on:
       hyunwoo-database:
         condition: service_healthy
-      ollama:
-        condition: service_started
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
@@ -497,6 +539,28 @@ services:
       retries: 5
       start_period: 15s
 
+  # =========================================================================
+  # RAG SERVER -- shared. Provides retrieval‑augmented generation for the
+  # financial glossary and other textual sources.
+  # =========================================================================
+  rag-server:
+    build: ./rag-server
+    container_name: rag-server
+    restart: unless-stopped
+    ports:
+      - "5003:5003"   # expose host port 5003 so host.docker.internal still works if needed
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+    depends_on:
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:5003/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
   #
