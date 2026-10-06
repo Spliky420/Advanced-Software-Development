@@ -1,0 +1,5 @@
+Netflix billing dates
+Source: https://help.netflix.com/en/node/54896
+Checked: 2026-10-02
+
+Netflix payment history shows billing information. The billing day normally follows the signup day. When that day does not exist in a month, Netflix charges on the month's final day. A payment partner's billing date may differ from Netflix's. These are general billing rules, not a customer's personal payment date.

@@ -1,0 +1,5 @@
+Netflix cancellation through a payment partner
+Source: https://help.netflix.com/en/node/407
+Checked: 2026-10-02
+
+If the cancel option is missing from a Netflix account, cancellation must be handled through its payment partner. Check the account's Membership section for the partner's cancellation link or contact instructions. This guidance applies to partner billing, not cancellation performed inside the Bills and Subscriptions app.

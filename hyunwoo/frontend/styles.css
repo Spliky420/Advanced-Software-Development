@@ -509,6 +509,69 @@ tbody tr:hover {
     border: 0;
 }
 
+/* Shared assistant results. */
+.assistant-panel {
+    margin: 20px 0;
+}
+
+.assistant-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.assistant-card {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.assistant-card h3 {
+    margin-top: 0;
+}
+
+.assistant-card form {
+    display: grid;
+    gap: 10px;
+}
+
+.assistant-result {
+    margin-top: 16px;
+    overflow-wrap: anywhere;
+}
+
+.assistant-result pre {
+    max-height: 300px;
+    overflow: auto;
+    font-size: 0.8rem;
+}
+
+.assistant-result summary {
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+.citation-list {
+    padding-left: 20px;
+}
+
+.citation-list blockquote {
+    margin: 8px 0 16px;
+    padding-left: 12px;
+    border-left: 3px solid var(--color-border);
+    color: var(--color-muted);
+}
+
+.rag-answer {
+    white-space: pre-wrap;
+}
+
+.assistant-note {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
 /* Tablet and mobile layouts. */
 @media (max-width: 1120px) {
     .summary-grid {
@@ -542,6 +605,7 @@ tbody tr:hover {
         grid-column: 1 / -1;
     }
 
+    .assistant-grid,
     .phase-grid,
     .form-grid {
         grid-template-columns: 1fr;

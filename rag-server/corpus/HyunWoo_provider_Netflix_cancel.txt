@@ -1,0 +1,5 @@
+Netflix cancellation and remaining access
+Source: https://help.netflix.com/en/node/407
+Checked: 2026-10-02
+
+To cancel Netflix, open the signed-in membership management page, choose Cancel, and complete Finish Cancellation. With an ordinary paid period still remaining, Netflix access continues until that period ends. An account already on hold closes immediately. Removing the Netflix app or signing out does not end the subscription.

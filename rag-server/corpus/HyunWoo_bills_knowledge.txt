@@ -1,0 +1,23 @@
+Bills and Subscriptions reference
+
+The Bills and Subscriptions feature stores recurring bills and subscriptions with a name, provider, category, amount, billing frequency, next due date, automatic renewal setting, optional trial end date, status and notes. Records can be created, read, updated and deleted. Release 1 uses one default local user. Separate dated provider references cover selected Netflix and Spotify billing and cancellation questions. The app does not connect to providers, pay bills or cancel subscriptions.
+
+Bills cost calculation
+
+Bills cost calculations use Python. A weekly amount is multiplied by 52 and divided by 12 to estimate its monthly cost. A fortnightly amount is multiplied by 26 and divided by 12. A monthly amount stays unchanged. A quarterly amount is divided by 3. A yearly amount is divided by 12. Annual recurring cost is the unrounded monthly total multiplied by 12. Displayed totals are rounded to two decimal places.
+
+Paused and cancelled bills
+
+Only active bills and subscriptions contribute to the cost summary and payment review. Paused and cancelled bills remain saved in the database but are excluded from active monthly and annual totals. The automatic renewal count includes only active records with automatic renewal enabled. Deleting a bill removes the record; pausing preserves it for later use. The app's paused status does not pause a payment with a provider.
+
+Bills review priorities and dates
+
+The Plan Act Observe Adapt bills review accepts a review date and a window from 1 to 90 days. Overdue bills come first, followed by expiring trials, payments due soon and automatic renewals. Due soon means a payment is due between the review date and seven days later, inclusive. Overdue means its next due date is earlier than the review date. Automatic renewals and trial endings are checked within the selected review window, including its end date.
+
+Bills AI review and safe actions
+
+Python calculates bill costs, due dates, findings, priorities and recommended actions. In Adapt, Ollama selects a neutral, direct or supportive tone for the summary. An unexpected tone uses a neutral fallback. If no record requires attention, Ollama is skipped. Reminders invite the user to review or pay an overdue bill, prepare for a payment, or decide whether to keep a trial or renewal. They do not execute payments or cancellations.
+
+Bills MCP and RAG access
+
+The Bills and Subscriptions dashboard uses its Flask backend to access the team's shared local MCP and RAG servers. The registered bill_summary MCP tool is read-only and returns saved bills and cost totals through the existing bills API. RAG retrieves project reference context and asks the local model for an answer based on that context. The dashboard displays cited source excerpts and a confidence category. Questions without relevant evidence receive an insufficient-context response.

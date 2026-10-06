@@ -1,0 +1,219 @@
+{
+  "captured_at": "2026-10-01T15:47:05.740554+00:00",
+  "checks": [
+    {
+      "query": "How do I cancel Netflix?",
+      "http_status": 200,
+      "response": {
+        "answer": "The retrieved reference states:\n\nTo cancel Netflix, open the signed-in membership management page, choose Cancel, and complete Finish Cancellation. With an ordinary paid period still remaining, Netflix access continues until that period ends. An account already on hold closes immediately. Removing the Netflix app or signing out does not end the subscription.",
+        "citations": [
+          {
+            "checked_on": "2026-10-02",
+            "chunk_id": "HyunWoo_provider_Netflix_cancel_1",
+            "excerpt": "Netflix cancellation and remaining access Source: https://help.netflix.com/en/node/407 Checked: 2026-10-02 To cancel Netflix, open the signed-in membership management page, choose Cancel, and complete Finish Cancellation. With an ordinary paid period still remaining, Netflix access continues until that period ends. An account already on hold closes immediately. Removing the Netflix app or signing out does not end the subscription.",
+            "source_id": "HyunWoo_provider_Netflix_cancel.txt",
+            "source_title": "Netflix cancellation and remaining access",
+            "source_url": "https://help.netflix.com/en/node/407"
+          }
+        ],
+        "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+        "confidence_category": "High",
+        "llm_called": true,
+        "query": "How do I cancel Netflix?",
+        "retrieval_summary": {
+          "relevant_count": 1,
+          "retrieved_count": 1
+        },
+        "source_excerpt_fallback_reason": "provider_grounding",
+        "source_excerpt_fallback_used": true,
+        "status": "success"
+      }
+    },
+    {
+      "query": "Where can I find my Netflix billing date?",
+      "http_status": 200,
+      "response": {
+        "answer": "The retrieved reference states:\n\nNetflix payment history shows billing information. The billing day normally follows the signup day. When that day does not exist in a month, Netflix charges on the month's final day. A payment partner's billing date may differ from Netflix's. These are general billing rules, not a customer's personal payment date.",
+        "citations": [
+          {
+            "checked_on": "2026-10-02",
+            "chunk_id": "HyunWoo_provider_Netflix_billing_1",
+            "excerpt": "Netflix billing dates Source: https://help.netflix.com/en/node/54896 Checked: 2026-10-02 Netflix payment history shows billing information. The billing day normally follows the signup day. When that day does not exist in a month, Netflix charges on the month's final day. A payment partner's billing date may differ from Netflix's. These are general billing rules, not a customer's personal payment date.",
+            "source_id": "HyunWoo_provider_Netflix_billing.txt",
+            "source_title": "Netflix billing dates",
+            "source_url": "https://help.netflix.com/en/node/54896"
+          }
+        ],
+        "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+        "confidence_category": "Medium",
+        "llm_called": true,
+        "query": "Where can I find my Netflix billing date?",
+        "retrieval_summary": {
+          "relevant_count": 1,
+          "retrieved_count": 1
+        },
+        "source_excerpt_fallback_reason": "provider_grounding",
+        "source_excerpt_fallback_used": true,
+        "status": "success"
+      }
+    },
+    {
+      "query": "Why is the Netflix cancel option missing?",
+      "http_status": 200,
+      "response": {
+        "answer": "The retrieved reference states:\n\nIf the cancel option is missing from a Netflix account, cancellation must be handled through its payment partner. Check the account's Membership section for the partner's cancellation link or contact instructions. This guidance applies to partner billing, not cancellation performed inside the Bills and Subscriptions app.",
+        "citations": [
+          {
+            "checked_on": "2026-10-02",
+            "chunk_id": "HyunWoo_provider_Netflix_partner_1",
+            "excerpt": "Netflix cancellation through a payment partner Source: https://help.netflix.com/en/node/407 Checked: 2026-10-02 If the cancel option is missing from a Netflix account, cancellation must be handled through its payment partner. Check the account's Membership section for the partner's cancellation link or contact instructions. This guidance applies to partner billing, not cancellation performed inside the Bills and Subscriptions app.",
+            "source_id": "HyunWoo_provider_Netflix_partner.txt",
+            "source_title": "Netflix cancellation through a payment partner",
+            "source_url": "https://help.netflix.com/en/node/407"
+          }
+        ],
+        "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+        "confidence_category": "High",
+        "llm_called": true,
+        "query": "Why is the Netflix cancel option missing?",
+        "retrieval_summary": {
+          "relevant_count": 1,
+          "retrieved_count": 1
+        },
+        "source_excerpt_fallback_reason": "provider_grounding",
+        "source_excerpt_fallback_used": true,
+        "status": "success"
+      }
+    },
+    {
+      "query": "Will I keep my Spotify playlists after cancelling?",
+      "http_status": 200,
+      "response": {
+        "answer": "The retrieved reference states:\n\nFor Spotify Premium paid directly to Spotify, use the account page's plan management controls to cancel the subscription. Paid Premium benefits continue until the next billing date, then the account becomes Spotify Free. Playlists and saved music remain available. Zero-priced free trials switch to Free immediately on cancellation. Partner-billed plans require contacting the payment partner shown in the account.",
+        "citations": [
+          {
+            "checked_on": "2026-10-02",
+            "chunk_id": "HyunWoo_provider_Spotify_cancel_1",
+            "excerpt": "Spotify Premium cancellation and playlists Source: https://support.spotify.com/au/article/cancel-premium/ Checked: 2026-10-02 For Spotify Premium paid directly to Spotify, use the account page's plan management controls to cancel the subscription. Paid Premium benefits continue until the next billing date, then the account becomes Spotify Free. Playlists and saved music remain available. Zero-priced free trials switch to Free immediately on cancellation. Partner-billed plans require contacting the payment partner shown in the account.",
+            "source_id": "HyunWoo_provider_Spotify_cancel.txt",
+            "source_title": "Spotify Premium cancellation and playlists",
+            "source_url": "https://support.spotify.com/au/article/cancel-premium/"
+          }
+        ],
+        "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+        "confidence_category": "Medium",
+        "llm_called": true,
+        "query": "Will I keep my Spotify playlists after cancelling?",
+        "retrieval_summary": {
+          "relevant_count": 1,
+          "retrieved_count": 1
+        },
+        "source_excerpt_fallback_reason": "provider_grounding",
+        "source_excerpt_fallback_used": true,
+        "status": "success"
+      }
+    },
+    {
+      "query": "What happens if I cancel a Spotify free trial?",
+      "http_status": 200,
+      "response": {
+        "answer": "The retrieved reference states:\n\nCancelling a Spotify zero-priced free trial ends Premium immediately and changes the account to Spotify Free. This differs from cancelling paid Premium, which continues until the next billing date. A cancelled zero-priced free trial cannot be reactivated. Spotify playlists and saved music remain after the account becomes Free.",
+        "citations": [
+          {
+            "checked_on": "2026-10-02",
+            "chunk_id": "HyunWoo_provider_Spotify_trial_1",
+            "excerpt": "Spotify zero-priced free trial cancellation Source: https://support.spotify.com/au/article/cancel-premium/ Checked: 2026-10-02 Cancelling a Spotify zero-priced free trial ends Premium immediately and changes the account to Spotify Free. This differs from cancelling paid Premium, which continues until the next billing date. A cancelled zero-priced free trial cannot be reactivated. Spotify playlists and saved music remain after the account becomes Free.",
+            "source_id": "HyunWoo_provider_Spotify_trial.txt",
+            "source_title": "Spotify zero-priced free trial cancellation",
+            "source_url": "https://support.spotify.com/au/article/cancel-premium/"
+          }
+        ],
+        "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+        "confidence_category": "Medium",
+        "llm_called": true,
+        "query": "What happens if I cancel a Spotify free trial?",
+        "retrieval_summary": {
+          "relevant_count": 1,
+          "retrieved_count": 1
+        },
+        "source_excerpt_fallback_reason": "provider_grounding",
+        "source_excerpt_fallback_used": true,
+        "status": "success"
+      }
+    },
+    {
+      "query": "How can I change my Spotify billing date?",
+      "http_status": 200,
+      "response": {
+        "answer": "The retrieved reference states:\n\nSpotify's billing cycle begins when you subscribe. The account page lists the billing date. To change that date, cancel the plan, stay on Free until the desired day, then subscribe again. Resubscribing before the current billing period ends keeps the original date. These are general instructions, not a customer's personal payment date.",
+        "citations": [
+          {
+            "checked_on": "2026-10-02",
+            "chunk_id": "HyunWoo_provider_Spotify_billing_1",
+            "excerpt": "Spotify billing dates Source: https://support.spotify.com/au/article/billing-date/ Checked: 2026-10-02 Spotify's billing cycle begins when you subscribe. The account page lists the billing date. To change that date, cancel the plan, stay on Free until the desired day, then subscribe again. Resubscribing before the current billing period ends keeps the original date. These are general instructions, not a customer's personal payment date.",
+            "source_id": "HyunWoo_provider_Spotify_billing.txt",
+            "source_title": "Spotify billing dates",
+            "source_url": "https://support.spotify.com/au/article/billing-date/"
+          }
+        ],
+        "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+        "confidence_category": "High",
+        "llm_called": true,
+        "query": "How can I change my Spotify billing date?",
+        "retrieval_summary": {
+          "relevant_count": 1,
+          "retrieved_count": 1
+        },
+        "source_excerpt_fallback_reason": "provider_grounding",
+        "source_excerpt_fallback_used": true,
+        "status": "success"
+      }
+    },
+    {
+      "query": "What is Netflix's current price in Australia?",
+      "http_status": 200,
+      "response": {
+        "answer": "There is not enough relevant source information to answer this question.",
+        "citations": [],
+        "confidence_category": "Low",
+        "llm_called": false,
+        "query": "What is Netflix's current price in Australia?",
+        "retrieval_summary": {
+          "retrieved_count": 0
+        },
+        "status": "insufficient_context"
+      }
+    },
+    {
+      "query": "What is Spotify's student discount?",
+      "http_status": 200,
+      "response": {
+        "answer": "There is not enough relevant source information to answer this question.",
+        "citations": [],
+        "confidence_category": "Low",
+        "llm_called": false,
+        "query": "What is Spotify's student discount?",
+        "retrieval_summary": {
+          "retrieved_count": 0
+        },
+        "status": "insufficient_context"
+      }
+    },
+    {
+      "query": "What is Netflix's cancellation fee?",
+      "http_status": 200,
+      "response": {
+        "answer": "There is not enough relevant source information to answer this question.",
+        "citations": [],
+        "confidence_category": "Low",
+        "llm_called": false,
+        "query": "What is Netflix's cancellation fee?",
+        "retrieval_summary": {
+          "retrieved_count": 0
+        },
+        "status": "insufficient_context"
+      }
+    }
+  ],
+  "result": "passed"
+}
