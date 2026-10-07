@@ -229,6 +229,100 @@ def test_insufficient_evidence_is_recorded_as_such_in_the_audit_trail(client, st
 
 
 # ---------------------------------------------------------------------------
+# The relevance check
+# ---------------------------------------------------------------------------
+
+# Seen live on 2026-10-07: five unrelated budgeting chunks came back for this,
+# the model answered about planets from its own knowledge, and the server
+# called it High confidence.
+OFF_TOPIC = "How many moons are there in the solar system?"
+UNGROUNDED_REPLY = "There are 8 planets in the solar system, not 9."
+
+
+def test_an_answer_the_retrieved_text_cannot_support_is_withheld(client, stub_rag):
+    stub_rag(answer=UNGROUNDED_REPLY)
+
+    body = _ask(client, question=OFF_TOPIC)
+
+    assert body["answer_withheld"] is True
+    assert body["relevance"]["passes"] is False
+    assert body["relevance"]["matched_terms"] == []
+    assert body["relevance"]["missing_terms"] == ["moons", "solar", "system"]
+
+
+def test_withholding_leaves_the_servers_fields_untouched(client, stub_rag):
+    """The check sits beside the server's answer. It does not rewrite it."""
+    stub_rag(answer=UNGROUNDED_REPLY, confidence="High")
+
+    body = _ask(client, question=OFF_TOPIC)
+
+    assert body["answer"] == UNGROUNDED_REPLY
+    assert body["confidence_category"] == "High"
+    assert body["citations"] == rag_citations()
+    assert body["insufficient_evidence"] is False
+
+
+def test_an_on_topic_answer_is_not_withheld(client, stub_rag):
+    stub_rag()
+
+    body = _ask(client)
+
+    assert body["answer_withheld"] is False
+    assert body["relevance"]["passes"] is True
+
+
+def test_half_the_key_words_is_not_enough(client, stub_rag):
+    """"capital" appears in the corpus (capital gains); "France" does not."""
+    chunks = [{**RAG_CHUNKS[0], "text": "A capital gain is the profit made when an asset is sold."}]
+    stub_rag(answer="Paris.", chunks=chunks)
+
+    body = _ask(client, question="What is the capital of France?")
+
+    assert body["relevance"]["coverage"] == 0.5
+    assert body["answer_withheld"] is True
+
+
+def test_plurals_and_word_forms_still_match(client, stub_rag):
+    chunks = [{**RAG_CHUNKS[0], "text": "Each goal has a priority, and bills are paid first."}]
+    stub_rag(chunks=chunks)
+
+    body = _ask(client, question="How are competing goals prioritised against a bill?")
+
+    assert body["relevance"]["matched_terms"] == ["goals", "prioritised", "bill"]
+    assert body["relevance"]["missing_terms"] == ["competing"]
+    assert body["answer_withheld"] is False
+
+
+def test_a_question_with_no_key_words_is_left_to_the_server(client, stub_rag):
+    stub_rag(answer=UNGROUNDED_REPLY)
+
+    body = _ask(client, question="What is it?")
+
+    assert body["relevance"]["passes"] is None
+    assert body["answer_withheld"] is False
+
+
+def test_insufficient_evidence_is_not_also_marked_withheld(client, stub_rag):
+    stub_rag(answer="Insufficient evidence.")
+
+    body = _ask(client, question=OFF_TOPIC)
+
+    assert body["insufficient_evidence"] is True
+    assert body["answer_withheld"] is False
+
+
+def test_a_withheld_answer_is_recorded_with_its_reason(client, stub_rag, conn):
+    stub_rag(answer=UNGROUNDED_REPLY)
+
+    _ask(client, question=OFF_TOPIC)
+
+    logged = json.loads(_rag_rows(conn)[0]["response"])
+    assert logged["answer"] == UNGROUNDED_REPLY
+    assert logged["answer_withheld"] is True
+    assert logged["relevance"]["missing_terms"] == ["moons", "solar", "system"]
+
+
+# ---------------------------------------------------------------------------
 # The server being down or broken
 # ---------------------------------------------------------------------------
 
@@ -472,6 +566,18 @@ def test_explain_returns_citations_and_confidence_like_ask_does(client, stub_rag
     assert body["citations"] == rag_citations()
     assert body["confidence_category"] == "High"
     assert body["retrieved_chunks"][0]["source_id"] == RAG_SOURCE
+
+
+def test_explain_checks_relevance_against_the_concepts_not_the_figures(client, stub_rag):
+    """The goal's name and the template around its figures never appear in
+    the corpus, so counting them would withhold every explanation."""
+    stub_rag()
+
+    body = _explain(client)
+
+    assert "situation" not in body["relevance"]["question_terms"]
+    assert "behind" in body["relevance"]["matched_terms"]
+    assert body["answer_withheld"] is False
 
 
 def test_explain_attributes_its_audit_row_to_the_goal(client, stub_rag, conn):
