@@ -1,0 +1,591 @@
+{
+  "captured_at": "2026-10-01T07:02:19.841826+00:00",
+  "base_url": "http://localhost:8041",
+  "health": {
+    "http_status": 200,
+    "request": null,
+    "response": {
+      "bill_count": 10,
+      "status": "healthy"
+    }
+  },
+  "summary": {
+    "http_status": 200,
+    "request": null,
+    "response": {
+      "active_bill_count": 10,
+      "annual_cost": 7442.9,
+      "auto_renew_count": 9,
+      "category_monthly_costs": {
+        "Entertainment": 39.98,
+        "Health": 64.89,
+        "Insurance": 128.5,
+        "Software": 53.98,
+        "Technology": 4.49,
+        "Telecommunications": 59.0,
+        "Utilities": 269.4
+      },
+      "monthly_cost": 620.24
+    }
+  },
+  "mcp": {
+    "http_status": 200,
+    "request": {},
+    "response": {
+      "result": {
+        "bills": [
+          {
+            "amount": 29.95,
+            "auto_renew": 1,
+            "billing_frequency": "fortnightly",
+            "category": "Health",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 6,
+            "name": "Gym Membership",
+            "next_due_date": "2026-08-31",
+            "notes": "Currently overdue",
+            "provider": "Fitness First",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 25.99,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Entertainment",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 4,
+            "name": "Netflix",
+            "next_due_date": "2026-09-02",
+            "notes": "Streaming subscription",
+            "provider": "Netflix",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 180.4,
+            "auto_renew": 0,
+            "billing_frequency": "monthly",
+            "category": "Utilities",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 1,
+            "name": "Electricity",
+            "next_due_date": "2026-09-03",
+            "notes": "Estimated monthly electricity bill",
+            "provider": "Energy Australia",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 4.49,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Technology",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 8,
+            "name": "Cloud Storage",
+            "next_due_date": "2026-09-04",
+            "notes": "Personal cloud storage",
+            "provider": "Apple iCloud+",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 89.0,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Utilities",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 2,
+            "name": "Home Internet",
+            "next_due_date": "2026-09-05",
+            "notes": "Unlimited home internet",
+            "provider": "Aussie Broadband",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 17.99,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Software",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 10,
+            "name": "Design Software",
+            "next_due_date": "2026-09-06",
+            "notes": "Trial ending soon",
+            "provider": "Canva",
+            "status": "active",
+            "trial_end_date": "2026-09-03",
+            "user_id": 1
+          },
+          {
+            "amount": 59.0,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Telecommunications",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 3,
+            "name": "Mobile Plan",
+            "next_due_date": "2026-09-07",
+            "notes": "Personal mobile service",
+            "provider": "Telstra",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 35.99,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Software",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 9,
+            "name": "Creative Software",
+            "next_due_date": "2026-09-09",
+            "notes": "Creative Cloud subscription",
+            "provider": "Adobe",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 13.99,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Entertainment",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 5,
+            "name": "Spotify",
+            "next_due_date": "2026-09-12",
+            "notes": "Music subscription",
+            "provider": "Spotify",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          },
+          {
+            "amount": 128.5,
+            "auto_renew": 1,
+            "billing_frequency": "monthly",
+            "category": "Insurance",
+            "created_at": "2026-08-31 15:54:51",
+            "id": 7,
+            "name": "Car Insurance",
+            "next_due_date": "2026-09-15",
+            "notes": "Comprehensive vehicle insurance",
+            "provider": "NRMA",
+            "status": "active",
+            "trial_end_date": null,
+            "user_id": 1
+          }
+        ],
+        "summary": {
+          "active_bill_count": 10,
+          "annual_cost": 7442.9,
+          "auto_renew_count": 9,
+          "category_monthly_costs": {
+            "Entertainment": 39.98,
+            "Health": 64.89,
+            "Insurance": 128.5,
+            "Software": 53.98,
+            "Technology": 4.49,
+            "Telecommunications": 59.0,
+            "Utilities": 269.4
+          },
+          "monthly_cost": 620.24
+        }
+      },
+      "status": "success",
+      "tool": "bill_summary"
+    }
+  },
+  "rag": {
+    "http_status": 200,
+    "request": {
+      "query": "How are fortnightly bills converted to a monthly cost?",
+      "k": 5
+    },
+    "response": {
+      "answer": "The retrieved reference states:\n\nweekly amount is multiplied by 52 and divided by 12 to estimate its monthly cost. A fortnightly amount is multiplied by 26 and divided by 12. A monthly amount stays unchanged. A quarterly amount is divided by 3. A yearly amount is divided by 12. Annual recurring cost is the unrounded monthly total multiplied by 12. Displayed totals are rounded to two decimal places. Paused and cancelled bills Only active bills and subscriptions contribute to the cost summary and payment",
+      "citations": [
+        {
+          "chunk_id": "HyunWoo_bills_knowledge_2",
+          "excerpt": "weekly amount is multiplied by 52 and divided by 12 to estimate its monthly cost. A fortnightly amount is multiplied by 26 and divided by 12. A monthly amount stays unchanged. A quarterly amount is divided by 3. A yearly amount is divided by 12. Annual recurring cost is the unrounded monthly total multiplied by 12. Displayed totals are rounded to two decimal places. Paused and cancelled bills Only active bills and subscriptions contribute to the cost summary and payment",
+          "source_id": "HyunWoo_bills_knowledge.txt"
+        }
+      ],
+      "confidence_basis": "Question terms covered by the cited source excerpts; not a probability.",
+      "confidence_category": "Medium",
+      "llm_called": true,
+      "query": "How are fortnightly bills converted to a monthly cost?",
+      "retrieval_summary": {
+        "relevant_count": 1,
+        "retrieved_count": 5
+      },
+      "source_excerpt_fallback_used": true,
+      "status": "success"
+    }
+  },
+  "insufficient_context": {
+    "http_status": 200,
+    "request": {
+      "query": "Who won the lunar football tournament?",
+      "k": 5
+    },
+    "response": {
+      "answer": "There is not enough relevant source information to answer this question.",
+      "citations": [],
+      "confidence_category": "Low",
+      "llm_called": false,
+      "query": "Who won the lunar football tournament?",
+      "retrieval_summary": {
+        "retrieved_count": 5
+      },
+      "status": "insufficient_context"
+    }
+  },
+  "existing_ai_review": {
+    "http_status": 200,
+    "request": {
+      "review_date": "2026-09-01",
+      "window_days": 30
+    },
+    "response": {
+      "act": {
+        "active_bill_count": 10,
+        "annual_cost": 7442.9,
+        "bills": [
+          {
+            "amount": 29.95,
+            "annual_cost": 778.7,
+            "auto_renew": true,
+            "billing_frequency": "fortnightly",
+            "category": "Health",
+            "days_until_due": -1,
+            "id": 6,
+            "monthly_cost": 64.89,
+            "name": "Gym Membership",
+            "next_due_date": "2026-08-31",
+            "provider": "Fitness First",
+            "trial_end_date": null
+          },
+          {
+            "amount": 25.99,
+            "annual_cost": 311.88,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Entertainment",
+            "days_until_due": 1,
+            "id": 4,
+            "monthly_cost": 25.99,
+            "name": "Netflix",
+            "next_due_date": "2026-09-02",
+            "provider": "Netflix",
+            "trial_end_date": null
+          },
+          {
+            "amount": 180.4,
+            "annual_cost": 2164.8,
+            "auto_renew": false,
+            "billing_frequency": "monthly",
+            "category": "Utilities",
+            "days_until_due": 2,
+            "id": 1,
+            "monthly_cost": 180.4,
+            "name": "Electricity",
+            "next_due_date": "2026-09-03",
+            "provider": "Energy Australia",
+            "trial_end_date": null
+          },
+          {
+            "amount": 4.49,
+            "annual_cost": 53.88,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Technology",
+            "days_until_due": 3,
+            "id": 8,
+            "monthly_cost": 4.49,
+            "name": "Cloud Storage",
+            "next_due_date": "2026-09-04",
+            "provider": "Apple iCloud+",
+            "trial_end_date": null
+          },
+          {
+            "amount": 89.0,
+            "annual_cost": 1068.0,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Utilities",
+            "days_until_due": 4,
+            "id": 2,
+            "monthly_cost": 89.0,
+            "name": "Home Internet",
+            "next_due_date": "2026-09-05",
+            "provider": "Aussie Broadband",
+            "trial_end_date": null
+          },
+          {
+            "amount": 17.99,
+            "annual_cost": 215.88,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Software",
+            "days_until_due": 5,
+            "id": 10,
+            "monthly_cost": 17.99,
+            "name": "Design Software",
+            "next_due_date": "2026-09-06",
+            "provider": "Canva",
+            "trial_end_date": "2026-09-03"
+          },
+          {
+            "amount": 59.0,
+            "annual_cost": 708.0,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Telecommunications",
+            "days_until_due": 6,
+            "id": 3,
+            "monthly_cost": 59.0,
+            "name": "Mobile Plan",
+            "next_due_date": "2026-09-07",
+            "provider": "Telstra",
+            "trial_end_date": null
+          },
+          {
+            "amount": 35.99,
+            "annual_cost": 431.88,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Software",
+            "days_until_due": 8,
+            "id": 9,
+            "monthly_cost": 35.99,
+            "name": "Creative Software",
+            "next_due_date": "2026-09-09",
+            "provider": "Adobe",
+            "trial_end_date": null
+          },
+          {
+            "amount": 13.99,
+            "annual_cost": 167.88,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Entertainment",
+            "days_until_due": 11,
+            "id": 5,
+            "monthly_cost": 13.99,
+            "name": "Spotify",
+            "next_due_date": "2026-09-12",
+            "provider": "Spotify",
+            "trial_end_date": null
+          },
+          {
+            "amount": 128.5,
+            "annual_cost": 1542.0,
+            "auto_renew": true,
+            "billing_frequency": "monthly",
+            "category": "Insurance",
+            "days_until_due": 14,
+            "id": 7,
+            "monthly_cost": 128.5,
+            "name": "Car Insurance",
+            "next_due_date": "2026-09-15",
+            "provider": "NRMA",
+            "trial_end_date": null
+          }
+        ],
+        "description": "Calculate recurring costs and days until each payment.",
+        "monthly_cost": 620.24,
+        "phase": "act"
+      },
+      "adapt": {
+        "actions": [
+          "Review or pay Gym Membership from Fitness First. It was due on 2026-08-31 and is 1 day overdue.",
+          "Decide whether to keep or cancel Design Software from Canva before its trial ends on 2026-09-03 in 2 days.",
+          "Prepare for Netflix from Netflix, which is due on 2026-09-02 in 1 day.",
+          "Prepare for Electricity from Energy Australia, which is due on 2026-09-03 in 2 days.",
+          "Prepare for Cloud Storage from Apple iCloud+, which is due on 2026-09-04 in 3 days.",
+          "Prepare for Home Internet from Aussie Broadband, which is due on 2026-09-05 in 4 days.",
+          "Prepare for Mobile Plan from Telstra, which is due on 2026-09-07 in 6 days.",
+          "Review whether to keep Creative Software from Adobe before it renews automatically on 2026-09-09 in 8 days.",
+          "Review whether to keep Spotify from Spotify before it renews automatically on 2026-09-12 in 11 days.",
+          "Review whether to keep Car Insurance from NRMA before it renews automatically on 2026-09-15 in 14 days."
+        ],
+        "description": "Provide a plain-language action summary.",
+        "llm_called": true,
+        "model_name": "qwen2.5:0.5b",
+        "phase": "adapt",
+        "priority": {
+          "reason": "Gym Membership is overdue and should be reviewed first.",
+          "type": "overdue"
+        },
+        "summary": "Review the following bills and subscriptions that need attention.",
+        "summary_fallback_used": false,
+        "summary_tone": "neutral"
+      },
+      "observe": {
+        "attention_count": 10,
+        "description": "Flag overdue bills, near-term payments, renewals and trials.",
+        "due_soon": [
+          {
+            "days_until_due": 1,
+            "id": 4,
+            "monthly_cost": 25.99,
+            "name": "Netflix",
+            "next_due_date": "2026-09-02",
+            "provider": "Netflix"
+          },
+          {
+            "days_until_due": 2,
+            "id": 1,
+            "monthly_cost": 180.4,
+            "name": "Electricity",
+            "next_due_date": "2026-09-03",
+            "provider": "Energy Australia"
+          },
+          {
+            "days_until_due": 3,
+            "id": 8,
+            "monthly_cost": 4.49,
+            "name": "Cloud Storage",
+            "next_due_date": "2026-09-04",
+            "provider": "Apple iCloud+"
+          },
+          {
+            "days_until_due": 4,
+            "id": 2,
+            "monthly_cost": 89.0,
+            "name": "Home Internet",
+            "next_due_date": "2026-09-05",
+            "provider": "Aussie Broadband"
+          },
+          {
+            "days_until_due": 5,
+            "id": 10,
+            "monthly_cost": 17.99,
+            "name": "Design Software",
+            "next_due_date": "2026-09-06",
+            "provider": "Canva"
+          },
+          {
+            "days_until_due": 6,
+            "id": 3,
+            "monthly_cost": 59.0,
+            "name": "Mobile Plan",
+            "next_due_date": "2026-09-07",
+            "provider": "Telstra"
+          }
+        ],
+        "expiring_trials": [
+          {
+            "days_until_trial_end": 2,
+            "id": 10,
+            "name": "Design Software",
+            "provider": "Canva",
+            "trial_end_date": "2026-09-03"
+          }
+        ],
+        "overdue": [
+          {
+            "days_until_due": -1,
+            "id": 6,
+            "monthly_cost": 64.89,
+            "name": "Gym Membership",
+            "next_due_date": "2026-08-31",
+            "provider": "Fitness First"
+          }
+        ],
+        "phase": "observe",
+        "upcoming_auto_renewals": [
+          {
+            "days_until_due": 1,
+            "id": 4,
+            "monthly_cost": 25.99,
+            "name": "Netflix",
+            "next_due_date": "2026-09-02",
+            "provider": "Netflix"
+          },
+          {
+            "days_until_due": 3,
+            "id": 8,
+            "monthly_cost": 4.49,
+            "name": "Cloud Storage",
+            "next_due_date": "2026-09-04",
+            "provider": "Apple iCloud+"
+          },
+          {
+            "days_until_due": 4,
+            "id": 2,
+            "monthly_cost": 89.0,
+            "name": "Home Internet",
+            "next_due_date": "2026-09-05",
+            "provider": "Aussie Broadband"
+          },
+          {
+            "days_until_due": 5,
+            "id": 10,
+            "monthly_cost": 17.99,
+            "name": "Design Software",
+            "next_due_date": "2026-09-06",
+            "provider": "Canva"
+          },
+          {
+            "days_until_due": 6,
+            "id": 3,
+            "monthly_cost": 59.0,
+            "name": "Mobile Plan",
+            "next_due_date": "2026-09-07",
+            "provider": "Telstra"
+          },
+          {
+            "days_until_due": 8,
+            "id": 9,
+            "monthly_cost": 35.99,
+            "name": "Creative Software",
+            "next_due_date": "2026-09-09",
+            "provider": "Adobe"
+          },
+          {
+            "days_until_due": 11,
+            "id": 5,
+            "monthly_cost": 13.99,
+            "name": "Spotify",
+            "next_due_date": "2026-09-12",
+            "provider": "Spotify"
+          },
+          {
+            "days_until_due": 14,
+            "id": 7,
+            "monthly_cost": 128.5,
+            "name": "Car Insurance",
+            "next_due_date": "2026-09-15",
+            "provider": "NRMA"
+          }
+        ]
+      },
+      "plan": {
+        "description": "Review active bills, renewals and trials in the selected period.",
+        "due_soon_days": 7,
+        "phase": "plan",
+        "priority_order": [
+          "overdue bills",
+          "trials ending soon",
+          "payments due soon",
+          "automatic renewals"
+        ],
+        "review_date": "2026-09-01",
+        "review_end_date": "2026-10-01",
+        "window_days": 30
+      }
+    }
+  },
+  "result": "passed"
+}

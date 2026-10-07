@@ -14,9 +14,10 @@
 #   HyunWoo    8040-8049   CLAIMED
 #   Thomas     8050-8059   CLAIMED
 #   LeHoaLong  8060-8069   CLAIMED
-#   shared     8070        mcp-server (Flask test harness / htmx UI backend)
-#   shared     8071        mcp-server (real MCP protocol, streamable-http)
-#   shared     11434       ollama
+#   host       5001        mcp-server app.py (Flask test harness), NOT in compose
+#   host       5002        mcp-server server.py (real MCP protocol), NOT in compose
+#   host       11434       Ollama (AI-Mode), NOT in compose
+#   host       5003        rag-server, NOT in compose
 #
 # Model selection lives in .env (copy .env.example to .env). The :- defaults
 # below mean the stack still comes up if .env is missing.
@@ -26,25 +27,11 @@ name: asd2026
 services:
 
   # =========================================================================
-  # SHARED INFRASTRUCTURE -- used by every student's backend.
+  # SHARED -- unified home page. AI-Mode (Ollama), the MCP server, the RAG
+  # server and the agentic loop are deliberately NOT services here: they run
+  # as local processes on the host, and every backend reaches them through
+  # host.docker.internal (Release 1 brief). Override the URLs in .env.
   # =========================================================================
-  ollama:
-    image: ollama/ollama:latest
-    container_name: asd-ollama
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      # Named volume so pulled models survive `docker compose down` and
-      # restarts. Models are NOT shared with a host Ollama install.
-      - ollama-models:/root/.ollama
-    healthcheck:
-      test: [ "CMD", "ollama", "list" ]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
-
   shared-frontend:
     build: ./shared
     container_name: shared-frontend
@@ -85,12 +72,12 @@ services:
       - "8011:5000"
     environment:
       DB_PATH: /data/portfolio.db
-      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
-      MCP_SERVER_URL: http://mcp-server:5002/mcp
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
       MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-5}
-      RAG_SERVER_URL: http://host.docker.internal:5003
+      RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
       RAG_TIMEOUT_SECONDS: ${RAG_TIMEOUT_SECONDS:-5}
     extra_hosts:
       # Resolves automatically on Docker Desktop; needed on Linux.
@@ -102,11 +89,6 @@ services:
     depends_on:
       joshua-database:
         condition: service_healthy
-      ollama:
-        # service_started, not service_healthy: the API is useful before a
-        # model has been pulled, and /api/insights returns a clean 503 until
-        # one is.
-        condition: service_started
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
@@ -155,15 +137,22 @@ services:
     ports:
       - "8021:5000"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:0.5b}
       - DATABASE=/data/glossary.sqlite
+      # MCP and RAG run on the host, not in this stack. Those servers are
+      # shared and unmodified; run them locally and this backend reaches them
+      # through host.docker.internal.
+      - MCP_SERVER_URL=${MCP_HARNESS_URL:-http://host.docker.internal:5001}
+      - RAG_SERVER_URL=${RAG_SERVER_URL:-http://host.docker.internal:5003}
+    extra_hosts:
+      # Resolves automatically on Docker Desktop; needed on Linux engines.
+      - "host.docker.internal:host-gateway"
     volumes:
       - maxwell-db-data:/data
     depends_on:
       maxwell-database:
         condition: service_healthy
-      ollama:
-        condition: service_started
 
   maxwell-frontend:
     build:
@@ -174,7 +163,16 @@ services:
     ports:
       - "8020:80"
     environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    volumes:
+      # Dev convenience only: serve these two files straight off the working
+      # tree, so a browser refresh picks up HTML/CSS edits without a rebuild.
+      # The Dockerfile still copies the same files into the image, so the
+      # image remains self-contained if these mounts are removed.
+      - ./Maxwell/frontend/index.html:/app/index.html
+      - ./Maxwell/frontend/styles.css:/app/styles.css
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - maxwell-backend
 
@@ -211,10 +209,13 @@ services:
 
     environment:
       DATABASE_PATH: /data/transactions.db
-      OLLAMA_URL: http://ollama:11434
+      OLLAMA_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
-      MCP_SERVER_URL: http://mcp-server:5002/mcp
-      RAG_SERVER_URL: http://host.docker.internal:5003
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
+      RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     volumes:
       - thomas-db-data:/data
@@ -223,8 +224,6 @@ services:
     depends_on:
       thomas-database:
         condition: service_healthy
-      ollama:
-        condition: service_started
 
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)" ]
@@ -299,7 +298,7 @@ services:
       - "8031:5000"
     environment:
       DB_PATH: /data/library.db
-      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
       # Release 1: the shared MCP server (python mcp-server/server.py) and
@@ -307,9 +306,9 @@ services:
       # not in compose, so the backend reaches them via host.docker.internal.
       # Set MCP_ENABLED / RAG_ENABLED to false to switch either mode off.
       MCP_ENABLED: ${MCP_ENABLED:-true}
-      MCP_SERVER_URL: ${ENEREL_MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
       RAG_ENABLED: ${RAG_ENABLED:-true}
-      RAG_SERVER_URL: ${ENEREL_RAG_SERVER_URL:-http://host.docker.internal:5003}
+      RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
     extra_hosts:
       # Docker Desktop (macOS/Windows) resolves host.docker.internal on its
       # own; this makes it resolve on Linux engines too.
@@ -321,11 +320,6 @@ services:
     depends_on:
       enerel-database:
         condition: service_healthy
-      ollama:
-        # service_started, not service_healthy: the API is useful before a
-        # model has been pulled, and /summarize or /search return a clean 503
-        # until one is.
-        condition: service_started
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so the check fails exactly when it should.
@@ -343,15 +337,21 @@ services:
       - "8041:5000"
     environment:
       DB_PATH: /data/bills.db
-      OLLAMA_BASE_URL: http://ollama:11434
+      # Shared Release 1 services run on the host.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      AI_MODE_ENABLED: ${AI_MODE_ENABLED:-true}
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
+      RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - hyunwoo-db-data:/data
     depends_on:
       hyunwoo-database:
         condition: service_healthy
-      ollama:
-        condition: service_started
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5)" ]
       interval: 15s
@@ -423,11 +423,14 @@ services:
       - "8061:5000"
     environment:
       DB_PATH: /data/goals.db
-      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
       # Only used by `npm run dev`; in the container nginx makes /api
       # same-origin and this layer never fires.
       CORS_ORIGINS: http://localhost:8060,http://127.0.0.1:8060
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       # Same volume as lehoalong-database: that service creates and seeds
       # goals.db, this one reads and writes it.
@@ -435,11 +438,6 @@ services:
     depends_on:
       lehoalong-database:
         condition: service_healthy
-      ollama:
-        # service_started, not service_healthy: goals CRUD, progress and the
-        # budget summary are all useful before a model has been pulled, and
-        # /plan and /replan return a clean 503 until one is.
-        condition: service_started
     healthcheck:
       # /health returns 503 when the database is unreachable; urlopen raises
       # on a non-2xx status, so this fails exactly when it should.
@@ -472,50 +470,19 @@ services:
       start_period: 10s
 
   # =========================================================================
-  # MCP SERVER -- shared. Exposes the team's data (portfolio, glossary,
-  # documents, bills, transactions, goals) as MCP tools, calling each
-  # student backend over HTTP rather than touching any database directly.
-  # See mcp-server/tools.py for the tool implementations.
-  #
-  # Two processes, two ports (see mcp-server/entrypoint.sh):
-  #   8070 -> 5001  app.py    Flask test harness behind shared/mcp.html
-  #   8071 -> 5002  server.py the real MCP protocol (streamable-http), for
-  #                 an actual MCP client -- not for browser/curl use.
+  # MCP SERVER -- shared, but deliberately NOT a compose service. It runs as
+  # one local process pair on the host (see mcp-server/README.md):
+  #   5001  app.py    Flask test harness behind shared/mcp.html
+  #   5002  server.py the real MCP protocol (streamable-http)
+  # Every backend reaches it through host.docker.internal; set MCP_SERVER_URL
+  # / MCP_HARNESS_URL in .env to point all of them somewhere else at once.
   # =========================================================================
-  mcp-server:
-    build: ./mcp-server
-    container_name: mcp-server
-    restart: unless-stopped
-    ports:
-      - "8070:5001"
-      - "8071:5002"
-    environment:
-      OLLAMA_BASE_URL: http://ollama:11434/v1
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
-      MCP_ENABLED: "true"
-      MCP_HTTP_HOST: "0.0.0.0"
-      MCP_HTTP_PORT: "5002"
-    depends_on:
-      ollama:
-        condition: service_started
-      joshua-backend:
-        condition: service_started
-      maxwell-backend:
-        condition: service_started
-      enerel-backend:
-        condition: service_started
-      hyunwoo-backend:
-        condition: service_started
-      thomas-backend:
-        condition: service_started
-      lehoalong-backend:
-        condition: service_started
-    healthcheck:
-      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=5)" ]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 15s
+
+  # =========================================================================
+  # RAG SERVER -- shared, but NOT a compose service. Runs on the host at
+  # port 5003 (python rag-server/rag_http_server.py); backends reach it via
+  # RAG_SERVER_URL.
+  # =========================================================================
 
   # =========================================================================
   # TEMPLATE -- copy this block, replace <name>, claim a port range above.
@@ -530,7 +497,7 @@ services:
   #     ports:
   #       - "80X1:5000"
   #     environment:
-  #       OLLAMA_BASE_URL: http://ollama:11434
+  #       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
   #       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
   #     volumes:
   #       - <name>-db-data:/data
@@ -547,9 +514,6 @@ services:
   # =========================================================================
 
 volumes:
-  # Shared
-  ollama-models:
-
   # Joshua
   joshua-db-data:
   # Maxwell

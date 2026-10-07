@@ -14,10 +14,25 @@ from __future__ import annotations
 
 import sqlite3
 
-PHASES = ("plan", "observe", "adapt")
+PHASES = ("plan", "observe", "adapt", "mcp", "rag")
 
 # The model_name written when Python did the work itself.
 PYTHON = "python"
+
+# Release 1 writes two more kinds of row, and neither can honestly claim a
+# model tag of its own:
+#
+#   MCP         an MCP tool call runs no model at all. The MCP server relays
+#               figures the owning backend already computed in Python.
+#   RAG_SERVER  a grounded answer did involve a model, but it ran inside the
+#               shared RAG server, which does not report its tag in the
+#               response. Recording the tag this service happens to have
+#               configured would be a guess, and a wrong one whenever the two
+#               differ. See the README's known issues -- the pull request that
+#               makes rag_pipeline.py read OLLAMA_MODEL from the environment
+#               would also let it report what it used.
+MCP = "mcp"
+RAG_SERVER = "rag-server"
 
 COLUMNS = ("log_id", "goal_id", "phase", "model_name", "prompt", "response", "created_at")
 

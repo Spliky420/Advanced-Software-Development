@@ -4,11 +4,32 @@
 # filters below keep it off the other five students' work, and nothing here
 # reads or writes outside LeHoaLong/ and this file.
 #
-# No Ollama runs in CI, and none is needed. Every LLM path in LeHoaLong/tests
-# goes through the `fake_model` / `stub_ollama` fixtures in tests/conftest.py,
-# and an autouse `no_network` fixture monkeypatches socket.connect so any test
-# that tries to open a socket fails loudly instead of hanging. OLLAMA_BASE_URL
-# is additionally pointed at a dead port below as a second line of defence.
+# AI-Mode, MCP and RAG are all DISABLED in CI, and none of the three is
+# needed to run the suite. The Release 1 brief requires this; the `backend`
+# job below states it explicitly in its own step so it is visible in the
+# Actions log rather than only in this comment.
+#
+# Three independent layers enforce it, in order of authority:
+#
+#   1. tests/conftest.py's autouse `no_network` fixture monkeypatches
+#      socket.connect and socket.create_connection, so any test that tries to
+#      open a socket fails loudly naming itself instead of hanging. This is
+#      the authoritative one -- every Ollama, MCP and RAG call in the suite
+#      goes through a stub fixture (`fake_model`, `stub_ollama`, `stub_mcp`,
+#      `stub_rag`).
+#   2. The test app is built with MCP_ENABLED and RAG_ENABLED false, matching
+#      the environment below, so a test that does not ask for an integration
+#      cannot reach for one.
+#   3. The three service URLs in the job environment point at dead ports, so
+#      if layers 1 and 2 were ever both defeated the attempt still fails fast
+#      here rather than silently passing on a machine that happens to be
+#      running one of them.
+#
+# The MCP client SDK is deliberately NOT installed: tests/requirements.txt
+# omits it, and app/mcp/client.py imports it lazily inside the one transport
+# function the tests replace. The `backend` job asserts that `import mcp`
+# fails, which is what makes "the suite never speaks the MCP protocol" a
+# checked property rather than a claim.
 
 name: lehoalong-ci
 
@@ -47,11 +68,20 @@ jobs:
     name: Backend (ruff + pytest, no Ollama)
     runs-on: ubuntu-24.04
     env:
-      # Deliberately unreachable. Nothing in the suite should ever open a
-      # socket to Ollama; if a future test regresses and tries, it fails fast
-      # here instead of silently passing on a machine that happens to run one.
+      # Every URL here is deliberately unreachable: port 1 is reserved and
+      # nothing listens on it. Nothing in the suite should open a socket at
+      # all, so if a future test regresses and tries, it fails fast here
+      # instead of silently passing on a machine that happens to be running
+      # Ollama, the MCP server or the RAG server.
       OLLAMA_BASE_URL: http://127.0.0.1:1
       OLLAMA_MODEL: qwen2.5:0.5b
+
+      # Release 1. Both integrations are optional at runtime and are switched
+      # off here, which is also the configuration the test app is built with.
+      MCP_ENABLED: 'false'
+      MCP_SERVER_URL: http://127.0.0.1:1/mcp
+      RAG_ENABLED: 'false'
+      RAG_SERVER_URL: http://127.0.0.1:1
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
@@ -76,6 +106,34 @@ jobs:
           pip install -r LeHoaLong/tests/requirements.txt
           pip install ruff==0.16.6
 
+      - name: Confirm AI-Mode, MCP and RAG are disabled
+        # The Release 1 brief requires all three to be off in CI. Printed as
+        # a step rather than left in a comment so it is visible in the Actions
+        # log, and asserted rather than only printed so that deleting an env
+        # entry fails the build instead of quietly re-enabling an integration.
+        run: |
+          echo "OLLAMA_BASE_URL = ${OLLAMA_BASE_URL}  (dead port, AI-Mode disabled)"
+          echo "MCP_ENABLED     = ${MCP_ENABLED}"
+          echo "MCP_SERVER_URL  = ${MCP_SERVER_URL}  (dead port)"
+          echo "RAG_ENABLED     = ${RAG_ENABLED}"
+          echo "RAG_SERVER_URL  = ${RAG_SERVER_URL}  (dead port)"
+          test "${MCP_ENABLED}" = "false"
+          test "${RAG_ENABLED}" = "false"
+          case "${OLLAMA_BASE_URL}${MCP_SERVER_URL}${RAG_SERVER_URL}" in
+            *127.0.0.1:1*) ;;
+            *) echo "a service URL is not pointed at a dead port"; exit 1 ;;
+          esac
+          # The suite must never speak the MCP protocol, so the SDK is not
+          # installed. app/mcp/client.py imports it lazily inside the one
+          # transport function every test replaces, which is why 400+ tests
+          # pass without it. If this import ever starts succeeding, something
+          # has added a real dependency on it to the test path.
+          if python -c "import mcp" 2>/dev/null; then
+            echo "the mcp SDK is installed in the test environment -- it should not be"
+            exit 1
+          fi
+          echo "the mcp SDK is absent, as intended"
+
       - name: Lint Python (ruff)
         # Config is LeHoaLong/ruff.toml -- scoped to this directory so it
         # imposes no style on anyone else's code.
@@ -90,6 +148,18 @@ jobs:
 
       - name: Run pytest
         run: pytest LeHoaLong/tests -v
+
+      - name: Check the corpus file still matches its generator
+        # LeHoaLong/tools/build_corpus.py generates this feature's
+        # contribution to the shared RAG corpus, padding each topic block to a
+        # multiple of the chunker's 80-word window. --check writes nothing and
+        # reports whether the committed file still matches.
+        #
+        # Advisory, not a gate: the file lives in rag-server/corpus/, a shared
+        # directory. If a teammate edits it the drift should be reported here,
+        # but it should not fail a pull request that only touches LeHoaLong/.
+        continue-on-error: true
+        run: python LeHoaLong/tools/build_corpus.py --check
 
   # ---------------------------------------------------------------------
   # JavaScript: lint and build the React app on the runner.

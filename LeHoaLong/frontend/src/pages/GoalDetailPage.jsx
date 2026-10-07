@@ -1,18 +1,22 @@
-import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import * as api from '../api/client'
+import AiModePanel from '../components/AiModePanel'
 import ContributionForm from '../components/ContributionForm'
 import StepList from '../components/StepList'
-import { BusyButton, Feedback, Loading, PriorityBadge, ProgressBar, StatusBadge } from '../components/common'
-import { useAction, useAsync } from '../hooks'
+import { Feedback, Loading, PriorityBadge, ProgressBar, StatusBadge } from '../components/common'
+import { useAsync } from '../hooks'
 import { longDate, money, percent, signedMoney } from '../format'
 
 // The whole agentic loop for one goal, on one page:
 //
-//   PLAN     the Generate / Regenerate plan buttons
+//   PLAN     the AI mode panel's generate / regenerate buttons
 //   ACT      the log contribution form
 //   OBSERVE  the progress panel, refreshed after every change
 //   ADAPT    Regenerate plan, which sends the observed variance to the model
+//
+// Release 1 moved the planning controls into the AI mode panel: there are now
+// three ways to ask for a plan and they belong beside each other. The savings
+// plan panel below shows what came out of it.
 async function loadGoal(goalId) {
   const [goal, progress, budget] = await Promise.all([
     api.getGoal(goalId),
@@ -93,34 +97,8 @@ export default function GoalDetailPage() {
   const { goalId } = useParams()
   const navigate = useNavigate()
   const { loading, data, error, reload } = useAsync(() => loadGoal(goalId), [goalId])
-  const { busy: planning, error: planError, setError: setPlanError, run } = useAction()
-  const [planNote, setPlanNote] = useState(null)
 
   const refresh = () => reload({ quiet: true })
-
-  const runPlanner = async (kind) => {
-    setPlanNote(null)
-    const result = await run(() =>
-      kind === 'plan' ? api.generatePlan(goalId) : api.regeneratePlan(goalId),
-    )
-    if (!result) return
-
-    const phase = kind === 'plan' ? result.plan : result.adapt
-    const parts = []
-    if (kind === 'plan') {
-      parts.push(`Plan generated: ${phase.step_count} instalments of ${money(phase.monthly_amount, data.currency)}, finishing ${longDate(phase.final_due_date)}.`)
-    } else {
-      parts.push(phase.summary)
-      parts.push(`${phase.steps_preserved} completed step(s) kept, ${phase.steps_regenerated} regenerated.`)
-    }
-    if (phase.fallback) {
-      // Honest about what happened: the plan is real and the figures are
-      // Python's either way, but the wording is not the model's.
-      parts.push('The model did not return a usable answer, so the descriptions were written by the app. The amounts and dates are unaffected.')
-    }
-    setPlanNote(parts.join(' '))
-    refresh()
-  }
 
   if (loading) return <Loading what="this goal" />
   if (error) {
@@ -160,52 +138,17 @@ export default function GoalDetailPage() {
 
       <ProgressPanel progress={progress} currency={currency} />
 
+      <AiModePanel goalId={goal.goal_id} currency={currency} hasPlan={hasPlan} onPlanned={refresh} />
+
       <section className="panel" aria-labelledby="plan-heading">
         <div className="panel-header">
           <h2 id="plan-heading">
             Savings plan <span className="muted">({goal.steps.length} steps)</span>
           </h2>
-          <div className="btn-row">
-            <BusyButton
-              busy={planning}
-              busyLabel={hasPlan ? 'Regenerating...' : 'Generating...'}
-              onClick={() => runPlanner(hasPlan ? 'replan' : 'plan')}
-            >
-              {hasPlan ? 'Regenerate plan' : 'Generate plan'}
-            </BusyButton>
-            {hasPlan && (
-              <BusyButton
-                className="btn btn--secondary"
-                busy={planning}
-                busyLabel="Working..."
-                onClick={() => runPlanner('plan')}
-                title="Discard the pending steps and lay the plan out again from scratch"
-              >
-                Start over
-              </BusyButton>
-            )}
-          </div>
         </div>
 
-        {planning && (
-          <p className="muted u-mt-sm">
-            Asking the model for step descriptions. This runs on a local model and can take a while.
-          </p>
-        )}
-        <Feedback error={planError} />
-        {planNote && !planError && <Feedback info={planNote} />}
-
         <div className="u-mt-md">
-          <StepList
-            goalId={goal.goal_id}
-            steps={goal.steps}
-            currency={currency}
-            onChanged={() => {
-              setPlanNote(null)
-              setPlanError(null)
-              refresh()
-            }}
-          />
+          <StepList goalId={goal.goal_id} steps={goal.steps} currency={currency} onChanged={refresh} />
         </div>
       </section>
 

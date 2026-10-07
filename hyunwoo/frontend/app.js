@@ -17,6 +17,12 @@ const elements = {
     runReview: document.querySelector("#run-review"),
     reviewDate: document.querySelector("#review-date"),
     windowDays: document.querySelector("#window-days"),
+    runMcp: document.querySelector("#run-mcp"),
+    mcpResult: document.querySelector("#mcp-result"),
+    ragForm: document.querySelector("#rag-form"),
+    ragQuery: document.querySelector("#rag-query"),
+    runRag: document.querySelector("#run-rag"),
+    ragResult: document.querySelector("#rag-result"),
     toast: document.querySelector("#toast"),
 };
 
@@ -342,7 +348,69 @@ async function runReview() {
     }
 }
 
+// Display the shared bills tool result.
+async function runMcp() {
+    elements.runMcp.disabled = true;
+    elements.mcpResult.textContent = "Checking saved commitments…";
+    try {
+        const response = await apiFetch("/bills/mcp", { method: "POST" });
+        const { summary, bills: toolBills } = response.result;
+        elements.mcpResult.innerHTML = `
+            <p><strong>Shared bill summary received</strong></p>
+            <p>${escapeHtml(summary.active_bill_count)} active bills · ${formatMoney(summary.monthly_cost)} monthly · ${formatMoney(summary.annual_cost)} annually</p>
+            <p>${escapeHtml(summary.auto_renew_count)} active automatic renewals.</p>
+            <details>
+                <summary>View ${toolBills.length} saved records</summary>
+                <ul>${toolBills.map((bill) => `<li>${escapeHtml(bill.name)} — ${formatMoney(bill.amount)} ${escapeHtml(bill.billing_frequency)}, due ${formatDate(bill.next_due_date)}, ${escapeHtml(bill.status)}</li>`).join("")}</ul>
+            </details>
+            <details><summary>Structured tool result</summary><pre>${escapeHtml(JSON.stringify(response, null, 2))}</pre></details>
+        `;
+    } catch (error) {
+        elements.mcpResult.textContent = error.message;
+    } finally {
+        elements.runMcp.disabled = false;
+    }
+}
+
+// Show the answer together with its retrieved source excerpts.
+async function runRag(event) {
+    event.preventDefault();
+    elements.runRag.disabled = true;
+    elements.ragResult.textContent = "Looking for sources and preparing an answer…";
+    try {
+        const result = await apiFetch("/bills/rag", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: elements.ragQuery.value.trim(), k: 5 }),
+        });
+        const citations = result.citations.map((citation) => `
+            <li><strong>${escapeHtml(citation.source_title || citation.source_id)}</strong> · ${escapeHtml(citation.chunk_id)}
+                ${citation.source_url ? `<p><a href="${escapeHtml(citation.source_url)}" target="_blank" rel="noopener noreferrer">Official provider source</a> · Checked ${escapeHtml(citation.checked_on)}</p>` : ""}
+                <blockquote>${escapeHtml(citation.excerpt)}</blockquote>
+            </li>
+        `).join("");
+        const fallbackNotes = {
+            model_abstention: "The model could not produce an answer. Relevant source wording is shown instead; check whether it answers your question.",
+            provider_grounding: "Original reference wording is shown to keep provider details grounded in the source.",
+            numerical_grounding: "The numerical explanation was replaced with the original source wording.",
+        };
+        elements.ragResult.innerHTML = `
+            <p class="meta-chip">${result.status === "insufficient_context" ? "Insufficient context" : result.source_excerpt_fallback_used ? "Source excerpt" : "Sourced answer"} · ${escapeHtml(result.confidence_category)} confidence</p>
+            <p class="rag-answer">${escapeHtml(result.answer)}</p>
+            ${result.source_excerpt_fallback_used ? `<p class="assistant-note">${escapeHtml(fallbackNotes[result.source_excerpt_fallback_reason] || "Original source wording is shown.")}</p>` : ""}
+            ${citations ? `<details><summary>Sources and retrieved context</summary><ul class="citation-list">${citations}</ul></details>` : ""}
+            <p class="assistant-note">Confidence describes source coverage, not a guarantee of correctness.</p>
+        `;
+    } catch (error) {
+        elements.ragResult.textContent = error.message;
+    } finally {
+        elements.runRag.disabled = false;
+    }
+}
+
 // Connect the page buttons and forms.
+elements.runMcp.addEventListener("click", runMcp);
+elements.ragForm.addEventListener("submit", runRag);
 elements.billForm.addEventListener("submit", saveBill);
 elements.cancelEdit.addEventListener("click", resetForm);
 elements.runReview.addEventListener("click", runReview);

@@ -14,6 +14,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Deliberately unreachable. The unit tests mock every LLM call, so
+      # nothing here should ever open a socket to Ollama; if a test regresses
+      # and tries, it fails fast instead of silently passing on a machine that
+      # happens to have one.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,15 +28,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Cache Ollama models
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.ollama
-          key: ${{ runner.os }}-ollama-${{ hashFiles('docker-compose.yml') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-ollama-
 
       - name: Install backend dependencies
         working-directory: ./Maxwell/backend
@@ -43,31 +40,15 @@ jobs:
         run: |
           docker compose build maxwell-database maxwell-backend maxwell-frontend
 
-      - name: Start all services (Ollama, backend, frontend)
+      - name: Start Maxwell services (database, backend, frontend)
+        # Scope to Maxwell's own services. The root compose file defines every
+        # team's stack, so a bare `docker compose up -d` would build and start
+        # all of them. The non-containerised merge also moved ollama, mcp-server
+        # and rag-server out of compose entirely, so these three are all this
+        # job owns.
         run: |
-          docker compose up -d
-          # Wait for Ollama to be ready (up to 30 seconds)
-          for i in {1..30}; do
-            if curl -s http://localhost:11434/api/tags > /dev/null; then
-              echo "Ollama is ready"
-              break
-            fi
-            echo "Waiting for Ollama..."
-            sleep 2
-          done
+          docker compose up -d maxwell-database maxwell-backend maxwell-frontend
 
-      - name: Pull Ollama model (qwen2.5:0.5b) - SKIP if cached
-        run: |
-          # Check if model already exists
-          if curl -s http://localhost:11434/api/tags | grep -q "qwen2.5:0.5b"; then
-            echo "Model qwen2.5:0.5b already pulled, skipping..."
-          else
-            echo "Pulling Ollama model (qwen2.5:0.5b)..."
-            curl -s -X POST http://localhost:11434/api/pull -d '{"model":"qwen2.5:0.5b"}' > /dev/null
-            echo "Ollama model pull initiated"
-            # Give it a moment to start pulling; actual pull may continue in background
-            sleep 10
-          fi
 
       - name: Wait for backend to be ready
         run: |
@@ -84,6 +65,32 @@ jobs:
         working-directory: ./Maxwell
         run: |
           pytest tests/test_glossary.py -v
+
+      - name: Validate MCP and RAG proxies are disabled in CI
+        # The shared MCP and RAG servers run on the host, outside this stack,
+        # so CI must prove the disabled path rather than reach them. These two
+        # flags are the backend's explicit off switch (see app.py): with them
+        # set, every proxy route returns 503 instead of dialling a host it
+        # cannot see. The step fails if either proxy is reachable.
+        working-directory: ./Maxwell/backend
+        env:
+          DISABLE_MCP_PROXY: "true"
+          DISABLE_RAG_PROXY: "true"
+        run: |
+          python - <<'PY'
+          import app
+
+          client = app.app.test_client()
+          mcp = client.post("/api/mcp/glossary-lookup", data={"term": "ETF"})
+          rag = client.post("/api/rag/answer", json={"query": "What is an ETF?"})
+
+          print(f"/api/mcp/...   -> HTTP {mcp.status_code}")
+          print(f"/api/rag/answer -> HTTP {rag.status_code}")
+
+          assert mcp.status_code == 503, f"MCP proxy must be disabled in CI, got {mcp.status_code}"
+          assert rag.status_code == 503, f"RAG proxy must be disabled in CI, got {rag.status_code}"
+          print("MCP and RAG proxies correctly disabled.")
+          PY
 
       - name: Lint Python files (optional)
         working-directory: ./Maxwell/backend

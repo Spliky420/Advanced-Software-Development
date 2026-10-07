@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request
 
 import calculations
 import db
+import integrations
 import llm
 import review
 
@@ -266,6 +267,33 @@ def review_bills():
         return jsonify(response), 503
 
     return jsonify(response)
+
+
+# Request the shared read-only bills tool.
+@app.post("/api/bills/mcp")
+def mcp_bills():
+    try:
+        return jsonify(integrations.bill_tool())
+    except integrations.ServiceError as error:
+        return jsonify({"error": str(error)}), 503
+
+
+# Ask the shared RAG server for a sourced answer.
+@app.post("/api/bills/rag")
+def rag_bills():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required."}), 400
+    query = data.get("query")
+    if not isinstance(query, str) or not 3 <= len(query.strip()) <= 500:
+        return jsonify({"error": "Enter a question between 3 and 500 characters."}), 400
+    k = data.get("k", 5)
+    if type(k) is not int or not 1 <= k <= 10:
+        return jsonify({"error": "Source count must be between 1 and 10."}), 400
+    try:
+        return jsonify(integrations.rag_answer(query.strip(), k))
+    except integrations.ServiceError as error:
+        return jsonify({"error": str(error)}), 503
 
 
 if __name__ == "__main__":

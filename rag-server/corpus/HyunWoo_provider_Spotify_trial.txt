@@ -1,0 +1,5 @@
+Spotify zero-priced free trial cancellation
+Source: https://support.spotify.com/au/article/cancel-premium/
+Checked: 2026-10-02
+
+Cancelling a Spotify zero-priced free trial ends Premium immediately and changes the account to Spotify Free. This differs from cancelling paid Premium, which continues until the next billing date. A cancelled zero-priced free trial cannot be reactivated. Spotify playlists and saved music remain after the account becomes Free.

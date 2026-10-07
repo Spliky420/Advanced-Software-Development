@@ -25,9 +25,20 @@ if [ "$is_ci" = "true" ]; then
 elif [ -f "$DB_FILE" ]; then
     echo "[database] $DB_FILE already exists -- skipping seeding."
 else
-    echo "[database] no database found at $DB_FILE -- initialising."
-    # Seed (or re-seed) the glossary database
-    # The seed script will remove any existing file, create schema, and load seed data.
+    echo "[database] no database found at $DB_FILE -- waiting for backend..."
+    # Wait for the Maxwell backend to be ready (max 30 seconds)
+    timeout=30
+    while [ $timeout -gt 0 ]; do
+        if curl -s -f "http://maxwell-backend:5000/health" >/dev/null 2>&1; then
+            break
+        fi
+        sleep 1
+        timeout=$((timeout - 1))
+    done
+    if [ $timeout -le 0 ]; then
+        echo "[database] WARNING: backend did not become ready in time; proceeding anyway."
+    fi
+    echo "[database] seeding glossary..."
     "$SQL_DIR/seed_glossary.sh"
 fi
 

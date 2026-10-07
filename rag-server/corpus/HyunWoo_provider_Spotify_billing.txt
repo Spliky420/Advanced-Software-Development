@@ -1,0 +1,5 @@
+Spotify billing dates
+Source: https://support.spotify.com/au/article/billing-date/
+Checked: 2026-10-02
+
+Spotify's billing cycle begins when you subscribe. The account page lists the billing date. To change that date, cancel the plan, stay on Free until the desired day, then subscribe again. Resubscribing before the current billing period ends keeps the original date. These are general instructions, not a customer's personal payment date.

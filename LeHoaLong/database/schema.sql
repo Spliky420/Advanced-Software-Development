@@ -89,12 +89,31 @@ CREATE TABLE contributions (
 --     PLAN/ADAPT fall back to a deterministic even split when the model
 --     misbehaves -- both still get logged, and 'python' is how you tell them
 --     apart from a real model call when reading the table.
+--
+-- Release 1 adds two phases to the same table rather than new tables, because
+-- these are the same kind of record: an outbound AI-adjacent call, what was
+-- sent, and what came back.
+--
+--   'mcp'  one MCP tool call (or one tools/list). No model runs in this phase
+--          at all -- the MCP server relays figures other backends computed --
+--          so model_name is the literal 'mcp'. goal_id is NULL for the
+--          standalone /api/mcp/* endpoints, which belong to no goal.
+--   'rag'  one grounded answer from the shared RAG server. A model *did* run,
+--          but it ran inside that server, which does not report its tag in
+--          the response, so model_name is 'rag-server' rather than a tag this
+--          service can honestly claim to know. See the README's known issues.
+--
+-- Adding to this CHECK is not a free change: an existing goals.db on the
+-- lehoalong-db-data volume keeps the old three-phase constraint, and every
+-- Release 1 log write against it would fail. init_db.py migrates such a file
+-- in place on start (migrate_ai_plan_log) rather than requiring a re-seed,
+-- which would discard goals created live.
 -- ---------------------------------------------------------------------------
 CREATE TABLE ai_plan_log (
     log_id     INTEGER PRIMARY KEY AUTOINCREMENT,
     goal_id    INTEGER REFERENCES goals (goal_id) ON DELETE SET NULL,
-    phase      TEXT    NOT NULL CHECK (phase IN ('plan', 'observe', 'adapt')),
-    model_name TEXT    NOT NULL,                     -- e.g. qwen2.5:0.5b, llama3.1:8b, python
+    phase      TEXT    NOT NULL CHECK (phase IN ('plan', 'observe', 'adapt', 'mcp', 'rag')),
+    model_name TEXT    NOT NULL,                     -- e.g. qwen2.5:0.5b, llama3.1:8b, python, mcp, rag-server
     prompt     TEXT    NOT NULL,                     -- exact text sent, figures already computed
     response   TEXT,                                 -- raw response, before parsing
     created_at TEXT    NOT NULL                      -- ISO-8601 timestamp

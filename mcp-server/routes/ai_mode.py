@@ -6,9 +6,10 @@ from openai import OpenAI
 
 ai_mode_bp = Blueprint("ai_mode", __name__)
 
-# Ollama's OpenAI-compatible endpoint, on the shared compose network --
-# never a commercial API (see CLAUDE.md's LLM access rules).
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/v1")
+# Ollama's OpenAI-compatible endpoint -- the compose ollama service, reached
+# through its published host port because this server runs on the host.
+# Never a commercial API (see CLAUDE.md's LLM access rules).
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
 
 # The client requires a non-empty api_key even though Ollama ignores it.

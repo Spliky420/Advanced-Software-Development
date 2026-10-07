@@ -469,13 +469,20 @@ def test_replan_writes_a_python_summary_when_the_model_gives_none(client, fake_m
 
 
 def test_replan_tells_the_model_what_actually_happened(client, fake_model):
+    """The measured variance is stated in the prompt, already computed.
+
+    The expected figure is read from /progress rather than written in as a
+    literal: the seed data's dates are absolute, so the variance depends on
+    which steps have fallen due by the date the suite runs on.
+    """
     calls = fake_model()
+    variance = client.get("/api/goals/3/progress").get_json()["variance"]
 
     client.post("/api/goals/3/replan")
 
     prompt = calls[0]["prompt"]
     assert "behind plan" in prompt
-    assert "484.00" in prompt  # the variance, already measured
+    assert f"{variance:,.2f}" in prompt  # the variance, already measured
     assert "Never perform arithmetic" in calls[0]["system"]
 
 
@@ -569,10 +576,16 @@ def test_replan_reports_the_instalment_it_replaced_not_the_one_it_created(client
     before = client.get("/api/goals/3/steps").get_json()["steps"]
     first_pending = next(step for step in before if step["status"] == "pending")
 
-    adapt = client.post("/api/goals/3/replan").get_json()["adapt"]
+    body = client.post("/api/goals/3/replan").get_json()
+    adapt, observe = body["adapt"], body["observe"]
 
-    assert adapt["previous_monthly_amount"] == first_pending["step_amount"] == 467.00
-    assert adapt["revised_monthly_amount"] == 587.50
+    # The revised instalment is remaining / months left -- the division the
+    # planner does in Python. Asserted against the observation rather than
+    # against a literal, because both of its inputs move with today's date.
+    expected = round(observe["remaining_amount"] / observe["months_remaining"], 2)
+
+    assert adapt["previous_monthly_amount"] == first_pending["step_amount"]
+    assert adapt["revised_monthly_amount"] == expected
     assert adapt["previous_monthly_amount"] != adapt["revised_monthly_amount"]
 
 

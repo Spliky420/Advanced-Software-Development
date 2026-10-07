@@ -1,0 +1,5 @@
+Spotify Premium cancellation and playlists
+Source: https://support.spotify.com/au/article/cancel-premium/
+Checked: 2026-10-02
+
+For Spotify Premium paid directly to Spotify, use the account page's plan management controls to cancel the subscription. Paid Premium benefits continue until the next billing date, then the account becomes Spotify Free. Playlists and saved music remain available. Zero-priced free trials switch to Free immediately on cancellation. Partner-billed plans require contacting the payment partner shown in the account.

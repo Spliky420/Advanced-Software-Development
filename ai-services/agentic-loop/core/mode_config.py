@@ -70,4 +70,12 @@ def build_mode_config() -> dict[str, ModeConfig]:
             implementation_prompts=("implementation/mcp_task_prompt.txt",),
             review_prompts=("review/integration_review_prompt.txt",),
         ),
+        "rag": ModeConfig(
+            key="rag",
+            label="RAG",
+            prompt_family="lab8",
+            # Follow same pattern as mcp mode - gets dedicated task prompt
+            implementation_prompts=("implementation/rag_task_prompt.txt",),
+            review_prompts=("review/integration_review_prompt.txt",),
+        ),
     }

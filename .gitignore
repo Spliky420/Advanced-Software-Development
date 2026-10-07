@@ -102,3 +102,6 @@ Maxwell/database/glossary.sqlite
 
 # ---- MCP reports ------
 .reports
+# --- Local caches (not source) ---
+LeHoaLong/frontend/.vite/
+rag-server/chroma/
