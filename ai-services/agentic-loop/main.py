@@ -317,7 +317,7 @@ def main():
 
     ai = AIRunner()
 
-    _print_mode_mapping(app_dir)
+    #_print_mode_mapping(app_dir)
 
     while True:
         reporter.print_menu()
