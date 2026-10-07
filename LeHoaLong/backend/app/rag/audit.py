@@ -69,6 +69,8 @@ def record_answer(conn: sqlite3.Connection, *, goal_id: int | None, result: dict
                 "source_ids": sources,
                 "confidence_category": result.get("confidence_category"),
                 "insufficient_evidence": bool(result.get("insufficient_evidence")),
+                "answer_withheld": bool(result.get("answer_withheld")),
+                "relevance": result.get("relevance"),
                 "retrieval_summary": result.get("retrieval_summary"),
                 "k": result.get("k"),
                 "duration_ms": result.get("duration_ms"),

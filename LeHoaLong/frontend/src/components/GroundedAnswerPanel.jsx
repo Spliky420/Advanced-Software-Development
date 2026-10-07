@@ -84,6 +84,37 @@ function Citations({ citations, chunks }) {
   )
 }
 
+function WithheldAnswer({ answer, relevance }) {
+  // The retrieved text was not about the question, so the model's reply could
+  // only have come from outside the corpus. It is kept, behind a toggle, so
+  // the decision can be checked rather than taken on trust.
+  const [shown, setShown] = useState(false)
+  const missing = relevance?.missing_terms || []
+  const total = relevance?.question_terms?.length ?? 0
+  const matched = relevance?.matched_terms?.length ?? 0
+
+  return (
+    <div className="callout callout--warning">
+      <strong>Insufficient evidence.</strong>
+      <div className="u-mt-sm">
+        The retrieved sources are not about this question: {matched} of {total} of its key words
+        appear in them
+        {missing.length > 0 && <> (not found: {missing.join(', ')})</>}. The model replied anyway,
+        but that reply could not have come from the corpus, so it is not shown as an answer.
+      </div>
+      <button
+        type="button"
+        className="btn btn--small btn--secondary u-mt-sm"
+        onClick={() => setShown((open) => !open)}
+        aria-expanded={shown}
+      >
+        {shown ? 'Hide' : 'Show'} the model&apos;s ungrounded reply
+      </button>
+      {shown && <blockquote className="citations__text">{answer}</blockquote>}
+    </div>
+  )
+}
+
 function Situation({ situation, currency }) {
   // Stated by this feature, from its own Python figures, so the panel does not
   // depend on the model's prose repeating them correctly.
@@ -203,6 +234,8 @@ export default function GroundedAnswerPanel({
                 rather than answering from outside it. The sources it searched are listed below.
               </div>
             </div>
+          ) : result.answer_withheld ? (
+            <WithheldAnswer answer={result.answer} relevance={result.relevance} />
           ) : (
             <p className="grounded__text">{result.answer}</p>
           )}

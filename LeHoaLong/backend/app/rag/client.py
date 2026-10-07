@@ -27,6 +27,19 @@ is deliberately no fallback to an ungrounded model answer: a grounded feature
 that admits it has no evidence is behaving properly, and quietly substituting
 an unsourced answer would defeat the point of grounding it.
 
+**A relevance check sits beside the server's answer, not in place of it.**
+The shared pipeline always returns its k nearest chunks, however far away they
+are, and its embedding is a hash of the words, so "nearest" is no evidence of
+relevance. A 0.5b model handed five unrelated chunks will often ignore the
+"Insufficient evidence." instruction and answer from its own knowledge -- a
+question about moons came back with a confident answer about planets. So this
+client checks whether the question's content words actually appear in the
+retrieved text. When no more than half of them do, `answer_withheld` is set
+and the UI shows "Insufficient evidence." in place of the reply. The server's
+`answer`, citations and confidence category are still returned verbatim
+alongside, and the check's working is returned as `relevance`, so the call is
+visible rather than silent.
+
 **The retrieved chunks come from a second call.** `/answer` returns citations
 but not the chunk text, and the UI needs the text for its citations list, so
 `ask()` calls `/retrieve` as well. Retrieval is deterministic -- the shared
@@ -39,6 +52,7 @@ were refreshed between the two calls.
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -157,6 +171,66 @@ def is_insufficient(answer: str) -> bool:
     return answer.strip().lower() == INSUFFICIENT_EVIDENCE.lower()
 
 
+# Words that say nothing about what a question is about. Without this list
+# every "What is ...?" question would share half its words with the corpus.
+_STOPWORDS = frozenset(
+    """
+    a an the is are was were be been being am of to in on for and or but if
+    then than so with without by at from as into about over under after before
+    what which who whom whose when where why how do does did done can could
+    should would will shall may might must i me my you your he she it its we
+    our they them their this that these those there here not no yes any some
+    all each every more most less much many very just also only own same such
+    too up down out off again once against between through during within
+    because while until upon via per mean means meaning tell explain please
+    """.split()
+)
+
+# More than this share of a question's content words must appear in the
+# retrieved text for the answer to be shown. Measured against the shared
+# corpus: on-topic questions matched every content word, off-topic ones at
+# most half ("capital of France" matches "capital" in capital gains).
+RELEVANCE_THRESHOLD = 0.5
+
+# Compare words by their first five letters once a plural "s" is dropped, so
+# "goals" matches "goal" and "prioritised" matches "priority", without pulling
+# in a stemming library.
+_STEM_LENGTH = 5
+
+
+def _terms(text: str) -> dict[str, str]:
+    """Content words, keyed by stem, each mapped to the first word seen."""
+    terms: dict[str, str] = {}
+    for word in re.findall(r"[a-z]+", text.lower()):
+        if len(word) > 2 and word not in _STOPWORDS:
+            singular = word[:-1] if word.endswith("s") and not word.endswith("ss") else word
+            terms.setdefault(singular[:_STEM_LENGTH], word)
+    return terms
+
+
+def relevance(question: str, chunks: list[dict]) -> dict:
+    """Whether the retrieved text is actually about the question.
+
+    `passes` is None when the question has no content words to check, which
+    leaves the decision with the server. Terms are reported as the question
+    worded them, not as stems.
+    """
+    question_terms = _terms(question)
+    chunk_stems = set(_terms(" ".join(str(chunk.get("text") or "") for chunk in chunks)))
+    matched = [word for stem, word in question_terms.items() if stem in chunk_stems]
+    missing = [word for stem, word in question_terms.items() if stem not in chunk_stems]
+    coverage = round(len(matched) / len(question_terms), 2) if question_terms else None
+
+    return {
+        "question_terms": list(question_terms.values()),
+        "matched_terms": matched,
+        "missing_terms": missing,
+        "coverage": coverage,
+        "threshold": RELEVANCE_THRESHOLD,
+        "passes": None if coverage is None else coverage > RELEVANCE_THRESHOLD,
+    }
+
+
 def _chunks(payload: dict) -> list[dict]:
     """The retrieved chunks, as the server described them.
 
@@ -199,13 +273,17 @@ def retrieve(question: str, top_k: int | None = None) -> dict:
     }
 
 
-def ask(question: str, top_k: int | None = None) -> dict:
+def ask(question: str, top_k: int | None = None, relevance_text: str | None = None) -> dict:
     """POST /answer (plus /retrieve for the chunk text) -- a grounded answer.
 
     Raises RAGUnavailable if the server is unreachable or answers without an
     `answer` field, which would mean its contract had changed under this
     feature. It does not raise for "Insufficient evidence.", which is a
     correct answer and comes back flagged.
+
+    `relevance_text` is what the relevance check reads, when that should be
+    narrower than the question sent -- the goal explanation passes only its
+    concept sentence, not the goal name and figures appended to it.
     """
     k = top_k or default_top_k()
     started = time.perf_counter()
@@ -226,6 +304,8 @@ def ask(question: str, top_k: int | None = None) -> dict:
     citations = citations if isinstance(citations, list) else []
     chunks = _chunks(retrieved)
     cited_ids = [citation.get("chunk_id") for citation in citations if isinstance(citation, dict)]
+    insufficient = is_insufficient(answer)
+    checked = relevance(relevance_text or question, chunks)
 
     return {
         "question": question,
@@ -240,7 +320,12 @@ def ask(question: str, top_k: int | None = None) -> dict:
         # trust. Only false if the corpus changed between the two calls.
         "chunks_match_citations": sorted(filter(None, cited_ids))
         == sorted(chunk.get("chunk_id") for chunk in chunks if chunk.get("chunk_id")),
-        "insufficient_evidence": is_insufficient(answer),
+        "insufficient_evidence": insufficient,
+        "relevance": checked,
+        # The retrieved text is not about the question, so whatever the model
+        # wrote did not come from it. Kept in `answer` for the record; the UI
+        # shows "Insufficient evidence." instead.
+        "answer_withheld": checked["passes"] is False and not insufficient,
         "duration_ms": round((time.perf_counter() - started) * 1000, 1),
         "server_url": server_url(),
     }

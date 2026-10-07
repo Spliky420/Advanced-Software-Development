@@ -53,10 +53,12 @@ def _require_enabled() -> None:
         )
 
 
-def _answer(conn, *, goal_id: int | None, question: str, top_k: int | None) -> tuple[dict, int]:
+def _answer(
+    conn, *, goal_id: int | None, question: str, top_k: int | None, relevance_text: str | None = None
+) -> tuple[dict, int]:
     """Ask, log, and return the body. Shared by both question endpoints."""
     try:
-        result = rag_client.ask(question, top_k)
+        result = rag_client.ask(question, top_k, relevance_text=relevance_text)
     except rag_client.RAGUnavailable as exc:
         audit.record_unavailable(conn, goal_id=goal_id, question=question, detail=str(exc))
         raise
@@ -112,7 +114,16 @@ def explain(goal_id: int):
     observation = agent_service.observe(conn, goal_id, log=False)
     question = build_goal_question(observation)
 
-    body, status = _answer(conn, goal_id=goal_id, question=question, top_k=clean["top_k"])
+    # The relevance check reads the concept sentence only: the goal's name and
+    # figures appended after it are this feature's own data, and would never
+    # appear in the corpus however relevant the retrieval was.
+    body, status = _answer(
+        conn,
+        goal_id=goal_id,
+        question=question,
+        top_k=clean["top_k"],
+        relevance_text=goal_concepts(observation),
+    )
     body["situation"] = _situation(observation)
     return jsonify(body), status
 
@@ -165,6 +176,11 @@ _STATUS_QUESTIONS = {
 }
 
 
+def goal_concepts(observation: dict) -> str:
+    """The concept sentence for this goal's status -- the part about meaning."""
+    return _STATUS_QUESTIONS.get(observation["status"], _STATUS_QUESTIONS["on_track"])
+
+
 def build_goal_question(observation: dict) -> str:
     """Turn an observation into a question for the RAG server.
 
@@ -173,7 +189,7 @@ def build_goal_question(observation: dict) -> str:
     question asks what the situation *means*, which is a text question, and
     the numbers in it have already been computed.
     """
-    concepts = _STATUS_QUESTIONS.get(observation["status"], _STATUS_QUESTIONS["on_track"])
+    concepts = goal_concepts(observation)
 
     return (
         f"{concepts}\n\n"
