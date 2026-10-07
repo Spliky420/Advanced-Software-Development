@@ -29,7 +29,7 @@ from mcp.client.streamable_http import streamable_http_client
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MCP_SERVER_URL = "http://mcp-server:5002/mcp"
+DEFAULT_MCP_SERVER_URL = "http://host.docker.internal:5002/mcp"
 DEFAULT_TIMEOUT_SECONDS = 5.0
 
 # portfolio_snapshot reads this backend's own /api/holdings and
