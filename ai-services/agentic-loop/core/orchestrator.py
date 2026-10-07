@@ -7,6 +7,7 @@ from core import (
     architecture_collector,
     devops_collector,
     mcp_collector,
+    rag_collector,
     mcp_pipeline,
 )
 from core.mode_config import build_mode_config
@@ -23,6 +24,7 @@ COLLECTORS = {
     "architecture": architecture_collector.collect,
     "devops": devops_collector.collect,
     "mcp": mcp_collector.collect,
+    "rag": rag_collector.collect,
 }
 
 
