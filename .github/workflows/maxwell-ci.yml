@@ -29,15 +29,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Cache Ollama models
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.ollama
-          key: ${{ runner.os }}-ollama-${{ hashFiles('docker-compose.yml') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-ollama-
-
       - name: Install backend dependencies
         working-directory: ./Maxwell/backend
         run: |
@@ -49,9 +40,14 @@ jobs:
         run: |
           docker compose build maxwell-database maxwell-backend maxwell-frontend
 
-      - name: Start all services (Ollama, backend, frontend)
+      - name: Start Maxwell services (database, backend, frontend)
+        # Scope to Maxwell's own services. The root compose file defines every
+        # team's stack, so a bare `docker compose up -d` would build and start
+        # all of them. The non-containerised merge also moved ollama, mcp-server
+        # and rag-server out of compose entirely, so these three are all this
+        # job owns.
         run: |
-          docker compose up -d
+          docker compose up -d maxwell-database maxwell-backend maxwell-frontend
 
 
       - name: Wait for backend to be ready
@@ -69,6 +65,32 @@ jobs:
         working-directory: ./Maxwell
         run: |
           pytest tests/test_glossary.py -v
+
+      - name: Validate MCP and RAG proxies are disabled in CI
+        # The shared MCP and RAG servers run on the host, outside this stack,
+        # so CI must prove the disabled path rather than reach them. These two
+        # flags are the backend's explicit off switch (see app.py): with them
+        # set, every proxy route returns 503 instead of dialling a host it
+        # cannot see. The step fails if either proxy is reachable.
+        working-directory: ./Maxwell/backend
+        env:
+          DISABLE_MCP_PROXY: "true"
+          DISABLE_RAG_PROXY: "true"
+        run: |
+          python - <<'PY'
+          import app
+
+          client = app.app.test_client()
+          mcp = client.post("/api/mcp/glossary-lookup", data={"term": "ETF"})
+          rag = client.post("/api/rag/answer", json={"query": "What is an ETF?"})
+
+          print(f"/api/mcp/...   -> HTTP {mcp.status_code}")
+          print(f"/api/rag/answer -> HTTP {rag.status_code}")
+
+          assert mcp.status_code == 503, f"MCP proxy must be disabled in CI, got {mcp.status_code}"
+          assert rag.status_code == 503, f"RAG proxy must be disabled in CI, got {rag.status_code}"
+          print("MCP and RAG proxies correctly disabled.")
+          PY
 
       - name: Lint Python files (optional)
         working-directory: ./Maxwell/backend
