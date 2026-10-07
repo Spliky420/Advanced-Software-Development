@@ -44,15 +44,18 @@ docker compose up -d --build
 First run takes a few minutes: it builds every image, and each database service
 creates and seeds its own SQLite file on first start only.
 
-### 3. Pull a model into the Ollama container
+### 3. Run Ollama, MCP and RAG on the host
 
-**This step is required.** A model pulled on your host machine is *not* visible
-to the container — Ollama keeps its models in the `ollama-models` Docker
-volume.
+**This step is required.** AI-Mode (Ollama), the MCP server, the RAG server
+and the agentic loop are not containerised (Release 1 brief); the backends
+reach them through `host.docker.internal`. Install Ollama on the host, then:
 
 ```bash
-docker compose exec ollama ollama pull qwen2.5:0.5b   # default, ~400 MB, fast
-docker compose exec ollama ollama pull llama3.1:8b    # demo model, ~4.9 GB
+ollama pull qwen2.5:0.5b   # default, ~400 MB, fast
+ollama pull llama3.1:8b    # demo model, ~4.9 GB
+ollama pull nomic-embed-text
+./mcp-server/run.sh                         # ports 5001 + 5002, see mcp-server/README.md
+python3 rag-server/rag_http_server.py       # port 5003
 ```
 
 `qwen2.5:0.5b` is the default so that a clean clone works quickly. To switch,
@@ -98,7 +101,8 @@ stack runs at once. Claim yours in `CLAUDE.md` and in the header comment of
 | 8040–8049 | **HyunWoo**| 8040 frontend, 8041 backend (database has no port) |
 | 8050–8059 | **Thomas** | 8050 frontend, 8051 backend (database has no port) |
 | 8060–8069 | **LeHoaLong** | 8060 frontend, 8061 backend (database has no port) |
-| 11434     | shared     | `ollama` — one instance serves every backend       |
+| 11434     | shared     | Ollama (AI-Mode) on the host, not in compose       |
+| 5001–5003 | shared     | MCP (5001, 5002) and RAG (5003) on the host        |
 
 ### A note for the other four students
 
@@ -234,7 +238,7 @@ itself, what that step of the loop did.
 ### Running just these services
 
 ```bash
-docker compose up -d --build ollama joshua-database joshua-backend joshua-frontend
+docker compose up -d --build joshua-database joshua-backend joshua-frontend
 ```
 
 Then pull a model as in step 3 above, if you have not already.
@@ -299,9 +303,8 @@ passing a real value through, not a rewrite.
 **The frontend is a placeholder.** Plain HTML and `fetch`, pending the team's
 framework decision. It currently renders the asset-class allocation table only.
 
-**The model must be pulled into the container.** Covered in step 3 above — a
-host-side `ollama pull` does not count, and the LLM endpoints return 503 until
-you do it.
+**The model must be pulled on the host.** Covered in step 3 above — the LLM
+endpoints return 503 until you do it.
 
 ---
 
@@ -345,15 +348,16 @@ The frontend also drives create, update and delete against these routes.
 ### Running just these services
 
 ```bash
-docker compose up --build maxwell-frontend maxwell-backend ollama
+docker compose up --build maxwell-frontend maxwell-backend
 ```
 
 ### Known limitations
 
 - Financial-term validation is a gate in front of the model, not a guarantee
   about the model's output quality.
-- All LLM access goes through the shared `ollama` service at
-  `http://ollama:11434` — never a hardcoded model name or a host install.
+- All LLM access goes through the shared host Ollama at
+  `OLLAMA_BASE_URL` (`http://host.docker.internal:11434`) — never a
+  hardcoded model name.
 
 ---
 
@@ -467,15 +471,15 @@ gracefully instead of erroring.
 ### Running just these services
 
 ```bash
-docker compose up -d --build ollama enerel-database enerel-backend enerel-frontend
+docker compose up -d --build enerel-database enerel-backend enerel-frontend
 ```
 
 Then pull both models — `OLLAMA_MODEL` for summarization and
 `OLLAMA_EMBED_MODEL` for search/indexing — as in step 3 above:
 
 ```bash
-docker compose exec ollama ollama pull qwen2.5:0.5b
-docker compose exec ollama ollama pull nomic-embed-text
+ollama pull qwen2.5:0.5b
+ollama pull nomic-embed-text
 ```
 
 ### Running the tests
@@ -531,9 +535,9 @@ constant defined in `db.py`; the documents and search endpoints never take a
 function still takes it as a parameter, so multi-user support later means
 passing a real value through, not a rewrite.
 
-**The model must be pulled into the container.** Covered above — a host-side
-`ollama pull` does not count, and both LLM-backed endpoints return 503 until
-the relevant model is.
+**The model must be pulled on the host.** Covered in step 3 above — both
+LLM-backed endpoints return 503 until the relevant model is.
+
 ## HyunWoo — Bills & Subscriptions
 
 ### What it does
@@ -595,8 +599,8 @@ validated neutral summary instead.
 ### Running just these services
 
 ```bash
-docker compose up -d --build ollama shared-frontend hyunwoo-database hyunwoo-backend hyunwoo-frontend
-docker compose exec ollama ollama pull qwen2.5:0.5b
+docker compose up -d --build shared-frontend hyunwoo-database hyunwoo-backend hyunwoo-frontend
+ollama pull qwen2.5:0.5b
 ```
 
 Then open <http://localhost:8000> or <http://localhost:8040>.
@@ -650,7 +654,7 @@ The model does not make the final decision. Its output is presented as a suggest
 
 Open <http://localhost:8050> for the Transactions Ledger, or call the API directly at `http://localhost:8051`.
 
-The backend communicates with the shared Ollama service over the Docker Compose network at `http://ollama:11434`.
+The backend communicates with the shared host Ollama at `http://host.docker.internal:11434` (`OLLAMA_BASE_URL`).
 
 The database stores transaction details including date, merchant, description, amount, transaction type, category, deduction status, receipt filename and notes.
 
@@ -727,11 +731,11 @@ The model is selected through the `OLLAMA_MODEL` environment variable, with `qwe
 
 From the repository root:
 
-    docker compose up -d --build ollama thomas-backend thomas-frontend
+    docker compose up -d --build thomas-backend thomas-frontend
 
 If the configured model has not already been pulled into the shared Ollama container:
 
-    docker compose exec ollama ollama pull qwen2.5:0.5b
+    ollama pull qwen2.5:0.5b
 
 Then open:
 
@@ -903,8 +907,8 @@ Two details worth knowing:
 ### Running just these services
 
 ```bash
-docker compose up -d --build ollama shared-frontend lehoalong-database lehoalong-backend lehoalong-frontend
-docker compose exec ollama ollama pull qwen2.5:0.5b
+docker compose up -d --build shared-frontend lehoalong-database lehoalong-backend lehoalong-frontend
+ollama pull qwen2.5:0.5b
 ```
 
 Then open <http://localhost:8060>, or reach it from the team home page at
@@ -916,7 +920,7 @@ Then open <http://localhost:8060>, or reach it from the team home page at
 `/replan`:**
 
 ```bash
-docker compose exec -T ollama ollama run qwen2.5:0.5b "hi"
+ollama run qwen2.5:0.5b "hi"
 ```
 
 Ollama loads a model into memory on first use and unloads it again after five
@@ -1015,6 +1019,5 @@ had nowhere to store a monthly budget, which the required budget summary panel
 needs. Flagged as a deliberate addition to the registration form, along with
 standardising the form's `/API/Goals` casing to `/api/goals`.
 
-**The model must be pulled into the container.** A host-side `ollama pull` does
-not count — the container keeps its models in the `ollama-models` volume, and
-`/plan` and `/replan` return 503 naming the missing tag until you pull it there.
+**The model must be pulled on the host** (`ollama pull`, step 3 above) —
+`/plan` and `/replan` return 503 naming the missing tag until you pull it.

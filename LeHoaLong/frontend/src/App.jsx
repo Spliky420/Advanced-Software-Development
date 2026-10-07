@@ -1,4 +1,5 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
+import ServiceStatus from './components/ServiceStatus'
 import DashboardPage from './pages/DashboardPage'
 import GoalDetailPage from './pages/GoalDetailPage'
 import GoalEditPage from './pages/GoalEditPage'
@@ -15,6 +16,7 @@ export default function App() {
           </p>
         </div>
         <nav className="app-nav">
+          <ServiceStatus />
           <Link className="btn btn--secondary" to="/">
             Dashboard
           </Link>

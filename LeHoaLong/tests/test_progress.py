@@ -240,14 +240,24 @@ def test_progress_variance_is_always_saved_minus_required(client):
 
 
 def test_progress_reflects_a_contribution_immediately(client):
-    before = client.get("/api/goals/3/progress").get_json()
+    """Contributing exactly the shortfall must read as on_track.
 
-    client.post("/api/goals/3/contributions", json={"amount": 484})
+    The gap is read from the API rather than written in as a literal. The seed
+    data uses absolute dates, so which of goal 3's steps have fallen due -- and
+    therefore what the shortfall is -- depends on the date the suite runs on.
+    A literal here passed in September 2026 and failed in October, which is a
+    property of the calendar rather than of the code under test.
+    """
+    before = client.get("/api/goals/3/progress").get_json()
+    shortfall = round(-before["variance"], 2)
+    assert shortfall > 0, "goal 3 is seeded behind its plan"
+
+    client.post("/api/goals/3/contributions", json={"amount": shortfall})
 
     after = client.get("/api/goals/3/progress").get_json()
-    assert after["saved_to_date"] == round(before["saved_to_date"] + 484, 2)
-    assert after["variance"] == round(before["variance"] + 484, 2)
-    assert after["status"] == "on_track"  # exactly closes the 484.00 gap
+    assert after["saved_to_date"] == round(before["saved_to_date"] + shortfall, 2)
+    assert after["variance"] == round(before["variance"] + shortfall, 2)
+    assert after["status"] == "on_track"  # the gap is exactly closed
 
 
 def test_progress_404s_for_a_goal_that_does_not_exist(client):

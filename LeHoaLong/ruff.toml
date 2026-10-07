@@ -40,3 +40,9 @@ select = [
 # cannot come first. conftest.py already carries an inline noqa; this keeps
 # a future test file from tripping over the same unavoidable ordering.
 "tests/*" = ["E402"]
+
+# tools/build_corpus.py holds the corpus prose itself, as string literals.
+# A fact wrapped across two source lines is harder to read and easy to break
+# with a stray space or a missing one, and the point of that file is that the
+# sentences in it are exactly the sentences that ship to the shared corpus.
+"tools/build_corpus.py" = ["E501"]

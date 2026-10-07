@@ -94,6 +94,8 @@ def choose_student(mode):
 
         if mode == "architecture":
             print("7. Integrated Team Application")
+        elif mode == "mcp":
+            print("7. Personal Finance Assistant")
         else:
             print("7. All Students")
 
@@ -112,6 +114,12 @@ def choose_student(mode):
                 return (
                     "all",
                     "Integrated Team Application"
+                )
+
+            if mode == "mcp":
+                return (
+                    "all",
+                    "Personal Finance Assistant"
                 )
 
             return (
