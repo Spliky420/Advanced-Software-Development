@@ -4,7 +4,9 @@ Local run of the backend steps in .github/workflows/joshua-ci.yml, same environm
 Commit: 6417e35 on Joshua-Release-1 | 2026-10-21T07:27:09Z | Windows 11, Python 3.11.9
 Lines starting with '#' are section headers, not tool output.
 
-GitHub Actions run: (added after push)
+GitHub Actions run: https://github.com/Spliky420/Advanced-Software-Development/actions/runs/39571789589
+  joshua-ci, push to Joshua-Release-1 at 9c0f239, conclusion: success
+  Backend tests job (incl. step "Endpoint tests (AI disabled)"): https://github.com/Spliky420/Advanced-Software-Development/actions/runs/39571789589/job/119127508560
 
 # Step: Show AI service config (AI mode, MCP, RAG and Multi-Agent disabled)
 ai_mode            -> disabled
