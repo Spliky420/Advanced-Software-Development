@@ -1,0 +1,47 @@
+Review the selected student's RAG integration for the Personal Finance Assistant.
+
+Use only the evidence collected from the repository. Do not assume that functionality exists unless it is supported by the supplied evidence.
+
+Validate whether the student's feature correctly integrates with the shared RAG system.
+
+Check for the following:
+
+1. The student's backend provides an integration path to the shared RAG server.
+
+2. The RAG server is treated as a shared local service and is not implemented as part of the student's feature container.
+
+3. The student's backend can send a query to the shared RAG server.
+
+4. The integration supports the RAG workflow:
+   - retrieve relevant context
+   - generate a grounded answer
+   - return citations
+   - return a confidence value
+
+5. The student's frontend or API provides a way to access the RAG functionality through their feature.
+
+6. The integration uses the expected shared RAG server boundary rather than duplicating RAG functionality inside the student's feature.
+
+7. Configuration such as RAG_SERVER_URL is used appropriately where supported by the evidence.
+
+Assess the implementation against the available evidence.
+
+Return a clear result using this structure:
+
+Status: PASS or FAIL
+
+Evidence:
+Summarise the repository evidence that supports the result.
+
+Strengths:
+Identify what has been implemented correctly.
+
+Issues:
+Identify missing, incorrect, or unsupported parts of the RAG integration.
+
+Recommendation:
+Explain what should be changed if the implementation does not satisfy the RAG integration requirements.
+
+A PASS must only be given when the supplied evidence demonstrates that the selected student's feature has a valid integration with the shared RAG system.
+
+If the evidence is insufficient to prove a requirement, state that clearly rather than inventing implementation details.

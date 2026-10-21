@@ -1,10 +1,11 @@
-def print_menu() -> None:
+def print_menu():
     print("\nOptions:")
     print("  1 - DB")
     print("  2 - Endpoints")
     print("  3 - Architecture")
     print("  4 - DevOps")
     print("  5 - MCP")
+    print("  6 - RAG")
     print("  0 - Exit")
 
 

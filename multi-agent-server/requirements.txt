@@ -1,0 +1,6 @@
+flask==3.0.3
+requests==2.32.3
+# The host WSGI server run.sh starts. Does not install on Windows -- skip it
+# there; run.sh falls back to Flask's own server.
+gunicorn==22.0.0; sys_platform != "win32"
+pytest==8.3.3

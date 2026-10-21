@@ -9,10 +9,17 @@ on:
   pull_request:
     paths:
       - "Thomas/**"
+      - ".github/workflows/thomas-ci.yml"
 
 jobs:
   validate-thomas-services:
     runs-on: ubuntu-latest
+
+    # MCP and RAG are local Release 1 services.
+    # They must not be required by CI.
+    env:
+      MCP_SERVER_URL: ""
+      RAG_SERVER_URL: ""
 
     steps:
       - name: Checkout repository
@@ -22,6 +29,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      # -------------------------
+      # Backend
+      # -------------------------
 
       - name: Install backend dependencies
         working-directory: Thomas/backend
@@ -33,6 +44,10 @@ jobs:
         run: |
           python -m py_compile app.py
 
+      # -------------------------
+      # Frontend
+      # -------------------------
+
       - name: Install frontend dependencies
         working-directory: Thomas/frontend
         run: |
@@ -42,6 +57,32 @@ jobs:
         working-directory: Thomas/frontend
         run: |
           python -m py_compile app.py
+
+      # -------------------------
+      # MCP / RAG CI validation
+      # -------------------------
+
+      - name: Confirm MCP and RAG are disabled in CI
+        run: |
+          echo "Checking Release 1 local service configuration..."
+
+          if [ -n "$MCP_SERVER_URL" ]; then
+            echo "ERROR: MCP_SERVER_URL must be empty in CI"
+            exit 1
+          fi
+
+          if [ -n "$RAG_SERVER_URL" ]; then
+            echo "ERROR: RAG_SERVER_URL must be empty in CI"
+            exit 1
+          fi
+
+          echo "MCP_SERVER_URL is empty - MCP disabled in CI"
+          echo "RAG_SERVER_URL is empty - RAG disabled in CI"
+          echo "MCP and RAG CI validation passed"
+
+      # -------------------------
+      # Docker builds
+      # -------------------------
 
       - name: Build backend Docker image
         run: |
