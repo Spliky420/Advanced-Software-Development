@@ -24,13 +24,15 @@ ENV DB_PATH=/data/portfolio.db \
     OLLAMA_BASE_URL=http://ollama:11434 \
     OLLAMA_MODEL=qwen2.5:0.5b
 
-# --timeout 120 must stay above llm.py's 60s Ollama timeout; the gunicorn
-# default of 30s would kill the worker mid-generation on a slow model.
+# --timeout 210 must stay above the longest outbound call: the Multi-Agent
+# Server client waits up to 190s (multi_agent_client.py), and llm.py's Ollama
+# call 60s. gunicorn's default 30s would kill the worker mid-request. The
+# frontend nginx proxy_read_timeout (220s) sits above this in turn.
 CMD ["gunicorn", \
      "--bind", "0.0.0.0:5000", \
      "--workers", "2", \
      "--threads", "4", \
-     "--timeout", "120", \
+     "--timeout", "210", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
      "app:app"]

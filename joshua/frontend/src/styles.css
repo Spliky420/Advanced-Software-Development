@@ -917,3 +917,28 @@ code {
   letter-spacing: 0.04em;
   color: var(--colour-text-muted);
 }
+
+/* Multi-Agent Review: the human decision controls and the worker's output. */
+.decision-options {
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.decision-options legend {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0 var(--space-xs);
+}
+
+.decision-option {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+}
+
+.worker-output {
+  white-space: pre-wrap;
+}

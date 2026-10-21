@@ -2,13 +2,15 @@
 // /api to joshua-backend, so there is no CORS handling anywhere on either side.
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, errors = [], aiStatus = null } = {}) {
+  constructor(message, { status = 0, errors = [], aiStatus = null, fields = null } = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     // "disabled" or "unavailable" on a 503 from an AI-only endpoint, so the
     // banner can tell "switched off" apart from "Ollama is down".
     this.aiStatus = aiStatus
+    // Per-field reasons from a Multi-Agent Server 400, keyed by field name.
+    this.fields = fields
     // The backend returns a flat `errors` array alongside `error` on a 400,
     // one entry per failed field. Kept so forms can put them next to fields.
     this.errors = errors
@@ -52,6 +54,7 @@ async function request(path, options = {}) {
         status: response.status,
         errors: (body && body.errors) || [],
         aiStatus: (body && body.ai_status) || null,
+        fields: (body && body.fields) || null,
       },
     )
   }
@@ -82,3 +85,12 @@ export const putTargets = (targets) =>
 
 export const createInsight = () => request('/api/insights', { method: 'POST' })
 export const runDriftReview = () => request('/api/drift-review', { method: 'POST' })
+
+// Synchronous: the backend waits for all three agents, which can take minutes.
+export const startMultiAgentReview = () =>
+  request('/api/multi-agent/workflow', { method: 'POST' })
+export const submitMultiAgentReview = (runId, decision) =>
+  request(`/api/multi-agent/workflow/${encodeURIComponent(runId)}/review`, {
+    method: 'POST',
+    ...jsonBody(decision),
+  })

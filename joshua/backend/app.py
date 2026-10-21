@@ -10,6 +10,7 @@ import db
 import allocation
 import drift
 import llm
+import multi_agent_client
 from db import DEFAULT_USER_ID
 from validation import ValidationError, validate_holding_payload, validate_targets_payload
 
@@ -138,6 +139,84 @@ def _round_report(report):
             ],
         },
     }
+
+
+MULTI_AGENT_TASK = "Review my portfolio allocation and drift"
+
+
+def build_workflow_evidence():
+    """The evidence object sent to the Multi-Agent Server.
+
+    Every figure is computed in Python before it leaves this backend:
+    holdings and allocation by allocation.build_portfolio_report, drift by
+    drift.act/observe from that same report. Rounded to 2dp at this output
+    layer, as every other response is. The agents only plan, describe and
+    review around these figures; none is ever asked to calculate one.
+    """
+    targets = db.list_targets(DEFAULT_USER_ID)
+    report = allocation.build_portfolio_report(db.list_holdings(DEFAULT_USER_ID))
+    rounded = _round_report(report)
+
+    plan_result = drift.plan(targets)
+    act_result = drift.act(report["portfolio"], plan_result)
+    observe_result = drift.observe(act_result, plan_result)
+
+    return {
+        "holdings": [
+            {
+                key: holding[key]
+                for key in ("ticker", "asset_name", "asset_class", "units",
+                            "market_value", "cost_basis", "gain_loss", "gain_loss_percent")
+            }
+            for holding in rounded["holdings"]
+        ],
+        "allocation": rounded["portfolio"],
+        "drift": {
+            "threshold_percent": _round(observe_result["threshold_percent"]),
+            "breaches": [_round_drift_row(row) for row in observe_result["breaches"]],
+            "within_threshold": [_round_drift_row(row) for row in observe_result["within_threshold"]],
+        },
+    }
+
+
+# Friendly message per failure, for the UI; code is for clients to branch on.
+MULTI_AGENT_FAILURES = {
+    "disabled": (503, "AI is disabled on this server, so the Multi-Agent Review cannot run."),
+    "unreachable": (503, "The Multi-Agent Server is not running. Start it on the host "
+                         "(multi-agent-server/run.sh) and try again."),
+    "timeout": (504, "The Multi-Agent Server took too long to answer. The model may be "
+                     "loading for the first time -- try again in a minute."),
+    "error": (502, "The Multi-Agent Server sent a response this app could not read."),
+    "validation_failed": (400, "The Multi-Agent Server rejected the request."),
+    "not_found": (404, "That review run no longer exists on the Multi-Agent Server "
+                       "(it keeps runs in memory, so a restart clears them). Start a new run."),
+    "conflict": (409, "This run has already been reviewed (or failed), so it cannot be reviewed again."),
+    "agent_unavailable": (503, "The agents could not run. Check Ollama is running on the host, "
+                               "or start the Multi-Agent Server with STUB_AGENTS=true."),
+}
+
+
+def _multi_agent_failure(result, own_request=False):
+    """Turn a failed multi_agent_client result into (body, status).
+
+    own_request: True when this backend built the whole request body (start
+    a workflow), so a 400 from the server is this backend's fault, not the
+    user's, and is reported as 502 rather than passed on as 400.
+    """
+    code = result["status"]
+    data = result["data"] if isinstance(result["data"], dict) else {}
+    if code == "rejected":
+        code = data.get("error") if data.get("error") in MULTI_AGENT_FAILURES else "error"
+    http_status, message = MULTI_AGENT_FAILURES[code]
+    if code == "validation_failed" and own_request:
+        http_status = 502
+
+    body = {"error": message, "code": code, "detail": result["error"]}
+    if data.get("fields"):
+        body["fields"] = data["fields"]
+    if data.get("run_id"):
+        body["run_id"] = data["run_id"]
+    return jsonify(body), http_status
 
 
 def create_app():
@@ -330,6 +409,30 @@ def create_app():
             # matched up without opening a section.
             "run_id": plan_result.get("run_id", "-"),
         }), 200
+
+    @app.post("/api/multi-agent/workflow")
+    def start_multi_agent_workflow():
+        # Synchronous: the Multi-Agent Server runs Planner -> Worker ->
+        # Reviewer inside this one request (15-40s warm, minutes cold).
+        evidence = build_workflow_evidence()
+        result = multi_agent_client.start_workflow(MULTI_AGENT_TASK, evidence)
+        if not result["ok"]:
+            return _multi_agent_failure(result, own_request=True)
+        return jsonify({"task": MULTI_AGENT_TASK, "evidence": evidence, "run": result["data"]}), 201
+
+    @app.post("/api/multi-agent/workflow/<run_id>/review")
+    def review_multi_agent_workflow(run_id):
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict):
+            return jsonify({
+                "error": "The review must be a JSON object with a decision.",
+                "code": "validation_failed",
+                "fields": {"body": "must be a JSON object"},
+            }), 400
+        result = multi_agent_client.submit_review(run_id, body)
+        if not result["ok"]:
+            return _multi_agent_failure(result)
+        return jsonify(result["data"]), 200
 
     return app
 

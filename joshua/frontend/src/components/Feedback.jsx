@@ -69,15 +69,13 @@ export function Loading({ label = 'Loading...' }) {
 
 // The AI endpoints take up to ~45s, so they get a longer-lived indicator that
 // says so rather than a bare spinner the user cannot interpret.
-export function AiLoading({ label }) {
+export function AiLoading({ label, note = 'The model runs locally in Ollama and can take up to 45 seconds.' }) {
   return (
     <div className="ai-loading" role="status">
       <span className="spinner" aria-hidden="true" />
       <div>
         <strong>{label}</strong>
-        <p className="ai-loading-note">
-          The model runs locally in Ollama and can take up to 45 seconds.
-        </p>
+        <p className="ai-loading-note">{note}</p>
       </div>
     </div>
   )

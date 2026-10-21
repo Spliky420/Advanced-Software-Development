@@ -82,6 +82,9 @@ services:
       MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-5}
       RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
       RAG_TIMEOUT_SECONDS: ${RAG_TIMEOUT_SECONDS:-5}
+      # Shared Multi-Agent Server (host-run). Its client uses a (5, 190)s
+      # timeout, separate from the 5s MCP/RAG timeouts above.
+      MULTI_AGENT_URL: ${MULTI_AGENT_URL:-http://host.docker.internal:5004}
     extra_hosts:
       # Resolves automatically on Docker Desktop; needed on Linux.
       - "host.docker.internal:host-gateway"
