@@ -24,6 +24,7 @@ app.create_app.
 import logging
 import os
 import re
+import sys
 import uuid
 
 import ai_mode
@@ -132,7 +133,9 @@ def _log(level, phase, run_id, template, *args):
     """Emit one aligned agentic-loop line.
 
     Never raises. Logging is additive evidence that the loop ran; a phase must
-    not fail because a handler, a formatter or a malformed argument did.
+    not fail because a handler, a formatter or a malformed argument did. A
+    failure is still reported -- one line on stderr, which needs no handler --
+    rather than swallowed silently.
     """
     try:
         logger.log(
@@ -140,8 +143,8 @@ def _log(level, phase, run_id, template, *args):
             "[agentic-loop %s] %-*s | " + template,
             run_id, PHASE_NAME_WIDTH, phase, *args,
         )
-    except Exception:  # noqa: BLE001 -- see docstring
-        pass
+    except Exception as exc:  # noqa: BLE001 -- see docstring
+        sys.stderr.write(f"drift: could not log {phase} for run {run_id}: {type(exc).__name__}\n")
 
 
 def _chars(value):
