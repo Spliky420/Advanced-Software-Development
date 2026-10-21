@@ -146,3 +146,8 @@ Run with AI off:
 ```bash
 AI_MODE_ENABLED=false docker compose up -d joshua-backend
 ```
+
+CI runs the backend job with `AI_MODE_ENABLED=false` (see
+`.github/workflows/joshua-ci.yml`). Its "Endpoint tests (AI disabled)" step
+runs `joshua/tests/test_endpoints.py`: holdings create + read, and
+`/api/drift-review` with AI off, whose figures and summary are fixed.
