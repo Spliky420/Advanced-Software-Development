@@ -2,10 +2,13 @@
 // /api to joshua-backend, so there is no CORS handling anywhere on either side.
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, errors = [] } = {}) {
+  constructor(message, { status = 0, errors = [], aiStatus = null } = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    // "disabled" or "unavailable" on a 503 from an AI-only endpoint, so the
+    // banner can tell "switched off" apart from "Ollama is down".
+    this.aiStatus = aiStatus
     // The backend returns a flat `errors` array alongside `error` on a 400,
     // one entry per failed field. Kept so forms can put them next to fields.
     this.errors = errors
@@ -45,7 +48,11 @@ async function request(path, options = {}) {
   if (!response.ok) {
     throw new ApiError(
       (body && body.error) || `The API returned HTTP ${response.status}.`,
-      { status: response.status, errors: (body && body.errors) || [] },
+      {
+        status: response.status,
+        errors: (body && body.errors) || [],
+        aiStatus: (body && body.ai_status) || null,
+      },
     )
   }
 

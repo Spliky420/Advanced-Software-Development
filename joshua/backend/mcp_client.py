@@ -27,6 +27,8 @@ import httpx
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
+import ai_mode
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_MCP_SERVER_URL = "http://host.docker.internal:5002/mcp"
@@ -166,6 +168,9 @@ def call_tools(calls):
         raise ValueError(f"refusing to call {', '.join(forbidden)}: it calls back into this backend")
     if not calls:
         return []
+
+    if not ai_mode.is_enabled():
+        return [_unavailable(name, ai_mode.DISABLED_MESSAGE) for name, _ in calls]
 
     url = get_server_url()
     if url is None:

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
 
+import ai_mode
 import db
 import allocation
 import drift
@@ -73,6 +74,30 @@ def _build_insight_prompt(portfolio):
             f"({item['percent_of_total']:.2f}% of total market value)"
         )
     return "\n".join(lines)
+
+
+AI_OFF_MESSAGES = {
+    "disabled": "AI is disabled on this server, so no summary was generated. "
+                "Holdings, allocation and the drift figures still work.",
+    "unavailable": "AI is unavailable right now (Ollama could not produce a response), "
+                   "so no summary was generated. Holdings, allocation and the drift "
+                   "figures still work.",
+}
+
+
+def _ai_off_response(status, detail):
+    """503 for an AI-only endpoint that could not use the model.
+
+    error is the message for people; ai_status ("disabled" or "unavailable")
+    is for code to branch on; detail keeps the technical reason. Never a
+    stack trace.
+    """
+    return jsonify({
+        "error": AI_OFF_MESSAGES[status],
+        "ai_enabled": status != "disabled",
+        "ai_status": status,
+        "detail": detail,
+    }), 503
 
 
 def _round(value):
@@ -187,10 +212,14 @@ def create_app():
         figures = _build_insight_prompt(portfolio)
         prompt_sent = INSIGHT_SYSTEM_PROMPT + "\n\n" + figures
 
+        if not ai_mode.is_enabled():
+            return _ai_off_response("disabled", ai_mode.DISABLED_MESSAGE)
         try:
             response_text, model_name = llm.generate(figures, system=INSIGHT_SYSTEM_PROMPT)
+        except llm.LLMDisabledError as exc:
+            return _ai_off_response("disabled", str(exc))
         except llm.LLMUnavailableError as exc:
-            return jsonify({"error": f"insight generation is unavailable: {exc}"}), 503
+            return _ai_off_response("unavailable", str(exc))
 
         entry = db.create_insight_log(
             {
@@ -216,10 +245,10 @@ def create_app():
         observe_result = drift.observe(act_result, plan_result)
         context_result = drift.gather_context(observe_result)
 
-        try:
-            adapt_result = drift.adapt(observe_result, context_result=context_result)
-        except llm.LLMUnavailableError as exc:
-            return jsonify({"error": f"drift review is unavailable: {exc}"}), 503
+        # Never raises for Ollama: with AI off or unreachable, ADAPT returns
+        # the Python-built fallback summary and ai_used=False, so the figures
+        # computed above still reach the client.
+        adapt_result = drift.adapt(observe_result, context_result=context_result)
 
         insight_log_id = None
         if adapt_result["llm_called"]:
@@ -289,8 +318,12 @@ def create_app():
                 "unsupplied_figures": adapt_result["unsupplied_figures"],
                 "misattributed": adapt_result["misattributed"],
                 "citations": adapt_result["citations"],
+                "ai_used": adapt_result["ai_used"],
+                "ai_error": adapt_result["ai_error"],
                 "run_id": adapt_result.get("run_id", "-"),
             },
+            "ai_enabled": ai_mode.is_enabled(),
+            "ai_used": adapt_result["ai_used"],
             "insight_log_id": insight_log_id,
             # Same id the four [agentic-loop <run_id>] log lines carry, lifted
             # to the top level so a response and a terminal capture can be

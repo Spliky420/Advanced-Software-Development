@@ -2,6 +2,8 @@ import os
 
 import requests
 
+import ai_mode
+
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:0.5b")
 
@@ -13,7 +15,18 @@ class LLMUnavailableError(Exception):
     """Ollama could not be reached, timed out, or returned nothing usable."""
 
 
+class LLMDisabledError(LLMUnavailableError):
+    """AI_MODE_ENABLED is false, so Ollama was deliberately not called.
+
+    A subclass, so every caller that already degrades on an unreachable
+    Ollama degrades the same way when AI is switched off.
+    """
+
+
 def generate(prompt, system=None):
+    if not ai_mode.is_enabled():
+        raise LLMDisabledError(ai_mode.DISABLED_MESSAGE)
+
     url = OLLAMA_BASE_URL.rstrip("/") + "/api/generate"
     payload = {
         "model": OLLAMA_MODEL,

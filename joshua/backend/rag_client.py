@@ -21,6 +21,8 @@ import os
 
 import requests
 
+import ai_mode
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_RAG_SERVER_URL = "http://host.docker.internal:5003"
@@ -69,6 +71,9 @@ def _unavailable(endpoint, status, reason):
 
 def _request(method, endpoint, payload=None):
     """One HTTP call; returns (body, None) or (None, (status, reason))."""
+    if not ai_mode.is_enabled():
+        return None, ("disabled", ai_mode.DISABLED_MESSAGE)
+
     base_url = get_server_url()
     if base_url is None:
         return None, ("disabled", "RAG is disabled (RAG_SERVER_URL is empty)")

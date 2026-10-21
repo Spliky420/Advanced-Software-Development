@@ -26,6 +26,7 @@ import os
 import re
 import uuid
 
+import ai_mode
 import llm
 import mcp_client
 import rag_client
@@ -510,6 +511,11 @@ def gather_context(observe_result, call_tools_fn=None, retrieve_fn=None):
         _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | rag_called=False | reason=%s", result["reason"])
         return result
 
+    if not ai_mode.is_enabled():
+        result["reason"] = "AI mode is disabled, context lookup skipped"
+        _log(logging.INFO, "CONTEXT", run_id, "mcp_called=False | rag_called=False | reason=%s", result["reason"])
+        return result
+
     result["mcp_called"], result["reason"], result["glossary"] = _lookup_glossary(
         observe_result, call_tools_fn
     )
@@ -781,6 +787,12 @@ def adapt(observe_result, generate_fn=None, context_result=None):
     not present in the figures block means it quoted the reference material
     or invented a figure, so the text is replaced by build_fallback_summary.
     When nothing breached, this says so directly and never calls the LLM.
+
+    When AI_MODE_ENABLED is false, or Ollama cannot produce a response, the
+    model's part is skipped and the summary is build_fallback_summary --
+    the same Python summary a rejected model text falls back to -- so the
+    review still completes. ai_used says whether the model wrote anything,
+    and ai_error says why it did not.
     """
     run_id = _run_id(observe_result)
     description = (
@@ -814,7 +826,12 @@ def adapt(observe_result, generate_fn=None, context_result=None):
             "model_response": None,
             "prompt_sent": None,
             "model_name": None,
+            "ai_used": False,
+            "ai_error": None,
         }
+
+    if not ai_mode.is_enabled():
+        return _python_summary(observe_result, run_id, description, "ai_disabled", ai_mode.DISABLED_MESSAGE)
 
     generate = generate_fn if generate_fn is not None else llm.generate
     figures = build_drift_prompt(observe_result)
@@ -836,7 +853,11 @@ def adapt(observe_result, generate_fn=None, context_result=None):
     elif context_status == "insufficient_context":
         user_prompt += "\n\n" + INSUFFICIENT_CONTEXT_NOTICE
 
-    response_text, model_name = generate(user_prompt, system=DRIFT_SYSTEM_PROMPT)
+    try:
+        response_text, model_name = generate(user_prompt, system=DRIFT_SYSTEM_PROMPT)
+    except llm.LLMUnavailableError as exc:
+        source = "ai_disabled" if isinstance(exc, llm.LLMDisabledError) else "ai_unavailable"
+        return _python_summary(observe_result, run_id, description, source, str(exc))
     prompt_sent = DRIFT_SYSTEM_PROMPT + "\n\n" + user_prompt
 
     rejected = unsupplied_figures(response_text, figures)
@@ -877,4 +898,33 @@ def adapt(observe_result, generate_fn=None, context_result=None):
         "model_response": response_text,
         "prompt_sent": prompt_sent,
         "model_name": model_name,
+        "ai_used": True,
+        "ai_error": None,
+    }
+
+
+def _python_summary(observe_result, run_id, description, source, error):
+    """ADAPT without the model: the breaches described by build_fallback_summary.
+
+    source is "ai_disabled" (the switch is off) or "ai_unavailable" (Ollama
+    could not produce a response). Nothing was generated, so there is no
+    model text to check, nothing to cite and nothing to log.
+    """
+    _log(logging.INFO, "ADAPT", run_id, "llm_called=False | summary_source=%s | reason=%s", source, error)
+    return {
+        "phase": "adapt",
+        "run_id": run_id,
+        "description": description,
+        "llm_called": False,
+        "summary": build_fallback_summary(observe_result),
+        "summary_source": source,
+        "context_status": None,
+        "unsupplied_figures": [],
+        "misattributed": [],
+        "citations": [],
+        "model_response": None,
+        "prompt_sent": None,
+        "model_name": None,
+        "ai_used": False,
+        "ai_error": error,
     }

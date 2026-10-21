@@ -119,3 +119,30 @@ citations, and the UI shows an "Insufficient context" banner.
 - `adapt.citations` lists the passages (then glossary definitions) that the
   summary was grounded on, in the order given. It is empty for a fallback
   summary and when context was insufficient.
+
+## AI switch: `AI_MODE_ENABLED`
+
+One environment variable on `joshua-backend` turns every AI-backed call off.
+Default `"true"` (set in the root `docker-compose.yml` as
+`${AI_MODE_ENABLED:-true}`). Any of `false`, `0`, `no` or `off` switches it
+off; unset or empty means on.
+
+With it off, the backend makes **no** call to Ollama, the MCP server, the RAG
+server or the Multi-Agent Server. Each client (`llm.py`, `mcp_client.py`,
+`rag_client.py`) checks the switch itself before opening a connection, so no
+code path can reach an AI service while it is off.
+
+| Endpoint | AI on | AI off (or Ollama unreachable) |
+| --- | --- | --- |
+| Holdings CRUD, `/api/allocation`, `/api/targets` | unchanged | unchanged |
+| `POST /api/insights` | 201, model summary | **503** JSON: `error` (message for people), `ai_status` `"disabled"` or `"unavailable"`, `ai_enabled`, `detail` |
+| `POST /api/drift-review` | 200, model summary (checked) | **200**: every Plan/Act/Observe figure, CONTEXT skipped, `adapt.summary` = the Python fallback summary, `adapt.summary_source` `"ai_disabled"` or `"ai_unavailable"`, top-level `ai_used: false` |
+
+The drift review's output check (`unsupplied_figures`, `misattributed`) is
+unchanged: it only ever runs on model text, and with AI off there is none.
+
+Run with AI off:
+
+```bash
+AI_MODE_ENABLED=false docker compose up -d joshua-backend
+```

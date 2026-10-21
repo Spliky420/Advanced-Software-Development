@@ -7,9 +7,12 @@ export function ErrorBanner({ error, onRetry, title }) {
   // A 503 always means the same thing, and naming it beats whatever generic
   // title the caller passed ("the summary could not be generated" does not
   // tell the user that Ollama is what is down), so it wins over `title`.
-  const heading = error.isLlmUnavailable
-    ? 'The AI service is unavailable'
-    : title || 'Something went wrong'
+  const aiDisabled = error.aiStatus === 'disabled'
+  const heading = aiDisabled
+    ? 'AI is switched off'
+    : error.isLlmUnavailable
+      ? 'The AI service is unavailable'
+      : title || 'Something went wrong'
 
   return (
     <div className="banner banner-error" role="alert">
@@ -24,11 +27,17 @@ export function ErrorBanner({ error, onRetry, title }) {
         </ul>
       )}
 
-      {error.isLlmUnavailable && (
+      {aiDisabled && (
         <p className="banner-hint">
-          The rest of the app still works -- only the AI commentary needs Ollama.
-          Check the <code>ollama</code> container is running and that the model in{' '}
-          <code>OLLAMA_MODEL</code> has been pulled into it.
+          The backend is running with <code>AI_MODE_ENABLED=false</code>. Everything else in the
+          app works as normal.
+        </p>
+      )}
+
+      {error.isLlmUnavailable && !aiDisabled && (
+        <p className="banner-hint">
+          The rest of the app still works -- only the AI commentary needs Ollama. Check Ollama is
+          running on the host and that the model in <code>OLLAMA_MODEL</code> has been pulled.
         </p>
       )}
 
