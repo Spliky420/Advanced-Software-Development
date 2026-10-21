@@ -7,7 +7,7 @@ export function ErrorBanner({ error, onRetry, title }) {
   // A 503 always means the same thing, and naming it beats whatever generic
   // title the caller passed ("the summary could not be generated" does not
   // tell the user that Ollama is what is down), so it wins over `title`.
-  const aiDisabled = error.aiStatus === 'disabled'
+  const aiDisabled = error.aiStatus === 'disabled' || error.code === 'disabled'
   const heading = aiDisabled
     ? 'AI is switched off'
     : error.isLlmUnavailable
@@ -29,8 +29,8 @@ export function ErrorBanner({ error, onRetry, title }) {
 
       {aiDisabled && (
         <p className="banner-hint">
-          The backend is running with <code>AI_MODE_ENABLED=false</code>. Everything else in the
-          app works as normal.
+          The backend's AI services are switched off (<code>AI_MODE_ENABLED=false</code>).
+          Everything else in the app works as normal.
         </p>
       )}
 

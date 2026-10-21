@@ -2,7 +2,7 @@
 // /api to joshua-backend, so there is no CORS handling anywhere on either side.
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, errors = [], aiStatus = null, fields = null } = {}) {
+  constructor(message, { status = 0, errors = [], aiStatus = null, fields = null, code = null } = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
@@ -11,16 +11,21 @@ export class ApiError extends Error {
     this.aiStatus = aiStatus
     // Per-field reasons from a Multi-Agent Server 400, keyed by field name.
     this.fields = fields
+    // Machine-readable reason from the Multi-Agent Review endpoints
+    // ("unreachable", "timeout", "conflict", ...).
+    this.code = code
     // The backend returns a flat `errors` array alongside `error` on a 400,
     // one entry per failed field. Kept so forms can put them next to fields.
     this.errors = errors
   }
 
-  // 503 from /api/insights and /api/drift-review means Ollama is unreachable
-  // or the model tag was never pulled -- worth telling the user apart from a
-  // generic failure, because only one of them is their problem to fix.
+  // 503 from /api/insights means Ollama is unreachable or the model tag was
+  // never pulled -- worth telling the user apart from a generic failure,
+  // because only one of them is their problem to fix. Multi-Agent Review
+  // errors carry a `code` and explain themselves, so they are excluded: a
+  // stopped Multi-Agent Server is not an Ollama problem.
   get isLlmUnavailable() {
-    return this.status === 503
+    return this.status === 503 && !this.code
   }
 }
 
@@ -55,6 +60,7 @@ async function request(path, options = {}) {
         errors: (body && body.errors) || [],
         aiStatus: (body && body.ai_status) || null,
         fields: (body && body.fields) || null,
+        code: (body && body.code) || null,
       },
     )
   }
