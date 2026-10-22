@@ -57,9 +57,13 @@ jobs:
           recursive: true
           failure-threshold: error
 
-      - name: Build Docker images for scanning
+      - name: Build and tag Docker images for scanning
         run: |
           docker compose build
+          # Tag images with simple names for Trivy scanning
+          docker tag asd2026-maxwell-backend maxwell-backend:latest
+          docker tag asd2026-maxwell-frontend maxwell-frontend:latest
+          docker tag asd2026-maxwell-database maxwell-database:latest
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
