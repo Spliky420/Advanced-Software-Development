@@ -317,6 +317,19 @@ def test_a_decided_review_is_served_from_the_log_even_if_the_server_is_gone(clie
     assert body["can_decide"] is False
 
 
+def test_a_decided_review_reads_as_complete_matching_the_server(client, multi_agent):
+    """Found driving the UI: the stored run was the pre-decision one, so the
+    stage tracker went on showing "your turn" after the person had decided."""
+    run_id, _ = _start(client, multi_agent)
+    _decide(client, run_id, decision="partial", note="the schedule only")
+    workflow = client.get(f"/api/agents/workflow/{run_id}").get_json()["workflow"]
+    server = multi_agent.store.get(run_id)
+
+    assert workflow["status"] == "complete" == server["status"]
+    for key in ("decision", "note", "corrected", "reviewer"):
+        assert workflow["human_review"][key] == server["human_review"][key], key
+
+
 def test_a_contribution_after_the_review_started_makes_approve_409(client, conn, multi_agent):
     run_id, _ = _start(client, multi_agent)
     client.post(f"/api/goals/{GOAL}/contributions", json={"amount": 50, "contribution_date": "2026-10-01"})

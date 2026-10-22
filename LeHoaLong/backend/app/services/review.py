@@ -191,8 +191,13 @@ def _staleness(conn: sqlite3.Connection, record: dict, today: date | None = None
         "first_step_order": "the completed steps (one was completed, skipped or edited)",
         "status": "the goal's status",
     }
+    def shown(key, value):
+        return f"{value:,.2f}" if key in ("target_amount", "saved_to_date") else str(value)
+
     problems = [
-        f"{labels[key]} changed from {then[key]} to {now[key]}" for key in labels if now[key] != then[key]
+        f"{labels[key]} changed from {shown(key, then[key])} to {shown(key, now[key])}"
+        for key in labels
+        if now[key] != then[key]
     ]
 
     today_iso = dates.to_iso(today or dates.today())
@@ -400,6 +405,21 @@ def decide(conn: sqlite3.Connection, run_id: str, clean: dict) -> dict:
     steps = record["proposal"]["steps"] if applies else []
     rationale = clean["corrected"] if decision == "correct" else clean["note"]
     decided_at = dates.now_iso()
+    reviewer = f"{client.caller()} (user {DEFAULT_USER_ID})"
+
+    # The run as it will stand once the server accepts the decision: what a
+    # later poll is served from. Stored as the decided state rather than the
+    # awaiting one read above, or a decided review would still read "awaiting
+    # a decision". If the server refuses, this row is rolled back with
+    # everything else, so it is never stored for a decision that did not land.
+    decided_workflow = {
+        **workflow,
+        "status": client.COMPLETE,
+        "human_review": {
+            "decision": decision, "note": clean["note"], "corrected": clean["corrected"],
+            "reviewer": reviewer, "decided_at": decided_at,
+        },
+    }
 
     if applies:
         agent_service.persist_schedule(conn, goal_id, steps)
@@ -416,14 +436,14 @@ def decide(conn: sqlite3.Connection, run_id: str, clean: dict) -> dict:
         response={
             "event": "decided", "run_id": run_id, "goal_id": goal_id, "decision": decision,
             "note": clean["note"], "corrected": clean["corrected"], "applied": applies,
-            "steps_applied": len(steps), "decided_at": decided_at, "workflow": workflow,
+            "steps_applied": len(steps), "decided_at": decided_at, "workflow": decided_workflow,
         },
     )
 
     try:
         server = client.decide(
             run_id, decision=decision, note=clean["note"], corrected=clean["corrected"],
-            reviewer=f"{client.caller()} (user {DEFAULT_USER_ID})",
+            reviewer=reviewer,
         )
     except client.RunConflict as exc:
         conn.rollback()

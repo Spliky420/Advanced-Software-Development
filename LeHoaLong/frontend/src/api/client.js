@@ -129,3 +129,19 @@ export const getRagHealth = () => request('/api/rag/health')
 export const askRag = (payload) => request('/api/rag/ask', { method: 'POST', ...jsonBody(payload) })
 export const explainGoal = (goalId, payload = {}) =>
   request(`/api/goals/${goalId}/explain`, { method: 'POST', ...jsonBody(payload) })
+
+// --- Multi-agent plan review (Release 2) ------------------------------------
+// The multi-agent server is never called from the browser either. These go
+// to this backend, which builds the evidence in Python, keeps the audit trail
+// and applies an approved plan.
+//
+// startPlanReview answers 202 with a run id when the agents have started, or
+// 200 with review.status "unavailable" when they could not -- not an error,
+// because the proposal is still in the body and the Release 1 path still
+// works. getPlanReview is polled while the agents run.
+export const getAgentsHealth = () => request('/api/agents/health')
+export const startPlanReview = (goalId, { useMcp = true } = {}) =>
+  request(`/api/goals/${goalId}/review-plan`, { method: 'POST', ...jsonBody({ use_mcp: useMcp }) })
+export const getPlanReview = (runId) => request(`/api/agents/workflow/${encodeURIComponent(runId)}`)
+export const decidePlanReview = (runId, payload) =>
+  request(`/api/agents/workflow/${encodeURIComponent(runId)}/review`, { method: 'POST', ...jsonBody(payload) })

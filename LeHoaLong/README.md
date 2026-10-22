@@ -328,6 +328,21 @@ goal detail with individually editable steps, generate/regenerate plan with a
 loading state and a clear error state when the AI service is down, a
 contribution form, and the budget summary panel with its over-budget warning.
 
+**Agents tab (Release 2).** The goal page's AI mode panel has a fourth tab
+beside AI-Mode, MCP and RAG, so the four ways of planning sit side by side.
+It shows Python's proposed plan first, labelled as Python's, then ticks off
+the Planner, Worker and Reviewer as the server stores each one (polled once a
+second; real progress, because runs are started async). The agents' output
+is shown as written, with the Python figure and arithmetic checks badged so
+they are not mistaken for the model. The decision form offers approve,
+correct, partial and reject with the same rules the backend enforces: correct
+needs the corrected rationale, partial needs a note, and approve and correct
+are disabled, with the reasons shown, when the goal has changed since the
+review started. When the agents are off or down, it says why and offers
+"Apply without review", the Release 1 path. A review in progress or decided
+is picked up again after navigating away. A third header light shows the
+multi-agent server's state.
+
 ---
 
 ## Tests
