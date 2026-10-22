@@ -13,12 +13,15 @@ agents over it. It never fetches data and never computes a figure.
 
 The POST is synchronous: it blocks for all three agents (15-40s warm on
 CPU). Each phase is stored as it finishes, so a GET from another client
-during the wait shows real progress. See README.md for the timeout chain.
+during the wait shows real progress. Every change is also appended to
+workflow_history.jsonl, and a restart rebuilds every run from that file.
+See README.md for the timeout chain.
 """
 
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
@@ -42,6 +45,9 @@ DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen2.5:0.5b"
 # Three agents x 55s stays inside gunicorn's 180s worker timeout in run.sh.
 DEFAULT_AGENT_TIMEOUT_SECONDS = 55.0
+# Next to this file rather than the working directory, so it is the same
+# file however the server is started.
+DEFAULT_HISTORY_PATH = Path(__file__).resolve().parent / "workflow_history.jsonl"
 
 
 def _env_flag(name: str) -> bool:
@@ -57,11 +63,12 @@ def create_app(config: dict | None = None) -> Flask:
         AGENT_TIMEOUT_SECONDS=float(
             os.getenv("AGENT_TIMEOUT_SECONDS", DEFAULT_AGENT_TIMEOUT_SECONDS)
         ),
+        WORKFLOW_HISTORY_PATH=os.getenv("WORKFLOW_HISTORY_PATH", str(DEFAULT_HISTORY_PATH)),
     )
     if config:
         app.config.update(config)
 
-    store = WorkflowStore()
+    store = WorkflowStore(app.config["WORKFLOW_HISTORY_PATH"])
     app.extensions["workflow_store"] = store
 
     def agent_config() -> agents.AgentConfig:
@@ -298,4 +305,5 @@ if __name__ == "__main__":
     print("Starting shared Multi-Agent Server...")
     print(f"Listening on http://0.0.0.0:{port}")
     print(f"Stub agents: {app.config['STUB_AGENTS']}  Model: {app.config['OLLAMA_MODEL']}")
+    print(f"History: {app.config['WORKFLOW_HISTORY_PATH']}")
     app.run(host="0.0.0.0", port=port, threaded=True)

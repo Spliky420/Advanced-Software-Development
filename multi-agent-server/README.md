@@ -42,6 +42,7 @@ server (or run `python server.py` directly).
 | `OLLAMA_MODEL`          | `qwen2.5:0.5b`            | model tag; never hardcoded              |
 | `AGENT_TIMEOUT_SECONDS` | `55`                      | per-agent Ollama call timeout           |
 | `MULTI_AGENT_PORT`      | `5004`                    | listen port                             |
+| `WORKFLOW_HISTORY_PATH` | `workflow_history.jsonl`  | audit log, next to `server.py`          |
 
 ## API contract
 
@@ -243,12 +244,47 @@ Ollama unloads an idle model after 5 minutes by default. Set
 `OLLAMA_KEEP_ALIVE=30m` on the host's Ollama to keep it loaded through a
 demo.
 
+## Workflow history
+
+Every change to a run is appended to `workflow_history.jsonl` as it
+happens, one JSON event per line, before it takes effect:
+
+| `event`          | Written when                                                |
+| ---------------- | ----------------------------------------------------------- |
+| `created`        | the run starts; carries task, evidence, caller and model     |
+| `phase`          | an agent finishes; its output and full audit record          |
+| `status`         | the Worker or Reviewer starts                                |
+| `failed`         | an agent could not run, or a restart interrupted the run     |
+| `awaiting_human` | all three agents are done                                    |
+| `decided`        | the human review                                             |
+
+```json
+{"at": "2026-10-22T03:23:17+00:00", "event": "decided", "run_id": "f05a...",
+ "human_review": {"decision": "approve", "note": "", "corrected": null, "reviewer": "me"}}
+```
+
+**A run can be rebuilt from this file alone**, and that is how the server
+starts: it replays the file, so runs and their decisions survive a
+restart. The `phase` events carry each agent's prompt, raw reply, retries,
+fallback flag and check findings, so the file is a complete audit trail,
+including the parts the API never returns.
+
+A run that was still planning, working or reviewing when the server
+stopped can never finish, because the request driving it is gone. On
+startup it is marked `failed` with the detail "the server restarted before
+this run finished", and that is written to the file too. A truncated last
+line from a crash mid-write is skipped with a warning, not fatal.
+
+The file is append-only, never rewritten, and is git-ignored. Delete it to
+start with no runs.
+
 ## Process model
 
-Runs are held in memory, so `run.sh` starts **one** gunicorn worker with
-eight threads. The single worker means every request for a run reaches the
-process that holds it. The threads let `GET /workflow/<id>` answer while a
-`POST /workflow` is blocked.
+Runs are served from memory and the history file is written by one
+process, so `run.sh` starts **one** gunicorn worker with eight threads.
+The single worker means every request for a run reaches the process that
+holds it, and only one process appends to the file. The threads let
+`GET /workflow/<id>` answer while a `POST /workflow` is blocked.
 
 ## Tests
 

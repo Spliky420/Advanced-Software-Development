@@ -11,8 +11,8 @@
 #                  (15-40s warm on CPU, far more cold). gunicorn's default
 #                  30s kills the worker silently, usually as the Reviewer
 #                  starts, and the caller just sees a dropped connection.
-#   --workers 1    runs are held in this process's memory, so every request
-#                  for a run must reach the same process.
+#   --workers 1    runs are served from this process's memory, and only one
+#                  process may append to workflow_history.jsonl.
 #   --threads 8    lets GET /workflow/<id> poll progress while a POST is
 #                  still blocked running the agents.
 #
