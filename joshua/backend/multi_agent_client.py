@@ -1,18 +1,17 @@
 """Thin client for the team's shared Multi-Agent Server (multi-agent-server/).
 
 The server runs on the host, never in compose, so from inside the
-joshua-backend container it is reached through host.docker.internal. It runs
-Planner -> Worker -> Reviewer synchronously inside one POST /workflow, then
-parks the run at "awaiting_human" until POST /workflow/<run_id>/review
-records a person's decision.
+joshua-backend container it is reached through host.docker.internal. A run
+is Planner -> Worker -> Reviewer, then parks at "awaiting_human" until
+POST /workflow/<run_id>/review records a person's decision.
 
-Timeouts: one POST /workflow runs three Ollama calls in sequence (15-40s
-warm, far longer cold), so this client uses its own (connect, read) pair of
-(5, 190) -- deliberately separate from the 5s MCP and RAG timeouts. Connect
-fails fast when nobody started the server; the 190s read sits above the
-server's 180s gunicorn timeout, so the server's own 503 arrives first. The
-chain continues outward: joshua-backend's gunicorn --timeout 210 and the
-frontend nginx proxy_read_timeout 220s.
+Runs are started asynchronously ("async": true): POST /workflow returns 202
+at once with the run at status "planning", the agents run on a server-side
+thread, and the caller polls GET /workflow/<run_id> to watch each agent
+finish. Every call is therefore quick, so this client uses short
+(connect, read) timeouts like the MCP and RAG clients -- no long read
+timeout, and no long gunicorn/nginx timeouts upstream of it. The overall
+deadline for a run belongs to whoever polls (the frontend).
 
 Every public call returns {"ok", "status", "http_status", "data", "error"}
 and never raises for a server-side problem. status is one of:
@@ -24,6 +23,10 @@ and never raises for a server-side problem. status is one of:
   rejected     -- the server answered 4xx/5xx; data is its JSON error body
                   ({"error": code, "detail": ..., ...}) and http_status its code
   error        -- the server answered something that is not JSON
+
+A run whose agent could not run is not a "rejected" call: the server
+answers 200 with the run at status "failed" and an error object saying
+which phase, and that is passed through as ok.
 """
 
 import logging
@@ -38,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_MULTI_AGENT_URL = "http://host.docker.internal:5004"
 CONNECT_TIMEOUT_SECONDS = 5
-READ_TIMEOUT_SECONDS = 190
+READ_TIMEOUT_SECONDS = 10
 TIMEOUT = (CONNECT_TIMEOUT_SECONDS, READ_TIMEOUT_SECONDS)
 
 CALLER = "joshua"
@@ -65,7 +68,11 @@ def _result(ok, status, http_status=None, data=None, error=None):
     return {"ok": ok, "status": status, "http_status": http_status, "data": data, "error": error}
 
 
-def _post(path, payload):
+def _invalid_run_id():
+    return _result(False, "rejected", 404, {"error": "not_found", "detail": "not a valid run id"}, "not a valid run id")
+
+
+def _request(method, path, payload=None):
     if not ai_mode.is_enabled():
         return _result(False, "disabled", error=ai_mode.DISABLED_MESSAGE)
 
@@ -75,7 +82,7 @@ def _post(path, payload):
 
     url = base_url + path
     try:
-        response = requests.post(url, json=payload, timeout=TIMEOUT)
+        response = requests.request(method, url, json=payload, timeout=TIMEOUT)
     except requests.exceptions.ConnectTimeout:
         logger.warning("Multi-Agent Server unreachable at %s (connect timeout)", url)
         return _result(False, "unreachable", error=f"could not connect to the Multi-Agent Server at {base_url}")
@@ -96,14 +103,24 @@ def _post(path, payload):
     if response.ok:
         return _result(True, "ok", response.status_code, body)
 
-    logger.warning("Multi-Agent Server %s -> %s %s", path, response.status_code, body.get("error"))
+    logger.warning("Multi-Agent Server %s %s -> %s %s", method, path, response.status_code, body.get("error"))
     return _result(False, "rejected", response.status_code, body, body.get("detail") or body.get("error"))
 
 
 def start_workflow(task, evidence):
-    """POST /workflow. On success data is the run: run_id, status
-    ("awaiting_human"), plan, work, review, model, stub, human_review, error."""
-    return _post("/workflow", {"task": task, "evidence": evidence, "caller": CALLER})
+    """POST /workflow with "async": true. On success (202) data is the run at
+    status "planning": run_id, status, plan, work, review, model, stub,
+    human_review, error."""
+    return _request("POST", "/workflow", {"task": task, "evidence": evidence, "caller": CALLER, "async": True})
+
+
+def get_workflow(run_id):
+    """GET /workflow/<run_id>: the run's current state. status moves through
+    planning -> working -> reviewing -> awaiting_human -> complete, or to
+    failed with error {"phase", "detail", ...}."""
+    if not is_valid_run_id(run_id):
+        return _invalid_run_id()
+    return _request("GET", f"/workflow/{run_id}")
 
 
 def submit_review(run_id, review):
@@ -114,7 +131,7 @@ def submit_review(run_id, review):
     {run_id, status: "complete", decision, decided_at}.
     """
     if not is_valid_run_id(run_id):
-        return _result(False, "rejected", 404, {"error": "not_found", "detail": "not a valid run id"}, "not a valid run id")
+        return _invalid_run_id()
     body = {key: review[key] for key in ("decision", "note", "corrected") if review.get(key) is not None}
     body["reviewer"] = CALLER
-    return _post(f"/workflow/{run_id}/review", body)
+    return _request("POST", f"/workflow/{run_id}/review", body)

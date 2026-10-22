@@ -92,9 +92,12 @@ export const putTargets = (targets) =>
 export const createInsight = () => request('/api/insights', { method: 'POST' })
 export const runDriftReview = () => request('/api/drift-review', { method: 'POST' })
 
-// Synchronous: the backend waits for all three agents, which can take minutes.
+// Asynchronous: starting returns at once (202) with the run at "planning";
+// poll getMultiAgentRun for each agent's progress.
 export const startMultiAgentReview = () =>
   request('/api/multi-agent/workflow', { method: 'POST' })
+export const getMultiAgentRun = (runId) =>
+  request(`/api/multi-agent/workflow/${encodeURIComponent(runId)}`)
 export const submitMultiAgentReview = (runId, decision) =>
   request(`/api/multi-agent/workflow/${encodeURIComponent(runId)}/review`, {
     method: 'POST',

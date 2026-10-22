@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { startMultiAgentReview, submitMultiAgentReview } from '../api'
+import { useEffect, useState } from 'react'
+import { getMultiAgentRun, startMultiAgentReview, submitMultiAgentReview } from '../api'
 import { AiLoading, EmptyState, ErrorBanner, WarningBanner } from '../components/Feedback'
 
 // The shared Multi-Agent Server runs Planner -> Worker -> Reviewer inside one
@@ -146,35 +146,163 @@ function ReviewForm({ runId, onDecided }) {
   )
 }
 
+// How often to ask for the run's progress, and the most time to wait in all.
+// The server bounds a run at three agent timeouts (3 x 55s); 180s sits above
+// that, in case the server restarts mid-run and the run can never finish.
+const POLL_INTERVAL_MS = 2500
+const POLL_DEADLINE_MS = 180000
+
+const IN_FLIGHT = ['planning', 'working', 'reviewing']
+
+// The three agents in order, with the run status that means each is running
+// and the error.phase name the server uses when it fails.
+const AGENTS = [
+  { phase: 'plan', label: 'Planner', running: 'planning' },
+  { phase: 'work', label: 'Worker', running: 'working' },
+  { phase: 'review', label: 'Reviewer', running: 'reviewing' },
+]
+
+function agentState(run, index) {
+  if (run.status === 'failed') {
+    const failedAt = AGENTS.findIndex((agent) => agent.phase === run.error?.phase)
+    if (index < failedAt) return 'done'
+    return index === failedAt ? 'failed' : 'skipped'
+  }
+  if (run.status === 'lost' || run.status === 'timed_out') {
+    const lastKnown = run.lastStatus
+    const runningAt = AGENTS.findIndex((agent) => agent.running === lastKnown)
+    if (index < runningAt) return 'done'
+    return 'unknown'
+  }
+  const runningAt = AGENTS.findIndex((agent) => agent.running === run.status)
+  if (runningAt === -1) return 'done' // awaiting_human or complete
+  if (index < runningAt) return 'done'
+  return index === runningAt ? 'running' : 'waiting'
+}
+
+const AGENT_STATE_LABELS = {
+  done: 'Done',
+  running: 'Running...',
+  waiting: 'Waiting',
+  failed: 'Failed',
+  skipped: 'Not run',
+  unknown: 'Unknown',
+}
+
+const AGENT_STATE_MARKS = { done: '✓', failed: '✗', running: '' }
+
+function AgentProgress({ run }) {
+  return (
+    <ol className="agent-progress" aria-label="Agent progress">
+      {AGENTS.map((agent, index) => {
+        const state = agentState(run, index)
+        return (
+          <li key={agent.phase} className={`agent-step agent-step-${state}`} data-state={state}>
+            <span className="agent-step-mark" aria-hidden="true">
+              {state === 'running' ? <span className="spinner" /> : AGENT_STATE_MARKS[state] ?? '•'}
+            </span>
+            <strong>{agent.label}</strong>
+            <span className="agent-step-state">{AGENT_STATE_LABELS[state]}</span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+function DecisionBanner({ decided }) {
+  return (
+    <div className="banner banner-success" role="status">
+      <strong className="banner-title">
+        Decision recorded: {DECISIONS.find((d) => d.value === decided.decision)?.label ?? decided.decision}
+      </strong>
+      <p className="banner-message">
+        Run <code>{decided.run_id}</code> is <strong>{decided.status}</strong> as of{' '}
+        {decided.decided_at}.
+      </p>
+      {decided.note && <p className="banner-message">Note: {decided.note}</p>}
+      {decided.corrected && <p className="banner-message">Corrected text: {decided.corrected}</p>}
+    </div>
+  )
+}
+
+// Marks a run the page stopped polling for its own reasons -- the server could
+// not be reached, or the deadline passed -- keeping the last status it saw.
+function stopped(current, status) {
+  return current && { ...current, run: { ...current.run, lastStatus: current.run.status, status } }
+}
+
 export default function MultiAgentReviewPage() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [starting, setStarting] = useState(false)
   const [decided, setDecided] = useState(null)
 
+  const run = result?.run
+  const polling = Boolean(run && IN_FLIGHT.includes(run.status))
+  const runId = run?.run_id
+  const runStatus = run?.status
+  const startedAt = result?.startedAt
+
+  // One poll per render while the run is in flight; each answer re-renders
+  // and schedules the next. Stops at awaiting_human, complete or failed, on
+  // any request error, at the deadline, and when the page unmounts.
+  useEffect(() => {
+    if (!polling) return undefined
+    let cancelled = false
+    const timer = setTimeout(async () => {
+      if (Date.now() - startedAt > POLL_DEADLINE_MS) {
+        setError({
+          message:
+            'The agents did not finish within 3 minutes. The Multi-Agent Server may have ' +
+            'restarted, or the model is very slow. Start a new review to try again.',
+        })
+        setResult((current) => stopped(current, 'timed_out'))
+        return
+      }
+      try {
+        const latest = await getMultiAgentRun(runId)
+        if (!cancelled) setResult((current) => current && { ...current, run: latest.run, polls: (current.polls ?? 0) + 1 })
+      } catch (failure) {
+        if (!cancelled) {
+          setError(failure)
+          setResult((current) => stopped(current, 'lost'))
+        }
+      }
+    }, POLL_INTERVAL_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [polling, runId, runStatus, result?.polls, startedAt])
+
   async function start() {
-    setLoading(true)
+    setStarting(true)
     setError(null)
     setResult(null)
     setDecided(null)
     try {
-      setResult(await startMultiAgentReview())
+      const started = await startMultiAgentReview()
+      setResult({ ...started, startedAt: Date.now(), polls: 0 })
     } catch (failure) {
       setError(failure)
     } finally {
-      setLoading(false)
+      setStarting(false)
     }
   }
 
-  const run = result?.run
+  const finished = run && (run.status === 'awaiting_human' || run.status === 'complete')
+  const failed = run?.status === 'failed'
+  const failedAgent = failed ? AGENTS.find((agent) => agent.phase === run.error?.phase) : null
   const stageByKey = Object.fromEntries(STAGES.map((stage) => [stage.key, stage]))
+  const busy = starting || polling
 
   return (
     <section className="page">
       <header className="page-header">
         <h2>Multi-Agent Review</h2>
-        <button type="button" className="button button-primary" onClick={start} disabled={loading}>
-          {loading ? 'Running...' : run ? 'Start a new review' : 'Start Multi-Agent Review'}
+        <button type="button" className="button button-primary" onClick={start} disabled={busy}>
+          {busy ? 'Running...' : run ? 'Start a new review' : 'Start Multi-Agent Review'}
         </button>
       </header>
 
@@ -186,19 +314,38 @@ export default function MultiAgentReviewPage() {
         decision.
       </p>
 
-      {loading && (
+      {busy && (
         <AiLoading
-          label="The agents are working..."
+          label={starting ? 'Starting the agents...' : 'The agents are working...'}
           note="Three agents run one after another, so this can take up to a few minutes."
         />
       )}
-      <ErrorBanner error={error} title="The Multi-Agent Review could not be run" />
 
-      {!run && !loading && !error && (
+      {run && <AgentProgress run={run} />}
+
+      <ErrorBanner
+        error={error}
+        title={run ? 'Lost contact with the Multi-Agent Review' : 'The Multi-Agent Review could not be run'}
+      />
+
+      {failed && (
+        <div className="banner banner-error" role="alert">
+          <h3 className="banner-title">
+            The {failedAgent?.label ?? 'agent'} could not run, so this review stopped
+          </h3>
+          <p className="banner-message">{run.error?.detail}</p>
+          <p className="banner-hint">
+            Check Ollama is running on the host with the model pulled, or start the Multi-Agent
+            Server with <code>STUB_AGENTS=true</code>. Then start a new review.
+          </p>
+        </div>
+      )}
+
+      {!run && !busy && !error && (
         <EmptyState>Start a review to see the plan, the work and the review.</EmptyState>
       )}
 
-      {run && !loading && (
+      {finished && (
         <div className="phase-list">
           {run.stub && (
             <WarningBanner>
@@ -264,24 +411,16 @@ export default function MultiAgentReviewPage() {
           </StageSection>
 
           <StageSection stage={stageByKey.human}>
-            {decided ? (
-              <div className="banner banner-success" role="status">
-                <strong className="banner-title">
-                  Decision recorded: {DECISIONS.find((d) => d.value === decided.decision)?.label ?? decided.decision}
-                </strong>
-                <p className="banner-message">
-                  Run <code>{decided.run_id}</code> is <strong>{decided.status}</strong> as of{' '}
-                  {decided.decided_at}.
-                </p>
-                {decided.note && <p className="banner-message">Note: {decided.note}</p>}
-                {decided.corrected && (
-                  <p className="banner-message">Corrected text: {decided.corrected}</p>
-                )}
-              </div>
+            {decided || run.human_review ? (
+              <DecisionBanner
+                decided={decided ?? { run_id: run.run_id, status: run.status, ...run.human_review }}
+              />
             ) : (
               <ReviewForm
                 runId={run.run_id}
-                onDecided={(response, sent) => setDecided({ ...response, ...sent, decision: response.decision })}
+                onDecided={(response, sent) =>
+                  setDecided({ ...response, ...sent, decision: response.decision })
+                }
               />
             )}
           </StageSection>

@@ -184,12 +184,12 @@ MULTI_AGENT_FAILURES = {
     "disabled": (503, "AI is disabled on this server, so the Multi-Agent Review cannot run."),
     "unreachable": (503, "The Multi-Agent Server is not running. Start it on the host "
                          "(multi-agent-server/run.sh) and try again."),
-    "timeout": (504, "The Multi-Agent Server took too long to answer. The model may be "
-                     "loading for the first time -- try again in a minute."),
+    "timeout": (504, "The Multi-Agent Server is not responding. It may be busy -- try again "
+                     "in a moment."),
     "error": (502, "The Multi-Agent Server sent a response this app could not read."),
     "validation_failed": (400, "The Multi-Agent Server rejected the request."),
-    "not_found": (404, "That review run no longer exists on the Multi-Agent Server "
-                       "(it keeps runs in memory, so a restart clears them). Start a new run."),
+    "not_found": (404, "That run does not exist on the Multi-Agent Server (its history may have "
+                       "been cleared). Start a new run."),
     "conflict": (409, "This run has already been reviewed (or failed), so it cannot be reviewed again."),
     "agent_unavailable": (503, "The agents could not run. Check Ollama is running on the host, "
                                "or start the Multi-Agent Server with STUB_AGENTS=true."),
@@ -412,13 +412,24 @@ def create_app():
 
     @app.post("/api/multi-agent/workflow")
     def start_multi_agent_workflow():
-        # Synchronous: the Multi-Agent Server runs Planner -> Worker ->
-        # Reviewer inside this one request (15-40s warm, minutes cold).
+        # Asynchronous: the Multi-Agent Server answers 202 at once with the
+        # run at "planning" and runs the agents on its own thread. The
+        # client polls GET /api/multi-agent/workflow/<run_id> for progress.
         evidence = build_workflow_evidence()
         result = multi_agent_client.start_workflow(MULTI_AGENT_TASK, evidence)
         if not result["ok"]:
             return _multi_agent_failure(result, own_request=True)
-        return jsonify({"task": MULTI_AGENT_TASK, "evidence": evidence, "run": result["data"]}), 201
+        return jsonify({"task": MULTI_AGENT_TASK, "evidence": evidence, "run": result["data"]}), 202
+
+    @app.get("/api/multi-agent/workflow/<run_id>")
+    def get_multi_agent_workflow(run_id):
+        # The run's current state, passed through. A run whose agent could
+        # not run is a 200 here with status "failed" and an error saying
+        # which phase -- the poller decides what to show, not this layer.
+        result = multi_agent_client.get_workflow(run_id)
+        if not result["ok"]:
+            return _multi_agent_failure(result)
+        return jsonify({"run": result["data"]}), 200
 
     @app.post("/api/multi-agent/workflow/<run_id>/review")
     def review_multi_agent_workflow(run_id):
