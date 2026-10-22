@@ -7,6 +7,7 @@ import calculations
 import db
 import integrations
 import llm
+import multi_agent
 import review
 
 app = Flask(__name__)
@@ -294,6 +295,49 @@ def rag_bills():
         return jsonify(integrations.rag_answer(query.strip(), k))
     except integrations.ServiceError as error:
         return jsonify({"error": str(error)}), 503
+
+
+# Keep workflow errors separate from ordinary bill requests.
+@app.errorhandler(multi_agent.WorkflowError)
+def workflow_error(error):
+    body = {"error": str(error)}
+    if error.run_id:
+        body["run_id"] = error.run_id
+    if error.disabled:
+        body["disabled"] = True
+    return jsonify(body), error.status
+
+
+@app.post("/api/bills/workflows")
+def start_bill_workflow():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required."}), 400
+    try:
+        return jsonify(multi_agent.start(data, db.DEFAULT_USER_ID)), 201
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+
+
+@app.get("/api/bills/workflows")
+def list_bill_workflows():
+    return jsonify(multi_agent.list_saved(db.DEFAULT_USER_ID))
+
+
+@app.get("/api/bills/workflows/<run_id>")
+def get_bill_workflow(run_id):
+    return jsonify(multi_agent.get(run_id, db.DEFAULT_USER_ID))
+
+
+@app.post("/api/bills/workflows/<run_id>/review")
+def decide_bill_workflow(run_id):
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "A JSON object is required."}), 400
+    try:
+        return jsonify(multi_agent.decide(run_id, data, db.DEFAULT_USER_ID))
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
 
 
 if __name__ == "__main__":

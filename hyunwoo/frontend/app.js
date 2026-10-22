@@ -23,11 +23,30 @@ const elements = {
     ragQuery: document.querySelector("#rag-query"),
     runRag: document.querySelector("#run-rag"),
     ragResult: document.querySelector("#rag-result"),
+    workflowForm: document.querySelector("#workflow-form"),
+    workflowDate: document.querySelector("#workflow-date"),
+    workflowDays: document.querySelector("#workflow-days"),
+    runWorkflow: document.querySelector("#run-workflow"),
+    workflowStatus: document.querySelector("#workflow-status"),
+    workflowResult: document.querySelector("#workflow-result"),
+    humanReviewForm: document.querySelector("#human-review-form"),
+    workflowDecision: document.querySelector("#workflow-decision"),
+    workflowNote: document.querySelector("#workflow-note"),
+    workflowCorrection: document.querySelector("#workflow-correction"),
+    workflowCorrectionLabel: document.querySelector("#workflow-correction-label"),
+    submitWorkflowReview: document.querySelector("#submit-workflow-review"),
+    workflowHistory: document.querySelector("#workflow-history"),
+    openWorkflow: document.querySelector("#open-workflow"),
+    refreshWorkflows: document.querySelector("#refresh-workflows"),
+    workflowHistoryNote: document.querySelector("#workflow-history-note"),
     toast: document.querySelector("#toast"),
 };
 
 let bills = [];
 let toastTimer;
+let currentWorkflow = null;
+let workflowBusy = false;
+let workflowDisabled = false;
 
 const moneyFormatter = new Intl.NumberFormat("en-AU", {
     style: "currency",
@@ -73,7 +92,10 @@ async function apiFetch(path, options = {}) {
         const message = body.error
             || Object.values(body.errors || {})[0]
             || "The request could not be completed.";
-        throw new Error(message);
+        const error = new Error(message);
+        error.status = response.status;
+        error.body = body;
+        throw error;
     }
 
     return body;
@@ -408,7 +430,215 @@ async function runRag(event) {
     }
 }
 
+// Give the three agents time to finish.
+async function workflowFetch(path, options = {}) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 210000);
+    try {
+        return await apiFetch(path, { ...options, signal: controller.signal });
+    } catch (error) {
+        if (controller.signal.aborted) {
+            throw new Error("The review took too long. Refresh saved reviews before trying again.");
+        }
+        throw error;
+    } finally {
+        window.clearTimeout(timer);
+    }
+}
+
+function setWorkflowBusy(busy) {
+    workflowBusy = busy;
+    for (const element of [
+        elements.runWorkflow, elements.workflowDate, elements.workflowDays,
+        elements.workflowDecision, elements.workflowNote, elements.workflowCorrection,
+        elements.submitWorkflowReview, elements.workflowHistory, elements.refreshWorkflows,
+    ]) {
+        element.disabled = busy;
+    }
+    elements.openWorkflow.disabled = busy || !elements.workflowHistory.value;
+    elements.runWorkflow.disabled = busy || workflowDisabled;
+}
+
+function setDecisionFields() {
+    const decision = elements.workflowDecision.value;
+    elements.workflowNote.required = decision === "partial";
+    elements.workflowCorrection.required = decision === "correct";
+    elements.workflowCorrectionLabel.hidden = decision !== "correct";
+}
+
+// Always show the original agent output beside any human correction.
+function renderWorkflow(run) {
+    currentWorkflow = run;
+    elements.workflowDate.value = run.evidence.review_scope.review_date;
+    elements.workflowDays.value = run.evidence.review_scope.window_days;
+    const statusLabels = {
+        planning: "Planner running",
+        working: "Worker running",
+        reviewing: "Reviewer running",
+        awaiting_human: "Waiting for your decision",
+        complete: "Human decision recorded",
+        failed: "Review failed",
+    };
+    elements.workflowStatus.textContent = `${statusLabels[run.status] || run.status} · Review ${run.run_id}`;
+    const steps = run.plan.map((step) => `
+        <li>${escapeHtml(step.action)}
+            <p class="assistant-note">Evidence: ${escapeHtml(step.evidence.join(", ") || "No evidence key named")}</p>
+        </li>`).join("");
+    const review = run.review || { risks: [], recommendations: [] };
+    const list = (items, empty) => items.length
+        ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+        : `<p>${escapeHtml(empty)}</p>`;
+    const decisionLabels = {
+        approve: "Approved", correct: "Corrected", partial: "Partially accepted", reject: "Rejected",
+    };
+    const human = run.human_review;
+    const decision = human ? `
+        <div class="workflow-decision-result">
+            <h3>Human decision: ${escapeHtml(decisionLabels[human.decision] || human.decision)}</h3>
+            <p>${escapeHtml(human.reviewer)} · ${escapeHtml(human.decided_at)}</p>
+            ${human.note ? `<p class="workflow-text">${escapeHtml(human.note)}</p>` : ""}
+            ${human.corrected ? `<h4>Human correction</h4><p class="workflow-text">${escapeHtml(human.corrected)}</p>` : ""}
+            <p>No bill records were changed.</p>
+        </div>` : "";
+    const evidence = run.evidence;
+    elements.workflowResult.innerHTML = `
+        <p class="meta-chip">${escapeHtml(run.model)} · ${run.stub ? "Test agents" : "Local agents"}</p>
+        ${run.stub ? '<p class="workflow-warning">Test mode: these are canned outputs, not a real model review. Use real agents for the final demonstration.</p>' : ""}
+        ${run.status === "failed" ? `<p class="workflow-warning">${escapeHtml(run.error?.detail || run.error || "An agent could not finish. Start a new review when the server is available.")}</p>` : ""}
+        <div class="workflow-phases">
+            <article class="workflow-phase"><h3>1. Planner</h3><ol>${steps || "<li>No plan was completed.</li>"}</ol></article>
+            <article class="workflow-phase"><h3>2. Worker</h3><div class="workflow-text">${escapeHtml(run.work || "No draft was completed.")}</div></article>
+            <article class="workflow-phase"><h3>3. Reviewer</h3>
+                <h4>Risks</h4>${list(review.risks, "No risks listed. This is not a guarantee of correctness.")}
+                <h4>Recommendations</h4>${list(review.recommendations, "No recommendations listed.")}
+            </article>
+        </div>
+        <p><strong>Evidence snapshot:</strong> ${formatDate(evidence.review_scope.review_date)} ·
+            ${escapeHtml(evidence.cost_summary.active_bill_count)} active bills ·
+            ${formatMoney(evidence.cost_summary.monthly_cost)} monthly ·
+            ${formatMoney(evidence.cost_summary.annual_cost)} annually</p>
+        <details><summary>Bill evidence used for this review</summary><pre>${escapeHtml(JSON.stringify(evidence, null, 2))}</pre></details>
+        ${decision}
+    `;
+    elements.humanReviewForm.hidden = run.status !== "awaiting_human";
+    elements.humanReviewForm.reset();
+    setDecisionFields();
+}
+
+// Reload links saved by this Bills feature only.
+async function loadWorkflows(preferred = currentWorkflow?.run_id) {
+    elements.refreshWorkflows.disabled = true;
+    try {
+        const runs = await apiFetch("/bills/workflows");
+        workflowDisabled = false;
+        elements.runWorkflow.disabled = workflowBusy;
+        elements.workflowHistory.innerHTML = runs.length
+            ? runs.map((run) => `<option value="${escapeHtml(run.run_id)}">${escapeHtml(run.review_date)} · ${escapeHtml(run.run_id.slice(0, 8))}</option>`).join("")
+            : '<option value="">No saved reviews</option>';
+        if (preferred && runs.some((run) => run.run_id === preferred)) {
+            elements.workflowHistory.value = preferred;
+        }
+        elements.workflowHistoryNote.textContent = "The latest 20 reviews are listed. Reopen one to see its original evidence and saved decision.";
+    } catch (error) {
+        elements.workflowHistoryNote.textContent = error.message;
+        if (error.body?.disabled) {
+            workflowDisabled = true;
+            elements.workflowStatus.textContent = error.message;
+            elements.runWorkflow.disabled = true;
+        }
+    } finally {
+        elements.refreshWorkflows.disabled = workflowBusy;
+        elements.openWorkflow.disabled = workflowBusy || !elements.workflowHistory.value;
+    }
+}
+
+async function startWorkflow(event) {
+    event.preventDefault();
+    setWorkflowBusy(true);
+    currentWorkflow = null;
+    elements.workflowResult.textContent = "";
+    elements.humanReviewForm.hidden = true;
+    elements.workflowStatus.textContent = "The Planner, Worker and Reviewer are running. This can take a few minutes.";
+    try {
+        const run = await workflowFetch("/bills/workflows", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                review_date: elements.workflowDate.value,
+                window_days: Number(elements.workflowDays.value),
+            }),
+        });
+        renderWorkflow(run);
+        await loadWorkflows(run.run_id);
+    } catch (error) {
+        elements.workflowStatus.textContent = error.message;
+        if (error.body?.disabled) workflowDisabled = true;
+        if (error.body?.run_id) {
+            await loadWorkflows(error.body.run_id);
+            elements.workflowStatus.textContent += " The failed review is saved; use Open review to inspect it.";
+        }
+    } finally {
+        setWorkflowBusy(false);
+    }
+}
+
+async function openWorkflow() {
+    const runId = elements.workflowHistory.value;
+    if (!runId) return;
+    setWorkflowBusy(true);
+    elements.humanReviewForm.hidden = true;
+    elements.workflowStatus.textContent = "Loading the saved review…";
+    try {
+        renderWorkflow(await workflowFetch(`/bills/workflows/${encodeURIComponent(runId)}`));
+    } catch (error) {
+        currentWorkflow = null;
+        elements.workflowResult.textContent = "";
+        elements.workflowStatus.textContent = error.message;
+    } finally {
+        setWorkflowBusy(false);
+    }
+}
+
+async function saveWorkflowDecision(event) {
+    event.preventDefault();
+    if (!currentWorkflow || currentWorkflow.status !== "awaiting_human") return;
+    const runId = currentWorkflow.run_id;
+    const decision = {
+        decision: elements.workflowDecision.value,
+        note: elements.workflowNote.value.trim(),
+        corrected: elements.workflowDecision.value === "correct"
+            ? elements.workflowCorrection.value.trim() : null,
+    };
+    setWorkflowBusy(true);
+    elements.workflowStatus.textContent = "Saving your decision…";
+    try {
+        const result = await workflowFetch(`/bills/workflows/${encodeURIComponent(runId)}/review`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(decision),
+        });
+        renderWorkflow({
+            ...currentWorkflow, status: result.status,
+            human_review: result.human_review,
+        });
+        showToast("Human decision saved. No bills were changed.");
+    } catch (error) {
+        elements.workflowStatus.textContent = `${error.message} Reopen this review to confirm its state before trying again.`;
+        elements.humanReviewForm.hidden = true;
+    } finally {
+        setWorkflowBusy(false);
+    }
+}
+
 // Connect the page buttons and forms.
+elements.workflowForm.addEventListener("submit", startWorkflow);
+elements.workflowDecision.addEventListener("change", setDecisionFields);
+elements.humanReviewForm.addEventListener("submit", saveWorkflowDecision);
+elements.openWorkflow.addEventListener("click", () => openWorkflow());
+elements.refreshWorkflows.addEventListener("click", () => loadWorkflows());
+elements.workflowHistory.addEventListener("change", () => {
+    elements.openWorkflow.disabled = workflowBusy || !elements.workflowHistory.value;
+});
 elements.runMcp.addEventListener("click", runMcp);
 elements.ragForm.addEventListener("submit", runRag);
 elements.billForm.addEventListener("submit", saveBill);
@@ -430,5 +660,7 @@ elements.billRows.addEventListener("click", (event) => {
 
 // Load the first dashboard view.
 elements.reviewDate.value = new Date().toISOString().slice(0, 10);
+elements.workflowDate.value = elements.reviewDate.value;
 resetForm();
 loadDashboard();
+loadWorkflows();

@@ -31,9 +31,11 @@ env:
   AI_MODE_ENABLED: "false"
   MCP_ENABLED: "false"
   RAG_ENABLED: "false"
+  MULTI_AGENT_ENABLED: "false"
   OLLAMA_BASE_URL: http://127.0.0.1:1
   MCP_SERVER_URL: http://127.0.0.1:1/mcp
   RAG_SERVER_URL: http://127.0.0.1:1
+  MULTI_AGENT_URL: http://127.0.0.1:1
 
 jobs:
   backend-tests:
