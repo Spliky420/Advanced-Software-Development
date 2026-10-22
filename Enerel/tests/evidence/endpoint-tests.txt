@@ -1,0 +1,39 @@
+Endpoint tests -- Enerel/ (Research Library)
+Local run of the backend steps in .github/workflows/enerel-ci.yml, same environment as CI:
+  OLLAMA_BASE_URL=http://127.0.0.1:1  MCP_ENABLED=false  RAG_ENABLED=false  MULTI_AGENT_ENABLED=false  MULTI_AGENT_URL=http://127.0.0.1:1
+Working tree on enerel-release2-cloud-fixes, based on 98afb6a | 2026-10-22T18:49:56Z | macOS 26.6.2, Python 3.15.0
+Endpoint functions: start_multi_agent_workflow  POST /api/documents/<id>/multi-agent
+                    review_multi_agent_run      POST /api/multi-agent/runs/<run_id>/review
+Lines starting with '#' are section headers, not tool output.
+
+# Step: Post-commit endpoint tests (2 endpoint functions)
+# $ pytest Enerel/tests/test_release2_multi_agent.py -v -k "start_workflow or human_decision or invalid_review or second_review"
+============================= test session starts ==============================
+platform darwin -- Python 3.15.0, pytest-9.1.1, pluggy-1.7.0 -- python
+rootdir: <repo>
+plugins: anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 27 items / 13 deselected / 14 selected
+
+Enerel/tests/test_release2_multi_agent.py::test_start_workflow_sends_python_evidence_and_logs_the_run PASSED [  7%]
+Enerel/tests/test_release2_multi_agent.py::test_start_workflow_unknown_document_is_404_without_a_call PASSED [ 14%]
+Enerel/tests/test_release2_multi_agent.py::test_start_workflow_disabled_is_503_without_a_call PASSED [ 21%]
+Enerel/tests/test_release2_multi_agent.py::test_start_workflow_server_down_is_503 PASSED [ 28%]
+Enerel/tests/test_release2_multi_agent.py::test_start_workflow_timeout_is_504 PASSED [ 35%]
+Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review0] PASSED [ 42%]
+Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review1] PASSED [ 50%]
+Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review2] PASSED [ 57%]
+Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review3] PASSED [ 64%]
+Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review0-decision must be one of] PASSED [ 71%]
+Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review1-corrected is required] PASSED [ 78%]
+Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review2-note is required] PASSED [ 85%]
+Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review3-corrected is only allowed] PASSED [ 92%]
+Enerel/tests/test_release2_multi_agent.py::test_second_review_is_409_from_the_server PASSED [100%]
+
+====================== 14 passed, 13 deselected in 0.18s =======================
+
+# Step: Run pytest (full suite)
+# $ pytest Enerel/tests -q
+........................................................................ [ 37%]
+........................................................................ [ 75%]
+..............................................                           [100%]
+190 passed in 0.67s

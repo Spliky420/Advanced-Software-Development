@@ -578,4 +578,7 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    # Local development server only; the container runs gunicorn, which binds
+    # 0.0.0.0 inside the container (see Dockerfile). Loopback by default so a
+    # dev run is not exposed to the network; set HOST to override.
+    app.run(host=os.environ.get("HOST", "127.0.0.1"), port=int(os.environ.get("PORT", 5000)))
