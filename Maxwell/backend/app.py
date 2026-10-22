@@ -136,6 +136,7 @@ OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL', 'qwen2.5:0.5b')
 DISABLE_AI_MODE = os.environ.get('DISABLE_AI_MODE', 'false').lower() == 'true'
 DISABLE_MCP_PROXY = os.environ.get('DISABLE_MCP_PROXY', 'false').lower() == 'true'
 DISABLE_RAG_PROXY = os.environ.get('DISABLE_RAG_PROXY', 'false').lower() == 'true'
+DISABLE_MULTI_AGENT_PROXY = os.environ.get('DISABLE_MULTI_AGENT_PROXY', 'false').lower() == 'true'
 
 # The MCP and RAG servers are run on the host, not in this project's
 # containers (see docker-compose.yml). A backend running inside Docker reaches
@@ -144,12 +145,16 @@ DISABLE_RAG_PROXY = os.environ.get('DISABLE_RAG_PROXY', 'false').lower() == 'tru
 # (port 5001) -- the /mcp/ prefix is appended at the call site.
 MCP_SERVER_URL = os.environ.get('MCP_SERVER_URL', 'http://host.docker.internal:5001')
 RAG_SERVER_URL = os.environ.get('RAG_SERVER_URL', 'http://host.docker.internal:5003')
+# Multi-Agent Server runs on the host (port 5004), not in compose.
+MULTI_AGENT_SERVER_URL = os.environ.get('MULTI_AGENT_SERVER_URL', 'http://host.docker.internal:5004')
 
 # Upstream timeouts for the MCP/RAG proxies, in seconds. Named to match the
 # env vars the other backends use. RAG gets a longer budget because
 # /api/rag/answer runs model generation rather than a quick lookup.
 MCP_TIMEOUT_SECONDS = float(os.environ.get('MCP_TIMEOUT_SECONDS', '5'))
 RAG_TIMEOUT_SECONDS = float(os.environ.get('RAG_TIMEOUT_SECONDS', '60'))
+# Multi-Agent Server timeout (3 agents in sequence, ~15-40s warm on CPU)
+MULTI_AGENT_TIMEOUT_SECONDS = float(os.environ.get('MULTI_AGENT_TIMEOUT_SECONDS', '190'))
 
 # Database connection helper ensuring directory exists
 def get_db():
@@ -457,6 +462,223 @@ def rag_answer_proxy():
         status=resp.status_code,
         headers=dict(resp.headers)
     )
+    return response
+
+
+# Multi-Agent Server Proxy Endpoints
+@app.route('/api/multi-agent/workflow', methods=['POST'])
+def multi_agent_workflow_proxy():
+    # Check if Multi-Agent proxy is disabled for CI/CD
+    if DISABLE_MULTI_AGENT_PROXY:
+        return jsonify({'error': 'Multi-Agent proxy is disabled in CI/CD environment'}), 503
+
+    # Forward to the Multi-Agent Server
+    multi_agent_url = f"{MULTI_AGENT_SERVER_URL}/workflow"
+
+    # Prepare headers to forward (excluding hop-by-hop headers)
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request to the Multi-Agent Server
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=multi_agent_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=MULTI_AGENT_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Multi-Agent server unreachable at {multi_agent_url}: {e}")
+        return jsonify({'error': f'Multi-Agent server unreachable at {multi_agent_url}'}), 503
+
+    # Create a Flask response with the proxied response's content, status, and headers
+    response = Response(
+        resp.content,
+        status=resp.status_code
+    )
+    # Copy headers from the Multi-Agent server response, excluding hop-by-hop and other headers that should not be proxied
+    skip_headers = {
+        'content-length', 'connection', 'keep-alive', 'public',
+        'proxy-authenticate', 'proxy-authorization', 'te', 'trailers',
+        'transfer-encoding', 'upgrade', 'server', 'date',
+        'access-control-origin', 'access-control-headers', 'access-control-methods'
+    }
+    for key, value in resp.headers.items():
+        if key.lower() not in skip_headers:
+            response.headers[key] = value
+    # Set CORS headers based on the request
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers.set('Access-Control-Allow-Origin', origin)
+        response.headers.set('Vary', 'Origin')
+    else:
+        response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+
+@app.route('/api/multi-agent/workflow/<run_id>', methods=['GET'])
+def multi_agent_workflow_get_proxy(run_id):
+    # Check if Multi-Agent proxy is disabled for CI/CD
+    if DISABLE_MULTI_AGENT_PROXY:
+        return jsonify({'error': 'Multi-Agent proxy is disabled in CI/CD environment'}), 503
+
+    # Forward to the Multi-Agent Server
+    multi_agent_url = f"{MULTI_AGENT_SERVER_URL}/workflow/{run_id}"
+
+    # Prepare headers to forward (excluding hop-by-hop headers)
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request to the Multi-Agent Server
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=multi_agent_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=MULTI_AGENT_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Multi-Agent server unreachable at {multi_agent_url}: {e}")
+        return jsonify({'error': f'Multi-Agent server unreachable at {multi_agent_url}'}), 503
+
+    # Create a Flask response with the proxied response's content, status, and headers
+    response = Response(
+        resp.content,
+        status=resp.status_code
+    )
+    # Copy headers from the Multi-Agent server response, excluding hop-by-hop and other headers that should not be proxied
+    skip_headers = {
+        'content-length', 'connection', 'keep-alive', 'public',
+        'proxy-authenticate', 'proxy-authorization', 'te', 'trailers',
+        'transfer-encoding', 'upgrade', 'server', 'date',
+        'access-control-origin', 'access-control-headers', 'access-control-methods'
+    }
+    for key, value in resp.headers.items():
+        if key.lower() not in skip_headers:
+            response.headers[key] = value
+    # Set CORS headers based on the request
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers.set('Access-Control-Allow-Origin', origin)
+        response.headers.set('Vary', 'Origin')
+    else:
+        response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+
+@app.route('/api/multi-agent/workflow/<run_id>/review', methods=['POST'])
+def multi_agent_workflow_review_proxy(run_id):
+    # Check if Multi-Agent proxy is disabled for CI/CD
+    if DISABLE_MULTI_AGENT_PROXY:
+        return jsonify({'error': 'Multi-Agent proxy is disabled in CI/CD environment'}), 503
+
+    # Forward to the Multi-Agent Server
+    multi_agent_url = f"{MULTI_AGENT_SERVER_URL}/workflow/{run_id}/review"
+
+    # Prepare headers to forward (excluding hop-by-hop headers)
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request to the Multi-Agent Server
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=multi_agent_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=MULTI_AGENT_TIMEOUT_SECONDS)
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Multi-Agent server unreachable at {multi_agent_url}: {e}")
+        return jsonify({'error': f'Multi-Agent server unreachable at {multi_agent_url}'}), 503
+
+    # Create a Flask response with the proxied response's content, status, and headers
+    response = Response(
+        resp.content,
+        status=resp.status_code
+    )
+    # Copy headers from the Multi-Agent server response, excluding hop-by-hop and other headers that should not be proxied
+    skip_headers = {
+        'content-length', 'connection', 'keep-alive', 'public',
+        'proxy-authenticate', 'proxy-authorization', 'te', 'trailers',
+        'transfer-encoding', 'upgrade', 'server', 'date',
+        'access-control-origin', 'access-control-headers', 'access-control-methods'
+    }
+    for key, value in resp.headers.items():
+        if key.lower() not in skip_headers:
+            response.headers[key] = value
+    # Set CORS headers based on the request
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers.set('Access-Control-Allow-Origin', origin)
+        response.headers.set('Vary', 'Origin')
+    else:
+        response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+
+@app.route('/api/multi-agent/health', methods=['GET'])
+def multi_agent_health_proxy():
+    # Check if Multi-Agent proxy is disabled for CI/CD
+    if DISABLE_MULTI_AGENT_PROXY:
+        return jsonify({'error': 'Multi-Agent proxy is disabled in CI/CD environment'}), 503
+
+    # Forward to the Multi-Agent Server
+    multi_agent_url = f"{MULTI_AGENT_SERVER_URL}/health"
+
+    # Prepare headers to forward (excluding hop-by-hop headers)
+    headers = {key: value for (key, value) in request.headers if key.lower() not in
+               ['host', 'content-length']}
+
+    # Make the request to the Multi-Agent Server
+    try:
+        resp = requests.request(
+            method=request.method,
+            url=multi_agent_url,
+            headers=headers,
+            data=request.get_data(),
+            cookies=request.cookies,
+            allow_redirects=False,
+            timeout=10)  # Short timeout for health check
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Multi-Agent server unreachable at {multi_agent_url}: {e}")
+        return jsonify({'error': f'Multi-Agent server unreachable at {multi_agent_url}'}), 503
+
+    # Create a Flask response with the proxied response's content, status, and headers
+    response = Response(
+        resp.content,
+        status=resp.status_code
+    )
+    # Copy headers from the Multi-Agent server response, excluding hop-by-hop and other headers that should not be proxied
+    skip_headers = {
+        'content-length', 'connection', 'keep-alive', 'public',
+        'proxy-authenticate', 'proxy-authorization', 'te', 'trailers',
+        'transfer-encoding', 'upgrade', 'server', 'date',
+        'access-control-origin', 'access-control-headers', 'access-control-methods'
+    }
+    for key, value in resp.headers.items():
+        if key.lower() not in skip_headers:
+            response.headers[key] = value
+    # Set CORS headers based on the request
+    origin = request.headers.get('Origin')
+    if origin:
+        response.headers.set('Access-Control-Allow-Origin', origin)
+        response.headers.set('Vary', 'Origin')
+    else:
+        response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
 

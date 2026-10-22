@@ -151,6 +151,9 @@ services:
       # through host.docker.internal.
       - MCP_SERVER_URL=${MCP_HARNESS_URL:-http://host.docker.internal:5001}
       - RAG_SERVER_URL=${RAG_SERVER_URL:-http://host.docker.internal:5003}
+      # Multi-Agent Server runs on the host (port 5004), not in compose.
+      - MULTI_AGENT_SERVER_URL=${MULTI_AGENT_SERVER_URL:-http://host.docker.internal:5004}
+      - MULTI_AGENT_TIMEOUT_SECONDS=${MULTI_AGENT_TIMEOUT_SECONDS:-190}
     extra_hosts:
       # Resolves automatically on Docker Desktop; needed on Linux engines.
       - "host.docker.internal:host-gateway"

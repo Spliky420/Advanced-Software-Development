@@ -1,0 +1,26 @@
+Review the Cloud Deployment implementation for the student's backend.
+
+TASK:
+{{TASK}}
+
+EVIDENCE:
+{{EVIDENCE}}
+
+STUDENT BACKEND FILES:
+{{CONTEXT}}
+
+Please evaluate:
+1. Is there a cloud deployment configuration for Azure or AWS (Terraform, Bicep, CloudFormation, or ARM templates)?
+2. Are all microservices (frontend, backend, database) configured for cloud deployment?
+3. Are AI services disabled by default in cloud (DISABLE_AI_MODE=true, DISABLE_MCP_PROXY=true, DISABLE_RAG_PROXY=true, DISABLE_MULTI_AGENT_PROXY=true)?
+4. Is there a CI/CD pipeline for cloud deployment (GitHub Actions with Azure/AWS deployment steps)?
+5. Are environment variables properly managed for cloud vs local (separate .env files or Azure App Configuration / AWS Parameter Store)?
+6. Is the database migrated to a cloud managed service (Azure SQL, AWS RDS, Cosmos DB, DynamoDB)?
+7. Are containers pushed to a cloud container registry (ACR, ECR)?
+8. Is networking configured correctly (VNet/VPC, subnets, load balancers, ingress controllers)?
+9. Are secrets managed securely (Azure Key Vault, AWS Secrets Manager, not in code)?
+10. Is HTTPS/TLS configured for all endpoints?
+11. Is there monitoring and logging (Azure Monitor, CloudWatch, Application Insights)?
+12. Bonus: Are selected AI services enabled in cloud with proper security controls (private endpoints, managed identities, network restrictions)?
+
+Provide a detailed assessment with specific references to deployment files, CI/CD configuration, and infrastructure code.

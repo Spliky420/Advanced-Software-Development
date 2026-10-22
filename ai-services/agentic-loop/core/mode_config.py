@@ -78,4 +78,34 @@ def build_mode_config() -> dict[str, ModeConfig]:
             implementation_prompts=("implementation/rag_task_prompt.txt",),
             review_prompts=("review/integration_review_prompt.txt",),
         ),
+        "multi_agent": ModeConfig(
+            key="multi_agent",
+            label="Multi-Agent Workflow",
+            prompt_family="lab9",
+            implementation_prompts=(
+                "implementation/multi_agent_system_prompt.txt",
+                "implementation/multi_agent_task_prompt.txt",
+            ),
+            review_prompts=("review/multi_agent_review_prompt.txt",),
+        ),
+        "testing_report": ModeConfig(
+            key="testing_report",
+            label="Testing Report",
+            prompt_family="lab10",
+            implementation_prompts=(
+                "implementation/testing_report_system_prompt.txt",
+                "implementation/testing_report_task_prompt.txt",
+            ),
+            review_prompts=("review/testing_report_review_prompt.txt",),
+        ),
+        "cloud_deployment": ModeConfig(
+            key="cloud_deployment",
+            label="Cloud Deployment Report",
+            prompt_family="lab11",
+            implementation_prompts=(
+                "implementation/cloud_deployment_system_prompt.txt",
+                "implementation/cloud_deployment_task_prompt.txt",
+            ),
+            review_prompts=("review/cloud_deployment_review_prompt.txt",),
+        ),
     }

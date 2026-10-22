@@ -56,6 +56,50 @@
                     </div>
                 </div>
 
+                <div class="tool-section">
+                    <h3>Multi-Agent Server</h3>
+                    <div class="tool-item">
+                        <label for="ma-task-input">Task Description:</label>
+                        <textarea id="ma-task-input" placeholder="Describe the task for the Multi-Agent workflow (e.g., 'Analyze the glossary terms for accuracy and completeness')"></textarea>
+                    </div>
+                    <div class="tool-item">
+                        <label for="ma-evidence-input">Evidence (JSON):</label>
+                        <textarea id="ma-evidence-input" placeholder='{"key1": "value1", "key2": "value2"}'></textarea>
+                    </div>
+                    <div class="tool-item">
+                        <button id="ma-workflow-btn" class="edit-btn tool-btn">Start Workflow</button>
+                        <button id="ma-status-btn" class="edit-btn tool-btn" disabled>Check Status</button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Human Review</h3>
+                    <div class="tool-item">
+                        <label for="ma-run-id-input">Run ID:</label>
+                        <input type="text" id="ma-run-id-input" placeholder="Enter workflow run ID">
+                    </div>
+                    <div class="tool-item">
+                        <label for="ma-decision-select">Decision:</label>
+                        <select id="ma-decision-select">
+                            <option value="approve">Approve</option>
+                            <option value="correct">Correct</option>
+                            <option value="partial">Partial</option>
+                            <option value="reject">Reject</option>
+                        </select>
+                    </div>
+                    <div class="tool-item">
+                        <label for="ma-note-input">Note:</label>
+                        <input type="text" id="ma-note-input" placeholder="Required for 'partial' decision">
+                    </div>
+                    <div class="tool-item">
+                        <label for="ma-corrected-input">Corrected Text:</label>
+                        <textarea id="ma-corrected-input" placeholder="Required for 'correct' decision"></textarea>
+                    </div>
+                    <div class="tool-item">
+                        <button id="ma-review-btn" class="edit-btn tool-btn">Submit Review</button>
+                    </div>
+                </div>
+
                 <div id="mcp-rag-results">
                     <!-- Results will be displayed here -->
                 </div>
@@ -289,6 +333,158 @@
                 console.error('Error calling RAG answer:', error);
                 resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
             }
+        });
+
+        // Multi-Agent Server Event Listeners
+        let currentRunId = null;
+
+        document.getElementById('ma-workflow-btn').addEventListener('click', async () => {
+            const task = document.getElementById('ma-task-input').value.trim();
+            const evidenceText = document.getElementById('ma-evidence-input').value.trim();
+            if (!task) {
+                alert('Please enter a task description');
+                return;
+            }
+            let evidence = {};
+            try {
+                evidence = JSON.parse(evidenceText || '{}');
+            } catch (e) {
+                alert('Invalid JSON in evidence field');
+                return;
+            }
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Starting Multi-Agent workflow...</p>`;
+            try {
+                const response = await fetch('http://localhost:8021/api/multi-agent/workflow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ task: task, evidence: evidence, caller: 'maxwell' })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentRunId = data.run_id;
+                    document.getElementById('ma-run-id-input').value = data.run_id;
+                    document.getElementById('ma-status-btn').disabled = false;
+                    document.getElementById('ma-review-btn').disabled = false;
+                    resultsDiv.innerHTML = `
+                        <h3>Workflow Started (Run ID: ${data.run_id})</h3>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <h4>Plan:</h4><pre>${JSON.stringify(data.plan, null, 2)}</pre>
+                        <h4>Work:</h4><pre>${data.work}</pre>
+                        <h4>Review:</h4><pre>${JSON.stringify(data.review, null, 2)}</pre>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<p>Error: ${data.detail || JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                console.error('Error starting workflow:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        document.getElementById('ma-status-btn').addEventListener('click', async () => {
+            const runId = currentRunId || document.getElementById('ma-run-id-input').value.trim();
+            if (!runId) {
+                alert('Please enter a Run ID or start a workflow first');
+                return;
+            }
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Checking workflow status...</p>`;
+            try {
+                const response = await fetch(`http://localhost:8021/api/multi-agent/workflow/${runId}`);
+                const data = await response.json();
+                if (response.ok) {
+                    let html = `
+                        <h3>Workflow Status (Run ID: ${runId})</h3>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                    `;
+                    if (data.plan && data.plan.length > 0) {
+                        html += `<h4>Plan:</h4><pre>${JSON.stringify(data.plan, null, 2)}</pre>`;
+                    }
+                    if (data.work) {
+                        html += `<h4>Work:</h4><pre>${data.work}</pre>`;
+                    }
+                    if (data.review) {
+                        html += `<h4>Review:</h4><pre>${JSON.stringify(data.review, null, 2)}</pre>`;
+                    }
+                    if (data.human_review) {
+                        html += `<h4>Human Review:</h4><pre>${JSON.stringify(data.human_review, null, 2)}</pre>`;
+                    }
+                    if (data.error) {
+                        html += `<h4>Error:</h4><pre>${JSON.stringify(data.error, null, 2)}</pre>`;
+                    }
+                    resultsDiv.innerHTML = html;
+
+                    // Enable review button if awaiting human
+                    document.getElementById('ma-review-btn').disabled = data.status !== 'awaiting_human';
+                } else {
+                    resultsDiv.innerHTML = `<p>Error: ${data.detail || JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                console.error('Error checking status:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        document.getElementById('ma-review-btn').addEventListener('click', async () => {
+            const runId = currentRunId || document.getElementById('ma-run-id-input').value.trim();
+            if (!runId) {
+                alert('Please enter a Run ID');
+                return;
+            }
+            const decision = document.getElementById('ma-decision-select').value;
+            const note = document.getElementById('ma-note-input').value.trim();
+            const corrected = document.getElementById('ma-corrected-input').value.trim();
+
+            // Validate
+            if (decision === 'partial' && !note) {
+                alert('Note is required for partial decision');
+                return;
+            }
+            if (decision === 'correct' && !corrected) {
+                alert('Corrected text is required for correct decision');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('mcp-rag-results');
+            resultsDiv.innerHTML = `<p>Submitting review...</p>`;
+            try {
+                const body = { decision: decision };
+                if (note) body.note = note;
+                if (decision === 'correct') body.corrected = corrected;
+
+                const response = await fetch(`http://localhost:8021/api/multi-agent/workflow/${runId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <h3>Review Submitted</h3>
+                        <p><strong>Run ID:</strong> ${data.run_id}</p>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Decision:</strong> ${data.decision}</p>
+                        <p><strong>Decided At:</strong> ${data.decided_at}</p>
+                    `;
+                    document.getElementById('ma-review-btn').disabled = true;
+                } else {
+                    resultsDiv.innerHTML = `<p>Error: ${data.detail || JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                resultsDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+
+        document.getElementById('ma-decision-select').addEventListener('change', (e) => {
+            const decision = e.target.value;
+            document.getElementById('ma-note-input').style.display = decision === 'partial' ? 'block' : 'none';
+            document.getElementById('ma-corrected-input').style.display = decision === 'correct' ? 'block' : 'none';
         });
 
         // MCP & RAG side drawer. The tab reveals the tools; the scrim, the

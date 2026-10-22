@@ -1,0 +1,22 @@
+Review the Cloud Deployment implementation assessment against the evidence.
+
+TASK:
+{{TASK}}
+
+EVIDENCE:
+{{EVIDENCE}}
+
+IMPLEMENTATION ASSESSMENT:
+{{IMPLEMENTATION}}
+
+Please provide a cross-check review focusing on:
+
+1. Are there any numbers or calculations in the implementation assessment that do not appear in the evidence? (Figure check)
+2. Does the implementation assessment claim the cloud deployment does something that the evidence does not support?
+3. Are there any missing aspects of the cloud deployment that should have been checked?
+4. Does the assessment properly verify AI services are disabled by default in cloud?
+5. Are the security controls adequate (secrets management, networking, HTTPS)?
+6. Is the infrastructure-as-code complete and valid?
+7. Bonus: If AI services are enabled in cloud, are the security controls properly implemented?
+
+Provide your review as JSON with "risks" and "recommendations" arrays.

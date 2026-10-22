@@ -286,13 +286,31 @@ body.drawer-open {
   font-size: var(--font-size-base);
 }
 #mcp-term-input,
-#rag-query-input {
+#rag-query-input,
+#ma-task-input,
+#ma-evidence-input,
+#ma-run-id-input,
+#ma-note-input,
+#ma-corrected-input,
+#ma-decision-select {
   width: 100%;
   padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-base);
   box-sizing: border-box;
+  font-family: inherit;
+}
+
+#ma-task-input,
+#ma-evidence-input,
+#ma-corrected-input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+#ma-decision-select {
+  background-color: var(--color-surface);
 }
 #add-term-form button {
   padding: var(--spacing-sm) var(--spacing-md);

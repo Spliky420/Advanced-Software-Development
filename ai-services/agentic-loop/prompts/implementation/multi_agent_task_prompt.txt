@@ -1,0 +1,22 @@
+Review the Multi-Agent Workflow implementation for the student's backend.
+
+TASK:
+{{TASK}}
+
+EVIDENCE:
+{{EVIDENCE}}
+
+STUDENT BACKEND FILES:
+{{CONTEXT}}
+
+Please evaluate:
+1. Does the backend correctly implement proxy endpoints for the Multi-Agent Server (POST /workflow, GET /workflow/<id>, POST /workflow/<id>/review, GET /health)?
+2. Does the backend assemble evidence correctly (Python-computed figures, not model-generated)?
+3. Does the backend handle the human review gate properly (decision types: approve/correct/partial/reject)?
+4. Is error handling implemented for agent unavailability (503 with proper error codes)?
+5. Does the backend integrate properly with existing AI-Mode, MCP, and RAG services?
+6. Are environment variables used for configuration (MULTI_AGENT_SERVER_URL, MULTI_AGENT_TIMEOUT_SECONDS, DISABLE_MULTI_AGENT_PROXY)?
+7. Is the Multi-Agent Server reachable via host.docker.internal:5004 from containers?
+8. Are timeouts configured appropriately for the 3-agent sequential execution (190s read timeout)?
+
+Provide a detailed assessment with specific code references.
