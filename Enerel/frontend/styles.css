@@ -442,3 +442,212 @@ dialog#doc-modal::backdrop {
 }
 
 #detail-body-text { cursor: text; }
+
+.file-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-alt);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.file-btn:hover { border-color: var(--accent); color: var(--accent); }
+.file-icon { font-size: 1.3rem; line-height: 1; }
+.file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+
+dialog#doc-view-modal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  width: min(760px, 92vw);
+  max-height: 85vh;
+  padding: 1.25rem;
+  display: none;
+  flex-direction: column;
+}
+
+dialog#doc-view-modal[open] { display: flex; }
+dialog#doc-view-modal::backdrop { background: rgba(0, 0, 0, 0.55); }
+
+.doc-view-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.doc-view-header h2 { margin: 0; font-size: 1.15rem; }
+#doc-view-modal p.muted { margin: 0.25rem 0 0.75rem; }
+
+dialog#doc-view-modal #detail-body-text {
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 0.25rem;
+}
+
+/* ------------------------------------------------------------------------
+   Release 2 -- Multi-Agent Review: agent progress, numbered stages, human
+   review. Same structure as Joshua's Multi-Agent Review page.
+   ------------------------------------------------------------------------ */
+
+#multi-agent-btn { margin-bottom: 0.5rem; }
+
+.agent-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0.5rem 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.agent-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-alt);
+  font-size: 0.82rem;
+}
+
+.agent-step-mark { font-size: 0.9rem; line-height: 1; }
+.agent-step-state { color: var(--muted); font-size: 0.75rem; }
+
+.agent-step-running { border-color: var(--accent); }
+.agent-step-running .agent-step-mark,
+.agent-step-running .agent-step-state { color: var(--accent); }
+.agent-step-running .agent-step-mark { display: inline-block; animation: agent-spin 1s linear infinite; }
+.agent-step-done { border-color: #a5d6a7; background: #e8f5e9; }
+.agent-step-done .agent-step-mark { color: #1b5e20; }
+.agent-step-failed { border-color: #ef9a9a; background: #ffebee; }
+.agent-step-failed .agent-step-mark,
+.agent-step-failed .agent-step-state { color: var(--danger); }
+.agent-step-skipped, .agent-step-unknown { opacity: 0.6; }
+
+@keyframes agent-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-step-running .agent-step-mark { animation: none; }
+}
+
+.run-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 1rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+}
+
+.run-facts dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.run-facts dd { margin: 0; overflow-wrap: anywhere; }
+
+.stage {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--stage-colour, var(--accent));
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+  background: var(--panel);
+}
+
+.stage:nth-of-type(1) { --stage-colour: #1976d2; }
+.stage:nth-of-type(2) { --stage-colour: #7b1fa2; }
+.stage:nth-of-type(3) { --stage-colour: #ef6c00; }
+.stage:nth-of-type(4) { --stage-colour: #2e7d32; }
+
+.stage-header { display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.4rem; }
+
+.stage-step {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--stage-colour, var(--accent));
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.stage-title { margin: 0; font-size: 0.92rem; color: var(--text); text-transform: none; letter-spacing: 0; }
+.stage-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stage-tagline { margin: 0.1rem 0 0; color: var(--muted); font-size: 0.78rem; }
+.stage-body { font-size: 0.88rem; }
+
+.stage-subheading {
+  margin: 0.5rem 0 0.2rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.worker-output { max-height: 18rem; overflow-y: auto; }
+
+.banner p { margin: 0.25rem 0 0; }
+.banner.warning { border-color: #ffe082; background: #fff8e1; color: #8a5a00; }
+.banner.success { border-color: #a5d6a7; background: #e8f5e9; color: #1b5e20; }
+.banner.success.decision-correct,
+.banner.success.decision-partial { border-color: #ffe082; background: #fff8e1; color: #8a5a00; }
+.banner.success.decision-reject { border-color: #ffab91; background: #fbe9e7; color: #b23c17; }
+
+.human-review-form { display: flex; flex-direction: column; gap: 0.6rem; }
+.human-review-form fieldset { border: 0; margin: 0; padding: 0; }
+.human-review-form legend,
+.human-review-form label[for] { font-size: 0.82rem; font-weight: 600; margin-bottom: 0.25rem; display: block; }
+
+.decision-option {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.3rem 0;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.human-review-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.field-invalid textarea { border-color: var(--danger); }
+.field-error { margin: 0.2rem 0 0; color: var(--danger); font-size: 0.8rem; }
+.human-review-form .btn { align-self: flex-start; }
+
+.brief-card {
+  border: 1px solid #a5d6a7;
+  border-left: 4px solid #2e7d32;
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.75rem;
+  background: var(--panel);
+  font-size: 0.9rem;
+}
+
+.brief-card .key-points { margin-top: 0.25rem; }
+.brief-card p.muted { margin: 0.4rem 0 0; }
+.brief-empty { margin: 0 0 0.6rem; }
+.brief-full { margin-top: 0.4rem; font-size: 0.85rem; }
+.brief-full summary { cursor: pointer; color: var(--accent); }
+.brief-full .summary-text { margin-top: 0.3rem; max-height: 14rem; overflow-y: auto; }
