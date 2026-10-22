@@ -307,6 +307,31 @@ progress calculation including zero contributions / overdue / already achieved,
 the budget summary maths, and the AI response parser against both valid and
 malformed JSON.
 
+### Post-commit endpoint tests
+
+`LeHoaLong/endpoint_tests/` tests exactly two endpoints against a backend
+that is really serving: `GET /api/goals/<id>/progress` and
+`GET /api/budget/summary`. Every request goes through one helper that
+refuses any other path.
+
+Both answers depend on today's date, so nothing is hardcoded. Each test
+reads the `as_at` date the response used and recomputes every figure from a
+read-only copy of the database with plain SQL and the documented formula,
+a second implementation rather than a call into the backend's own code.
+Planting a sign error in the variance, or an off-by-one in the monthly
+commitment, fails them.
+
+They live outside `tests/` because that suite's `no_network` fixture blocks
+every socket. To run them locally against a running backend:
+
+```bash
+ENDPOINT_BASE_URL=http://127.0.0.1:8061 ENDPOINT_DB_PATH=copy-of-goals.db pytest LeHoaLong/endpoint_tests -v
+```
+
+The report (`endpoint-report.md`, `.json`, `junit.xml`, the backend log) is
+written to `endpoint_tests/report/` (git-ignored). In CI it is uploaded as the
+`endpoint-report-<sha>` artefact and shown on the run's summary page.
+
 ---
 
 ## Security checks
@@ -337,13 +362,15 @@ and the reasoning behind every suppression are in dated reports in
 [`.github/workflows/lehoalong-ci.yml`](../.github/workflows/lehoalong-ci.yml) runs on
 pushes to `main` and any `LeHoaLong-**` branch, and on pull requests to `main`,
 filtered to `LeHoaLong/**` and the workflow file itself — so it never runs on
-another student's work and never reports on it. Three parallel jobs:
+another student's work and never reports on it. Three parallel jobs, then a
+post-commit job once `backend` passes:
 
 | Job        | Steps                                                                           |
 | ---------- | ------------------------------------------------------------------------------- |
 | `backend`  | `ruff check LeHoaLong` → `pip-audit` both requirements files → seed and verify the database → `pytest LeHoaLong/tests` |
 | `frontend` | `npm ci` → `npm run lint` (eslint) → `npm run build` (vite)                      |
 | `images`   | Build all three Dockerfiles, then run the database initialiser in its image      |
+| `post-commit-endpoint-tests` | Run the database and backend **images**, then test two endpoints over real HTTP; uploads a report artefact |
 
 **No Ollama runs in CI and none is needed** — the suite is fully mocked, and
 `OLLAMA_BASE_URL` is pointed at a dead port as a second line of defence.

@@ -49,6 +49,9 @@ select = [
 # stripped under `python -O` -- a check that must hold is an explicit raise.
 "tests/*" = ["E402", "S101"]
 
+# The post-commit endpoint tests are pytest too: bare asserts are the point.
+"endpoint_tests/*" = ["S101"]
+
 # tools/build_corpus.py holds the corpus prose itself, as string literals.
 # A fact wrapped across two source lines is harder to read and easy to break
 # with a stray space or a missing one, and the point of that file is that the
