@@ -1,6 +1,8 @@
 name: maxwell-ci
 
 on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
   push:
     paths:
       - "Maxwell/**"

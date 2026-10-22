@@ -24,6 +24,8 @@ name: joshua-ci
 
 # Every push, on any branch, that changes joshua/ or this file.
 on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
   push:
     paths:
       - 'joshua/**'
