@@ -55,6 +55,15 @@
     </aside>
   </main>
 
+  <dialog id="doc-view-modal" aria-labelledby="doc-view-title">
+    <header class="doc-view-header">
+      <h2 id="doc-view-title"></h2>
+      <button type="button" id="close-doc-view-btn" class="btn btn-ghost" aria-label="Close">✕</button>
+    </header>
+    <p class="muted">Double-click a word to look it up in the glossary.</p>
+    <div class="body-text" id="detail-body-text"></div>
+  </dialog>
+
   <dialog id="doc-modal">
     <form id="doc-form" method="dialog">
       <h2 id="doc-modal-title">New document</h2>

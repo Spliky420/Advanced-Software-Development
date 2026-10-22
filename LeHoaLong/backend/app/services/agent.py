@@ -71,6 +71,10 @@ from . import goals as goals_service
 # already failed twice buys latency, not reliability.
 MAX_MODEL_ATTEMPTS = 2
 
+# The fallback reason when the model was never asked. Worded like the MCP and
+# RAG "disabled by configuration" messages, so all three read the same way.
+AI_MODE_DISABLED = "AI-Mode is disabled by configuration (AI_MODE_ENABLED=false); no model was called."
+
 # A projection further out than this is not information, it is a rounding
 # artefact of a tiny contribution rate. Report "unknown" instead.
 MAX_PROJECTION_MONTHS = 1200
@@ -295,9 +299,23 @@ def _ask_model(prompt: str, system: str, expected_orders: list[int]) -> dict:
     Returns everything the caller needs to both use and audit the exchange.
     Raises only for Ollama being unreachable -- a bad answer is a normal,
     expected outcome with a defined consequence.
+
+    With AI-Mode switched off the model is not called at all, and the outcome
+    is the same one a model that failed twice produces: the deterministic
+    plan, `fallback: true`, and a reason saying why.
     """
     attempts: list[dict] = []
     last_problem: str | None = None
+
+    if not current_app.config["AI_MODE_ENABLED"]:
+        return {
+            "descriptions": {},
+            "summary": None,
+            "attempts": attempts,
+            "fallback": True,
+            "fallback_reason": AI_MODE_DISABLED,
+            "model_name": None,
+        }
 
     for _ in range(MAX_MODEL_ATTEMPTS):
         raw, model = client.generate(prompt, system=system)
@@ -360,9 +378,13 @@ def _write_exchange_log(
                 phase=phase,
                 model_name=ai_log_model.PYTHON,
                 prompt=(
-                    f"FALLBACK after {len(outcome['attempts'])} unusable response(s) "
-                    f"({outcome['fallback_reason']}). The deterministic even-split plan below "
-                    f"was generated in Python and persisted instead."
+                    (
+                        f"FALLBACK after {len(outcome['attempts'])} unusable response(s) "
+                        f"({outcome['fallback_reason']})."
+                        if outcome["attempts"]
+                        else f"FALLBACK: {outcome['fallback_reason']}"
+                    )
+                    + " The deterministic even-split plan below was generated in Python and persisted instead."
                 ),
                 response=json.dumps({"steps": schedule, "note": "fallback"}),
                 created_at=timestamp,
@@ -376,10 +398,10 @@ def _write_exchange_log(
 # ---------------------------------------------------------------------------
 
 
-def _prepare(
+def prepare(
     conn: sqlite3.Connection, goal_id: int, as_at: date | None, *, use_mcp: bool = True
 ) -> dict:
-    """The shared groundwork for both plan and replan.
+    """The shared groundwork for plan, replan and the multi-agent plan review.
 
     Both need the same things: the goal with its funding figures, a schedule
     covering what is left, and how much of the monthly budget is actually
@@ -432,7 +454,7 @@ def _prepare(
     }
 
 
-def _persist(conn: sqlite3.Connection, goal_id: int, merged: list[dict]) -> None:
+def persist_schedule(conn: sqlite3.Connection, goal_id: int, merged: list[dict]) -> None:
     """Replace the pending steps with the newly described schedule.
 
     Completed and skipped steps are untouched: they are history, and a
@@ -454,7 +476,7 @@ def _persist(conn: sqlite3.Connection, goal_id: int, merged: list[dict]) -> None
         )
 
 
-def _affordability(monthly_amount: float, available: float | None) -> dict:
+def affordability(monthly_amount: float, available: float | None) -> dict:
     """Does the plan fit inside what is actually available? Python decides.
 
     `shortfall` is signed only in the sense that it is reported when positive:
@@ -472,7 +494,7 @@ def _affordability(monthly_amount: float, available: float | None) -> dict:
     }
 
 
-def _mcp_block(context: dict) -> dict:
+def mcp_block(context: dict) -> dict:
     """The `mcp` summary carried in a plan or replan response.
 
     A summary, not the whole context: tool names and the outcome, with the
@@ -498,7 +520,7 @@ def plan_goal(
     conn: sqlite3.Connection, goal_id: int, *, as_at: date | None = None, use_mcp: bool = True
 ) -> dict:
     """PLAN: generate and persist an ordered schedule of savings steps."""
-    prepared = _prepare(conn, goal_id, as_at, use_mcp=use_mcp)
+    prepared = prepare(conn, goal_id, as_at, use_mcp=use_mcp)
     goal, schedule, budget = prepared["goal"], prepared["schedule"], prepared["budget"]
     context, available = prepared["context"], prepared["available"]
 
@@ -512,7 +534,7 @@ def plan_goal(
     outcome = _ask_model(prompt, prompts.PLAN_SYSTEM_PROMPT, [item["step_order"] for item in schedule])
     merged = parsing.merge_descriptions(schedule, outcome["descriptions"], default_description)
 
-    _persist(conn, goal_id, merged)
+    persist_schedule(conn, goal_id, merged)
     log_ids = _write_exchange_log(conn, goal_id, "plan", outcome, schedule)
     conn.commit()
 
@@ -529,8 +551,8 @@ def plan_goal(
             "monthly_amount": merged[0]["step_amount"],
             "first_due_date": merged[0]["due_date"],
             "final_due_date": merged[-1]["due_date"],
-            **_affordability(merged[0]["step_amount"], available),
-            "mcp": _mcp_block(context),
+            **affordability(merged[0]["step_amount"], available),
+            "mcp": mcp_block(context),
             "model_name": outcome["model_name"],
             "llm_called": bool(outcome["attempts"]),
             "fallback": outcome["fallback"],
@@ -553,7 +575,7 @@ def replan_goal(
     every figure in it was calculated here.
     """
     observation = observe(conn, goal_id, as_at=as_at, log=True)
-    prepared = _prepare(conn, goal_id, as_at, use_mcp=use_mcp)
+    prepared = prepare(conn, goal_id, as_at, use_mcp=use_mcp)
     goal, schedule, budget = prepared["goal"], prepared["schedule"], prepared["budget"]
     context, available = prepared["context"], prepared["available"]
 
@@ -578,7 +600,7 @@ def replan_goal(
         None,
     )
 
-    _persist(conn, goal_id, merged)
+    persist_schedule(conn, goal_id, merged)
     log_ids = _write_exchange_log(conn, goal_id, "adapt", outcome, schedule)
     conn.commit()
 
@@ -600,8 +622,8 @@ def replan_goal(
             "previous_monthly_amount": previous_monthly,
             "revised_monthly_amount": merged[0]["step_amount"],
             "final_due_date": merged[-1]["due_date"],
-            **_affordability(merged[0]["step_amount"], available),
-            "mcp": _mcp_block(context),
+            **affordability(merged[0]["step_amount"], available),
+            "mcp": mcp_block(context),
             "model_name": outcome["model_name"],
             "llm_called": bool(outcome["attempts"]),
             "fallback": outcome["fallback"],

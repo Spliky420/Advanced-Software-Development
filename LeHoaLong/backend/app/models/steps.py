@@ -21,7 +21,7 @@ COLUMNS = (
     "created_at",
 )
 
-_SELECT = f"SELECT {', '.join(COLUMNS)} FROM goal_steps"
+_SELECT = f"SELECT {', '.join(COLUMNS)} FROM goal_steps"  # noqa: S608 -- table and columns are module constants; no input reaches this string
 
 
 def list_for_goal(conn: sqlite3.Connection, goal_id: int) -> list[sqlite3.Row]:
@@ -74,7 +74,8 @@ def update_step(conn: sqlite3.Connection, goal_id: int, step_id: int, changes: d
 
     assignments = ", ".join(f"{field} = ?" for field in fields)
     cursor = conn.execute(
-        f"UPDATE goal_steps SET {assignments} WHERE goal_id = ? AND step_id = ?",
+        # Column names come only from the UPDATABLE whitelist; every value is a bound parameter.
+        f"UPDATE goal_steps SET {assignments} WHERE goal_id = ? AND step_id = ?",  # noqa: S608
         (*fields.values(), goal_id, step_id),
     )
     return cursor.rowcount > 0

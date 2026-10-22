@@ -1070,5 +1070,86 @@ def seed_db():
     connection.close()
 
 
+MULTI_AGENT_URL = os.getenv(
+    "MULTI_AGENT_URL",
+    "http://host.docker.internal:5004"
+)
+
+
+@app.route("/api/transactions/multi-agent", methods=["POST"])
+def start_multi_agent():
+    connection = get_db()
+
+    row = connection.execute("""
+        SELECT
+            COUNT(*) AS transaction_count,
+            COALESCE(SUM(CASE WHEN transaction_type = 'income'
+                THEN amount ELSE 0 END), 0) AS total_income,
+            COALESCE(SUM(CASE WHEN transaction_type = 'expense'
+                THEN amount ELSE 0 END), 0) AS total_expenses,
+            COALESCE(SUM(CASE WHEN transaction_type = 'expense'
+                AND deduction_status = 'potentially_deductible'
+                THEN amount ELSE 0 END), 0) AS potential_deductions
+        FROM transactions
+    """).fetchone()
+
+    connection.close()
+
+    evidence = {
+        "transaction_count": row["transaction_count"],
+        "total_income": round(row["total_income"], 2),
+        "total_expenses": round(row["total_expenses"], 2),
+        "potential_deductions": round(row["potential_deductions"], 2)
+    }
+
+    try:
+        response = requests.post(
+    f"{MULTI_AGENT_URL}/workflow",
+    json={
+        "task": (
+            "Review the Transactions Ledger financial summary. "
+            "Explain the supplied figures, identify possible risks, "
+            "and recommend actions. Do not calculate new figures."
+        ),
+        "evidence": evidence,
+        "caller": "Thomas",
+        "async": True
+    },
+    timeout=(5, 10)
+)
+
+        return jsonify(response.json()), response.status_code
+
+    except requests.RequestException:
+        return jsonify({"error": "Multi-Agent Server unavailable"}), 502
+
+
+@app.route("/api/transactions/multi-agent/<run_id>", methods=["GET"])
+def get_multi_agent(run_id):
+    try:
+        response = requests.get(
+            f"{MULTI_AGENT_URL}/workflow/{run_id}",
+            timeout=15
+        )
+        return jsonify(response.json()), response.status_code
+
+    except requests.RequestException:
+        return jsonify({"error": "Multi-Agent Server unavailable"}), 502
+
+
+@app.route("/api/transactions/multi-agent/<run_id>/review", methods=["POST"])
+def review_multi_agent(run_id):
+    try:
+        response = requests.post(
+            f"{MULTI_AGENT_URL}/workflow/{run_id}/review",
+            json=request.get_json(silent=True) or {},
+            timeout=15
+        )
+        return jsonify(response.json()), response.status_code
+
+    except requests.RequestException:
+        return jsonify({"error": "Multi-Agent Server unavailable"}), 502
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)

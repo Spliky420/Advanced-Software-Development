@@ -31,6 +31,8 @@ def create_app(overrides: dict | None = None) -> Flask:
 
 def _register_blueprints(app: Flask) -> None:
     from .routes.agent import bp as agent_bp
+    from .routes.agents import bp as agents_bp
+    from .routes.agents import goal_bp as agents_goal_bp
     from .routes.budget import bp as budget_bp
     from .routes.contributions import bp as contributions_bp
     from .routes.goals import bp as goals_bp
@@ -51,6 +53,8 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(mcp_goal_bp)
     app.register_blueprint(rag_bp)
     app.register_blueprint(rag_goal_bp)
+    app.register_blueprint(agents_bp)
+    app.register_blueprint(agents_goal_bp)
 
 
 def _register_cors(app: Flask) -> None:

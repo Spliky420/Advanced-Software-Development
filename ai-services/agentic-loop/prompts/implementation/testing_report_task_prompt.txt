@@ -1,0 +1,24 @@
+Review the Testing Report implementation for the student's backend.
+
+TASK:
+{{TASK}}
+
+EVIDENCE:
+{{EVIDENCE}}
+
+STUDENT BACKEND FILES:
+{{CONTEXT}}
+
+Please evaluate:
+1. Does the test suite cover all backend endpoints (glossary CRUD, AI generation, MCP/RAG/Multi-Agent proxies)?
+2. Are unit tests properly isolated (mocking Ollama, no network calls)?
+3. Does the CI/CD pipeline (GitHub Actions) have proper stages: build, test, validate, lint?
+4. Are AI services disabled in CI (DISABLE_AI_MODE, DISABLE_MCP_PROXY, DISABLE_RAG_PROXY, DISABLE_MULTI_AGENT_PROXY)?
+5. Does the CI validate that MCP and RAG proxies return 503 when disabled?
+6. Does the CI validate that Multi-Agent proxy returns 503 when disabled?
+7. Are Docker images built and services started in CI for integration tests?
+8. Is there proper test coverage reporting?
+9. Are edge cases tested (empty database, invalid terms, error responses)?
+10. Does the test suite run in a clean environment (temporary database)?
+
+Provide a detailed assessment with specific code references to test files and CI configuration.
