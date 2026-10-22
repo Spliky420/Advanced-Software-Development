@@ -19,11 +19,6 @@ on:
   push:
     branches:
       - main
-      # Lets the cloud-deployment PR branch be tested before merge.
-      # workflow_dispatch alone cannot do this, because GitHub only offers
-      # the manual "Run workflow" button for workflows that exist on main.
-      # Remove once merged.
-      - cloud-deployment
   workflow_dispatch:
 
 # Default for every job; the deploy job adds id-token: write for OIDC.
