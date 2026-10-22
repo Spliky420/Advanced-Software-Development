@@ -286,3 +286,42 @@ def create_ai_log(entry, user_id):
         return dict(row)
     finally:
         conn.close()
+
+
+def find_ai_log(request_type, response_text, user_id):
+    """The newest log row of one type whose response_text matches exactly.
+
+    A multi-agent run is logged with its run_id as response_text, so this is
+    how the backend confirms a run_id is one it started for this user before
+    proxying a poll or a human decision for it.
+    """
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            """
+            SELECT * FROM document_ai_log
+            WHERE user_id = ? AND request_type = ? AND response_text = ?
+            ORDER BY id DESC LIMIT 1
+            """,
+            (user_id, request_type, response_text),
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def list_ai_logs(document_id, request_type, user_id):
+    """One document's log rows of one type, newest first."""
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            """
+            SELECT * FROM document_ai_log
+            WHERE user_id = ? AND document_id = ? AND request_type = ?
+            ORDER BY id DESC
+            """,
+            (user_id, document_id, request_type),
+        ).fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()

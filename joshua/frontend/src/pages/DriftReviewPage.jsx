@@ -56,6 +56,23 @@ const SUMMARY_SOURCES = {
   model: { label: 'Model', note: 'Written by the model; every figure passed the check.' },
   fallback: { label: 'Python fallback', note: 'Model text rejected; summary built in Python.' },
   no_breaches: { label: 'Python', note: 'Nothing breached, so the model was not called.' },
+  ai_disabled: { label: 'Python (AI off)', note: 'AI is switched off; summary built in Python.' },
+  ai_unavailable: {
+    label: 'Python (AI unavailable)',
+    note: 'The model could not answer; summary built in Python.',
+  },
+}
+
+// Why the model did not write the summary, when the switch or Ollama stopped it.
+const AI_SKIPPED = {
+  ai_disabled: {
+    title: 'AI is switched off -- Python summary shown',
+    message: 'AI_MODE_ENABLED is false on the backend, so no AI service was called.',
+  },
+  ai_unavailable: {
+    title: 'AI is unavailable -- Python summary shown',
+    message: 'The model could not produce a response, so the review continued without it.',
+  },
 }
 
 function SummarySourcePill({ source }) {
@@ -441,7 +458,13 @@ export default function DriftReviewPage() {
             <dl className="phase-facts">
               <div>
                 <dt>Model called</dt>
-                <dd>{review.adapt.llm_called ? 'Yes' : 'No -- nothing breached'}</dd>
+                <dd>
+                  {review.adapt.llm_called
+                    ? 'Yes'
+                    : review.adapt.summary_source === 'no_breaches'
+                      ? 'No -- nothing breached'
+                      : 'No -- AI not used'}
+                </dd>
               </div>
               <div>
                 <dt>Model</dt>
@@ -474,6 +497,20 @@ export default function DriftReviewPage() {
                   Python-computed figures only -- no explanation, background or sources.
                 </p>
               </InsufficientContextBanner>
+            )}
+
+            {AI_SKIPPED[review.adapt.summary_source] && (
+              <WarningBanner>
+                <strong className="banner-title">
+                  {AI_SKIPPED[review.adapt.summary_source].title}
+                </strong>
+                <p className="banner-message">{AI_SKIPPED[review.adapt.summary_source].message}</p>
+                <p className="banner-message">
+                  The drift figures above are unaffected: they are computed in Python, and so is
+                  the summary below.
+                </p>
+                {review.adapt.ai_error && <p className="banner-hint">{review.adapt.ai_error}</p>}
+              </WarningBanner>
             )}
 
             {review.adapt.summary_source === 'fallback' && (

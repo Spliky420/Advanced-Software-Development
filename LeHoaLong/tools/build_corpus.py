@@ -324,7 +324,8 @@ def main():
 
     offset = 0
     for sentences in chosen:
-        assert offset % WINDOW == 0, f"block starts mid-chunk at word {offset}"
+        if offset % WINDOW:
+            sys.exit(f"block starts mid-chunk at word {offset}")
         offset += words(sentences)
 
     body = "\n\n\n".join("\n\n".join(sentences) for sentences in chosen) + "\n"

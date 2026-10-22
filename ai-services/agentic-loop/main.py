@@ -54,6 +54,9 @@ def _menu_choice_to_key(choice: str) -> str | None:
         "4": "devops",
         "5": "mcp",
         "6": "rag",
+        "7": "multi_agent",
+        "8": "testing_report",
+        "9": "cloud_deployment",
     }.get(choice)
 
 
@@ -334,7 +337,7 @@ def main():
         mode_key = _menu_choice_to_key(choice)
 
         if not mode_key:
-            print("Invalid choice. Select 0, 1, 2, 3, 4, 5, or 6.")
+            print("Invalid choice. Select 0, 1, 2, 3, 4, 5, 6, 7, 8, or 9.")
             continue
 
         run_single_review(

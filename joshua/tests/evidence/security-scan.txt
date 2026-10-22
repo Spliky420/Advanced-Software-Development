@@ -1,0 +1,1120 @@
+Security scans -- joshua/ (Portfolio Holdings)
+Tools: ruff 0.17.1 | detect-secrets 1.5.0 | pip-audit 2.10.1 | Python 3.11.9, Windows 11
+BEFORE = commit b5b5b62 (before fixes). AFTER = commit 6417e35 (after fixes).
+Raw tool output below; lines starting with '#' are section headers, not tool output.
+
+################################################################
+# BEFORE FIXES
+################################################################
+
+# $ ruff check --select S --no-cache --output-format concise joshua/
+joshua\backend\app.py:443:18: S104 Possible binding to all interfaces
+joshua\backend\drift.py:143:5: S110 `try`-`except`-`pass` detected, consider logging the exception
+joshua\tests\test_ai_mode.py:50:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:56:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:61:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:73:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:74:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:77:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:78:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:83:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:87:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:88:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:91:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:92:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:94:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:95:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:97:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:98:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:104:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:106:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:107:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:108:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:109:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:119:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:121:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:122:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:123:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:141:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:143:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:144:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:147:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:148:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:149:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:152:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:153:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:154:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:159:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:161:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:171:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:174:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:175:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:176:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:177:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:187:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:188:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:189:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:35:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:36:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:37:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:38:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:40:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:41:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:42:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:44:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:45:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:48:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:49:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:50:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:53:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:55:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:56:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:57:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:60:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:67:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:68:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:69:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:70:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:71:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:72:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:78:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:79:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:80:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:81:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:82:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:101:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:102:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:105:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:107:9: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:108:9: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:127:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:128:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:130:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:131:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:132:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:133:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:136:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:137:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:138:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:141:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:142:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:155:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:165:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:168:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:169:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:170:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:47:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:48:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:54:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:61:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:69:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:70:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:83:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:84:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:85:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:86:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:95:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:96:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:97:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:98:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:108:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:109:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:110:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:111:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:121:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:122:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:131:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:132:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:147:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:148:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:149:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:150:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:151:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:152:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:161:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:162:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:163:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:172:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:182:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:184:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:191:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:206:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:207:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:208:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:209:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:220:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:222:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:223:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:224:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:225:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:226:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:238:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:239:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:240:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:254:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:255:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:67:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:69:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:70:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:73:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:76:9: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:79:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:80:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:84:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:85:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:96:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:102:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:103:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:104:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:105:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:109:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:111:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:112:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:115:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:116:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:117:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:118:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:119:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:120:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:121:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:32:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:33:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:34:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:46:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:61:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:62:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:63:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:80:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:95:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:101:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:112:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:113:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:114:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:115:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:145:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:147:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:166:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:167:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:213:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:214:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:215:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:226:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:230:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:231:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:239:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:240:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:241:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:242:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:251:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:266:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:268:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:269:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:270:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:271:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:280:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:292:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:297:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:298:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:303:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:304:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:305:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:307:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:73:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:75:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:76:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:83:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:84:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:85:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:86:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:88:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:101:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:103:9: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:106:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:107:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:114:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:115:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:116:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:123:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:133:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:134:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:142:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:144:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:145:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:155:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:164:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:165:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:189:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:190:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:192:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:193:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:195:9: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:196:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:208:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:210:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:211:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:219:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:220:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:228:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:229:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:235:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:236:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:243:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:244:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:251:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:252:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:259:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:260:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:265:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:269:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:153:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:160:9: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:169:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:172:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:179:9: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:184:9: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:193:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:54:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:64:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:66:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:68:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:74:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:75:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:76:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:77:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:78:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:90:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:92:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:98:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:106:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:112:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:133:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:149:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:162:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:163:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:164:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:178:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:190:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:197:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:198:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:117:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:118:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:134:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:135:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:143:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:144:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:145:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:159:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:171:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:175:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:185:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:191:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:199:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:200:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:206:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:210:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:211:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:223:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:224:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:225:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:232:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:233:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:240:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:274:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:275:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:276:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:277:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:280:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:281:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:282:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:284:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:287:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:296:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:307:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:308:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:309:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:312:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:313:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:321:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:330:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:331:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:332:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:333:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:334:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:335:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:336:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:346:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:348:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:349:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:350:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:351:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:362:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:364:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:365:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:394:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:395:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:396:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:397:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:400:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:401:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:405:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:406:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:407:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:408:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:423:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:424:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:425:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:426:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:427:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:434:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:435:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:448:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:449:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:450:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:451:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:461:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:462:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:463:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:464:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:476:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:16:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:30:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:51:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:52:5: S101 Use of `assert` detected
+Found 408 errors.
+
+# $ detect-secrets scan joshua/
+{
+  "version": "1.5.0",
+  "plugins_used": [
+    {
+      "name": "ArtifactoryDetector"
+    },
+    {
+      "name": "AWSKeyDetector"
+    },
+    {
+      "name": "AzureStorageKeyDetector"
+    },
+    {
+      "name": "Base64HighEntropyString",
+      "limit": 4.5
+    },
+    {
+      "name": "BasicAuthDetector"
+    },
+    {
+      "name": "CloudantDetector"
+    },
+    {
+      "name": "DiscordBotTokenDetector"
+    },
+    {
+      "name": "GitHubTokenDetector"
+    },
+    {
+      "name": "GitLabTokenDetector"
+    },
+    {
+      "name": "HexHighEntropyString",
+      "limit": 3.0
+    },
+    {
+      "name": "IbmCloudIamDetector"
+    },
+    {
+      "name": "IbmCosHmacDetector"
+    },
+    {
+      "name": "IPPublicDetector"
+    },
+    {
+      "name": "JwtTokenDetector"
+    },
+    {
+      "name": "KeywordDetector",
+      "keyword_exclude": ""
+    },
+    {
+      "name": "MailchimpDetector"
+    },
+    {
+      "name": "NpmDetector"
+    },
+    {
+      "name": "OpenAIDetector"
+    },
+    {
+      "name": "PrivateKeyDetector"
+    },
+    {
+      "name": "PypiTokenDetector"
+    },
+    {
+      "name": "SendGridDetector"
+    },
+    {
+      "name": "SlackDetector"
+    },
+    {
+      "name": "SoftlayerDetector"
+    },
+    {
+      "name": "SquareOAuthDetector"
+    },
+    {
+      "name": "StripeDetector"
+    },
+    {
+      "name": "TelegramBotTokenDetector"
+    },
+    {
+      "name": "TwilioKeyDetector"
+    }
+  ],
+  "filters_used": [
+    {
+      "path": "detect_secrets.filters.allowlist.is_line_allowlisted"
+    },
+    {
+      "path": "detect_secrets.filters.common.is_ignored_due_to_verification_policies",
+      "min_level": 2
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_indirect_reference"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_likely_id_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_lock_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_not_alphanumeric_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_potential_uuid"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_sequential_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_swagger_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_templated_secret"
+    }
+  ],
+  "results": {},
+  "generated_at": "2026-10-21T07:26:20Z"
+}
+
+# $ pip-audit -r joshua/backend/requirements.txt -r joshua/tests/requirements.txt
+Found 19 known vulnerabilities in 4 packages
+Name     Version ID              Fix Versions
+-------- ------- --------------- ------------
+flask    3.0.3   PYSEC-2026-2151 3.1.3
+flask    3.0.3   PYSEC-2026-2151 3.1.3
+werkzeug 3.0.3   PYSEC-2026-2045 3.0.6
+werkzeug 3.0.3   PYSEC-2026-1860 3.0.6
+werkzeug 3.0.3   PYSEC-2026-2046 3.1.4
+werkzeug 3.0.3   PYSEC-2026-2044 3.1.5
+werkzeug 3.0.3   PYSEC-2026-2320 3.1.6
+werkzeug 3.0.3   PYSEC-2026-2045 3.0.6
+werkzeug 3.0.3   PYSEC-2026-2046 3.1.4
+werkzeug 3.0.3   PYSEC-2026-2044 3.1.5
+werkzeug 3.0.3   PYSEC-2026-2320 3.1.6
+werkzeug 3.0.3   PYSEC-2026-3417 3.0.6
+werkzeug 3.0.3   PYSEC-2026-4312 3.1.9
+requests 2.32.3  PYSEC-2026-1872 2.32.4
+requests 2.32.3  PYSEC-2026-2275 2.33.0
+requests 2.32.3  PYSEC-2026-1872 2.32.4
+requests 2.32.3  PYSEC-2026-2275 2.33.0
+pytest   8.3.2   PYSEC-2026-1845 9.0.3
+pytest   8.3.2   PYSEC-2026-1845 9.0.3
+
+################################################################
+# AFTER FIXES
+################################################################
+
+# $ ruff check --select S --no-cache --output-format concise joshua/
+joshua\tests\test_ai_mode.py:50:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:56:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:61:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:73:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:74:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:77:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:78:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:83:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:87:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:88:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:91:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:92:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:94:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:95:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:97:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:98:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:104:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:106:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:107:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:108:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:109:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:119:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:121:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:122:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:123:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:141:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:143:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:144:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:147:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:148:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:149:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:152:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:153:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:154:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:159:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:161:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:171:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:174:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:175:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:176:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:177:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:187:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:188:5: S101 Use of `assert` detected
+joshua\tests\test_ai_mode.py:189:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:35:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:36:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:37:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:38:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:40:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:41:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:42:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:44:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:45:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:48:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:49:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:50:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:53:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:55:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:56:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:57:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:60:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:67:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:68:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:69:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:70:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:71:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:72:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:78:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:79:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:80:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:81:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:82:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:101:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:102:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:105:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:107:9: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:108:9: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:127:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:128:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:130:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:131:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:132:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:133:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:136:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:137:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:138:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:141:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:142:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:155:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:165:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:168:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:169:5: S101 Use of `assert` detected
+joshua\tests\test_allocation.py:170:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:47:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:48:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:54:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:61:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:69:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:70:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:83:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:84:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:85:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:86:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:95:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:96:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:97:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:98:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:108:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:109:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:110:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:111:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:121:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:122:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:131:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:132:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:147:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:148:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:149:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:150:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:151:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:152:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:161:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:162:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:163:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:172:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:182:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:184:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:191:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:206:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:207:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:208:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:209:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:220:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:222:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:223:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:224:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:225:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:226:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:238:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:239:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:240:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:254:5: S101 Use of `assert` detected
+joshua\tests\test_drift.py:255:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:67:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:69:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:70:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:73:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:76:9: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:79:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:80:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:84:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:85:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:96:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:102:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:103:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:104:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:105:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:109:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:111:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:112:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:115:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:116:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:117:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:118:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:119:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:120:5: S101 Use of `assert` detected
+joshua\tests\test_endpoints.py:121:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:32:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:33:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:34:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:46:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:61:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:62:5: S101 Use of `assert` detected
+joshua\tests\test_llm.py:63:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:80:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:95:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:101:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:112:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:113:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:114:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:115:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:145:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:147:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:166:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:167:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:213:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:214:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:215:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:226:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:230:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:231:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:239:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:240:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:241:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:242:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:251:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:266:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:268:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:269:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:270:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:271:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:280:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:292:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:297:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:298:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:303:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:304:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:305:5: S101 Use of `assert` detected
+joshua\tests\test_mcp_client.py:307:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:73:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:75:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:76:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:83:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:84:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:85:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:86:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:88:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:100:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:101:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:103:9: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:106:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:107:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:114:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:115:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:116:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:123:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:133:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:134:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:142:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:144:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:145:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:155:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:164:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:165:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:189:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:190:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:192:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:193:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:195:9: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:196:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:208:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:210:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:211:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:219:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:220:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:228:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:229:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:235:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:236:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:243:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:244:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:251:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:252:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:259:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:260:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:265:5: S101 Use of `assert` detected
+joshua\tests\test_multi_agent.py:269:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:153:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:160:9: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:169:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:172:5: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:179:9: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:184:9: S101 Use of `assert` detected
+joshua\tests\test_no_invented_figures.py:193:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:54:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:64:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:66:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:68:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:74:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:75:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:76:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:77:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:78:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:90:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:92:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:98:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:99:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:106:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:112:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:125:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:133:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:149:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:162:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:163:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:164:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:178:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:190:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:197:5: S101 Use of `assert` detected
+joshua\tests\test_output_check.py:198:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:117:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:118:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:126:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:134:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:135:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:143:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:144:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:145:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:146:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:156:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:157:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:158:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:159:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:171:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:173:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:175:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:185:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:191:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:199:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:200:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:206:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:210:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:211:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:223:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:224:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:225:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:232:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:233:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:240:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:274:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:275:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:276:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:277:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:280:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:281:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:282:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:284:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:287:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:296:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:307:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:308:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:309:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:312:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:313:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:321:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:330:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:331:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:332:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:333:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:334:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:335:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:336:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:346:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:348:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:349:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:350:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:351:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:362:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:364:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:365:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:394:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:395:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:396:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:397:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:400:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:401:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:405:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:406:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:407:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:408:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:423:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:424:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:425:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:426:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:427:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:434:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:435:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:448:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:449:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:450:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:451:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:461:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:462:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:463:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:464:5: S101 Use of `assert` detected
+joshua\tests\test_rag_client.py:476:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:16:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:30:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:51:5: S101 Use of `assert` detected
+joshua\tests\test_targets_validation.py:52:5: S101 Use of `assert` detected
+Found 406 errors.
+
+# $ ruff check --select S --no-cache --output-format concise --per-file-ignores 'joshua/tests/*:S101' joshua/
+All checks passed!
+
+# $ detect-secrets scan joshua/
+{
+  "version": "1.5.0",
+  "plugins_used": [
+    {
+      "name": "ArtifactoryDetector"
+    },
+    {
+      "name": "AWSKeyDetector"
+    },
+    {
+      "name": "AzureStorageKeyDetector"
+    },
+    {
+      "name": "Base64HighEntropyString",
+      "limit": 4.5
+    },
+    {
+      "name": "BasicAuthDetector"
+    },
+    {
+      "name": "CloudantDetector"
+    },
+    {
+      "name": "DiscordBotTokenDetector"
+    },
+    {
+      "name": "GitHubTokenDetector"
+    },
+    {
+      "name": "GitLabTokenDetector"
+    },
+    {
+      "name": "HexHighEntropyString",
+      "limit": 3.0
+    },
+    {
+      "name": "IbmCloudIamDetector"
+    },
+    {
+      "name": "IbmCosHmacDetector"
+    },
+    {
+      "name": "IPPublicDetector"
+    },
+    {
+      "name": "JwtTokenDetector"
+    },
+    {
+      "name": "KeywordDetector",
+      "keyword_exclude": ""
+    },
+    {
+      "name": "MailchimpDetector"
+    },
+    {
+      "name": "NpmDetector"
+    },
+    {
+      "name": "OpenAIDetector"
+    },
+    {
+      "name": "PrivateKeyDetector"
+    },
+    {
+      "name": "PypiTokenDetector"
+    },
+    {
+      "name": "SendGridDetector"
+    },
+    {
+      "name": "SlackDetector"
+    },
+    {
+      "name": "SoftlayerDetector"
+    },
+    {
+      "name": "SquareOAuthDetector"
+    },
+    {
+      "name": "StripeDetector"
+    },
+    {
+      "name": "TelegramBotTokenDetector"
+    },
+    {
+      "name": "TwilioKeyDetector"
+    }
+  ],
+  "filters_used": [
+    {
+      "path": "detect_secrets.filters.allowlist.is_line_allowlisted"
+    },
+    {
+      "path": "detect_secrets.filters.common.is_ignored_due_to_verification_policies",
+      "min_level": 2
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_indirect_reference"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_likely_id_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_lock_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_not_alphanumeric_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_potential_uuid"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_sequential_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_swagger_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_templated_secret"
+    }
+  ],
+  "results": {},
+  "generated_at": "2026-10-21T07:25:06Z"
+}
+
+# $ pip-audit -r joshua/backend/requirements.txt -r joshua/tests/requirements.txt
+No known vulnerabilities found

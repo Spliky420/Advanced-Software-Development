@@ -1,6 +1,8 @@
 name: maxwell-ci
 
 on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
   push:
     paths:
       - "Maxwell/**"
@@ -92,6 +94,23 @@ jobs:
           print("MCP and RAG proxies correctly disabled.")
           PY
 
+      - name: Validate Multi-Agent proxy is disabled in CI
+        working-directory: ./Maxwell/backend
+        env:
+          DISABLE_MULTI_AGENT_PROXY: "true"
+        run: |
+          python - <<'PY'
+          import app
+
+          client = app.app.test_client()
+          ma = client.post("/api/multi-agent/workflow", json={"task": "test", "evidence": {}})
+
+          print(f"/api/multi-agent/workflow -> HTTP {ma.status_code}")
+
+          assert ma.status_code == 503, f"Multi-Agent proxy must be disabled in CI, got {ma.status_code}"
+          print("Multi-Agent proxy correctly disabled.")
+          PY
+
       - name: Lint Python files (optional)
         working-directory: ./Maxwell/backend
         run: |
@@ -118,6 +137,35 @@ jobs:
             echo "Backend API returned HTTP $API_CODE"
             exit 1
           fi
+
+      - name: Post-commit endpoint integration tests
+        # Test two endpoint functions against the running containerized backend
+        run: |
+          echo "Testing GET /api/glossary endpoint..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8021/api/glossary)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "GET /api/glossary - PASS (200)"
+            echo "$BODY" | python -m json.tool > /dev/null && echo "  Response is valid JSON"
+          else
+            echo "GET /api/glossary - FAIL (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          echo "Testing GET /health endpoint..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8021/health)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "GET /health - PASS (200)"
+            echo "$BODY" | python -m json.tool > /dev/null && echo "  Response is valid JSON"
+          else
+            echo "GET /health - FAIL (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          echo "All post-commit endpoint tests passed!"
 
       - name: Tear down containers
         if: always()

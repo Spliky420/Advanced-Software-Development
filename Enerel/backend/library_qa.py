@@ -132,7 +132,7 @@ def plan(question):
 
     terms = content_terms(question)
     if not terms:
-        raise QuestionError("question has no searchable terms -- ask about a specific topic")
+        raise QuestionError("question has no searchable terms; ask about a specific topic")
 
     return {
         "phase": "plan",

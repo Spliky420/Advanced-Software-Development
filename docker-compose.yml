@@ -75,10 +75,16 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       DRIFT_THRESHOLD_PERCENT: ${DRIFT_THRESHOLD_PERCENT:-5}
+      # Master AI switch: "false" stops every call to Ollama, MCP, RAG and the
+      # Multi-Agent Server; CRUD, allocation and drift figures keep working.
+      AI_MODE_ENABLED: ${AI_MODE_ENABLED:-true}
       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
       MCP_TIMEOUT_SECONDS: ${MCP_TIMEOUT_SECONDS:-5}
       RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
       RAG_TIMEOUT_SECONDS: ${RAG_TIMEOUT_SECONDS:-5}
+      # Shared Multi-Agent Server (host-run). Runs are started async and
+      # polled, so its client uses short timeouts too.
+      MULTI_AGENT_URL: ${MULTI_AGENT_URL:-http://host.docker.internal:5004}
     extra_hosts:
       # Resolves automatically on Docker Desktop; needed on Linux.
       - "host.docker.internal:host-gateway"
@@ -145,6 +151,9 @@ services:
       # through host.docker.internal.
       - MCP_SERVER_URL=${MCP_HARNESS_URL:-http://host.docker.internal:5001}
       - RAG_SERVER_URL=${RAG_SERVER_URL:-http://host.docker.internal:5003}
+      # Multi-Agent Server runs on the host (port 5004), not in compose.
+      - MULTI_AGENT_SERVER_URL=${MULTI_AGENT_SERVER_URL:-http://host.docker.internal:5004}
+      - MULTI_AGENT_TIMEOUT_SECONDS=${MULTI_AGENT_TIMEOUT_SECONDS:-190}
     extra_hosts:
       # Resolves automatically on Docker Desktop; needed on Linux engines.
       - "host.docker.internal:host-gateway"

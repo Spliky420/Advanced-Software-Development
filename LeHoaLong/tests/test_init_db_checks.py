@@ -165,8 +165,14 @@ CREATE TABLE release_0_log (
 );
 """
 
+# Release 1's table: the same DDL, with the two phases Release 1 added.
+RELEASE_1_AI_PLAN_LOG = RELEASE_0_AI_PLAN_LOG.replace(
+    "CHECK (phase IN ('plan', 'observe', 'adapt'))", "CHECK (phase IN ('plan', 'observe', 'adapt', 'mcp', 'rag'))"
+)
+assert RELEASE_1_AI_PLAN_LOG != RELEASE_0_AI_PLAN_LOG
 
-def _downgrade_to_release_0(conn):
+
+def _downgrade_to_release_0(conn, ddl=None):
     """Rebuild ai_plan_log with the Release 0 CHECK, keeping every row.
 
     The reverse of the migration, so these tests start from the shape a real
@@ -174,7 +180,7 @@ def _downgrade_to_release_0(conn):
     """
     conn.execute("PRAGMA foreign_keys = OFF")
     conn.executescript(
-        RELEASE_0_AI_PLAN_LOG
+        (ddl or RELEASE_0_AI_PLAN_LOG)  # noqa: S608 -- two string constants, no input
         + """
         INSERT INTO release_0_log SELECT * FROM ai_plan_log;
         DROP TABLE ai_plan_log;
@@ -226,7 +232,7 @@ def test_migration_makes_the_new_phases_insertable(conn):
 
     init_db.migrate_ai_plan_log(conn)
 
-    for phase, model in (("mcp", "mcp"), ("rag", "rag-server")):
+    for phase, model in (("mcp", "mcp"), ("rag", "rag-server"), ("agent", "multi-agent")):
         conn.execute(
             "INSERT INTO ai_plan_log (goal_id, phase, model_name, prompt, response, created_at) "
             "VALUES (NULL, ?, ?, 'request', 'response', '2026-10-01T09:00:00')",
@@ -234,7 +240,22 @@ def test_migration_makes_the_new_phases_insertable(conn):
         )
     conn.commit()
 
-    assert conn.execute("SELECT COUNT(*) FROM ai_plan_log WHERE phase IN ('mcp', 'rag')").fetchone()[0] == 2
+    assert conn.execute("SELECT COUNT(*) FROM ai_plan_log WHERE phase IN ('mcp', 'rag', 'agent')").fetchone()[0] == 3
+
+
+def test_a_release_1_database_is_migrated_to_accept_the_agent_phase(conn):
+    """The case Release 2 actually meets: a volume built by Release 1, whose
+    CHECK allows five phases but not 'agent'. Its rows survive, ids unchanged."""
+    _downgrade_to_release_0(conn, ddl=RELEASE_1_AI_PLAN_LOG)
+    assert init_db.phase_is_allowed(conn, "rag") is True
+    assert init_db.phase_is_allowed(conn, "agent") is False
+
+    before = conn.execute("SELECT log_id, phase, prompt FROM ai_plan_log ORDER BY log_id").fetchall()
+    message = init_db.migrate_ai_plan_log(conn)
+
+    assert message.startswith("ai_plan_log migrated to accept the agent phase(s)")
+    assert init_db.phase_is_allowed(conn, "agent") is True
+    assert conn.execute("SELECT log_id, phase, prompt FROM ai_plan_log ORDER BY log_id").fetchall() == before
 
 
 def test_migration_still_rejects_a_phase_that_is_not_a_phase(conn):

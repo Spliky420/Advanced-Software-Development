@@ -170,7 +170,7 @@ def test_empty_server_url_disables_mcp_without_touching_the_network(monkeypatch)
 def test_unset_server_url_defaults_to_the_compose_address(monkeypatch):
     monkeypatch.delenv("MCP_SERVER_URL")
 
-    assert mcp_client.get_server_url() == "http://mcp-server:5002/mcp"
+    assert mcp_client.get_server_url() == "http://host.docker.internal:5002/mcp"
 
 
 def test_portfolio_snapshot_is_refused_because_it_loops_back(fake_mcp):

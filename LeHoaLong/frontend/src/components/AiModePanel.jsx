@@ -7,6 +7,9 @@
 //   MCP      The same planning, but the available-to-save figure first
 //            accounts for what other features report is already committed.
 //   RAG      Grounded answers from the shared corpus, with citations.
+//   Agents   Release 2. The same Python schedule, reviewed by three agents on
+//            the shared multi-agent server, then approved, corrected,
+//            partially accepted or rejected by a person before it is applied.
 //
 // The tabs are not three skins over one call. AI-Mode and MCP send different
 // requests and produce different available-to-save figures from the same
@@ -14,6 +17,7 @@
 
 import { useState } from 'react'
 import * as api from '../api/client'
+import AgentReviewPanel from './AgentReviewPanel'
 import GroundedAnswerPanel from './GroundedAnswerPanel'
 import McpContextPanel from './McpContextPanel'
 import { BusyButton, Feedback } from './common'
@@ -24,6 +28,7 @@ const MODES = [
   { id: 'ai', label: 'AI-Mode', hint: 'Release 0 · model writes the step descriptions' },
   { id: 'mcp', label: 'MCP', hint: 'adds what other features already commit' },
   { id: 'rag', label: 'RAG', hint: 'grounded answers with citations' },
+  { id: 'agents', label: 'Agents', hint: 'Release 2 · three agents review the plan, you decide' },
 ]
 
 const RAG_SUGGESTIONS = [
@@ -262,7 +267,11 @@ export default function AiModePanel({ goalId, currency, hasPlan, onPlanned }) {
           />
         )}
 
-        {mode !== 'rag' && (
+        {mode === 'agents' && (
+          <AgentReviewPanel goalId={goalId} currency={currency} onPlanned={onPlanned} />
+        )}
+
+        {(mode === 'ai' || mode === 'mcp') && (
           <>
             {planner.busy && (
               <p className="muted u-mt-sm" role="status">

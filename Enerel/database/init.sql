@@ -48,8 +48,9 @@ CREATE TABLE document_embeddings (
     UNIQUE (document_id, chunk_index)
 );
 
--- Audit trail of every LLM call made on a user's behalf (summarize and
--- search), mirroring joshua/database's insight_log. prompt_sent already
+-- Audit trail of every LLM call made on a user's behalf (summarize,
+-- search, MCP/RAG, and the Release 2 multi-agent workflow -- whose row holds
+-- the run_id in response_text -- plus the human review decision on it), mirroring joshua/database's insight_log. prompt_sent already
 -- contains any content the model needs -- summarization and embedding are
 -- both legitimate model tasks, but no numeric figure is ever computed by the
 -- model; see CLAUDE.md's arithmetic rule.
@@ -58,7 +59,7 @@ CREATE TABLE document_ai_log (
     user_id        INTEGER NOT NULL,
     document_id    INTEGER REFERENCES documents(id) ON DELETE SET NULL,
     created_at     TEXT NOT NULL,           -- ISO8601 timestamp
-    request_type   TEXT NOT NULL,           -- 'summarize' | 'search'
+    request_type   TEXT NOT NULL,           -- 'summarize' | 'search' | 'multi_agent_workflow' | 'multi_agent_review' | ...
     prompt_sent    TEXT,
     model_name     TEXT NOT NULL,           -- e.g. llama3.1:8b, qwen2.5:0.5b, nomic-embed-text
     response_text  TEXT

@@ -1,0 +1,21 @@
+Review the Multi-Agent Workflow implementation assessment against the evidence.
+
+TASK:
+{{TASK}}
+
+EVIDENCE:
+{{EVIDENCE}}
+
+IMPLEMENTATION ASSESSMENT:
+{{IMPLEMENTATION}}
+
+Please provide a cross-check review focusing on:
+
+1. Are there any numbers or calculations in the implementation assessment that do not appear in the evidence? (Figure check)
+2. Does the implementation assessment claim the backend does something that the evidence does not support?
+3. Are there any missing aspects of the Multi-Agent Server integration that should have been checked?
+4. Does the assessment properly verify the human review gate implementation?
+5. Are the timeout configurations correctly validated?
+6. Is the stub mode (STUB_AGENTS=true) properly tested in CI?
+
+Provide your review as JSON with "risks" and "recommendations" arrays.

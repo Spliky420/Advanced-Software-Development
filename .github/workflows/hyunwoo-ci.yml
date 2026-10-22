@@ -2,6 +2,8 @@
 name: hyunwoo-ci
 
 on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
   push:
     branches:
       - HyunWoo-Bills-Subscriptions
