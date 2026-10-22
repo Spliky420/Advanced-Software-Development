@@ -93,6 +93,8 @@ jobs:
           # Goals and Budgeting: a CRUD read through the frontend's nginx proxy
           # to the internal backend and its database.
           check "https://lehoalong-frontend.$domain/api/goals" "goal_id" || status=1
+          # Research Library: a CRUD read through the frontend's nginx proxy.
+          check "https://enerel-frontend.$domain/api/documents" "doc_type" || status=1
           {
             echo "### Deployed \`${IMAGE_TAG::7}\`"
             echo

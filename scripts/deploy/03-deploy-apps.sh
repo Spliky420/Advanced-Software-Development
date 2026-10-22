@@ -175,7 +175,7 @@ deploy thomas-backend 5001 internal 1 1 \
 deploy enerel-backend 5000 internal 1 1 \
   --db enerel-database /usr/local/bin/entrypoint.sh "DB_FILE=/data/library.db" -- \
   "DB_PATH=/data/library.db" "OLLAMA_MODEL=qwen2.5:0.5b" "OLLAMA_EMBED_MODEL=nomic-embed-text" \
-  "MCP_ENABLED=false" "RAG_ENABLED=false" "${NO_AI[@]}"
+  "MCP_ENABLED=false" "RAG_ENABLED=false" "MULTI_AGENT_ENABLED=false" "MULTI_AGENT_URL=" "${NO_AI[@]}"
 
 deploy hyunwoo-backend 5000 external 1 1 \
   --db hyunwoo-database /entrypoint.sh "DB_FILE=/data/bills.db" -- \
