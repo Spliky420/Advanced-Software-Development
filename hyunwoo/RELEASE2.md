@@ -61,6 +61,19 @@ In another terminal, rebuild only the Bills services:
 docker compose up -d --build hyunwoo-database hyunwoo-backend hyunwoo-frontend
 ```
 
+On this Mac, an unrelated application already uses MCP port 5002. Keep
+that application unchanged, start the Bills MCP launcher on 8071, and use
+this override when rebuilding Bills:
+
+```bash
+MCP_SERVER_URL=http://host.docker.internal:8071/mcp docker compose up -d --build hyunwoo-database hyunwoo-backend hyunwoo-frontend
+```
+
+This override applies to that command only; include it again on later
+rebuilds while the port conflict remains. The RAG launcher is
+`python hyunwoo/scripts/run_rag.py`; it uses a separate runtime index and
+does not rewrite the tracked shared corpus.
+
 Existing bill volumes are not reset. The backend creates the review-link
 table when needed, so existing databases work without reseeding.
 
@@ -151,7 +164,11 @@ Local development checks are recorded in evidence/release2-validation.md.
 The successful real-model check is awaiting human review; it is not a
 completed, human-approved showcase run.
 
-This change does not implement the group's cloud deployment, security
-pre-commit hooks or the three Release 2 agentic-loop review modes.
-Live Docker builds, real-model demonstration, GitHub Actions execution
-and final evidence capture must be verified in the integrated environment.
+The Bills security pre-commit hooks and matching CI checks are documented
+in security/README.md. They must be installed on each clone. Actual
+commit-time output still needs to be captured when the student commits.
+
+The group's cloud deployment and the three Release 2 agentic-loop review
+modes remain separate group work. Integrated checks are recorded in
+evidence/release2-integrated-check.md. New CI changes cannot have a hosted
+result until they have been committed and pushed by the student.

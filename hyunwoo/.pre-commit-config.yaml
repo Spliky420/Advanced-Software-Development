@@ -1,0 +1,28 @@
+# These checks only run when Bills files are included in a commit.
+minimum_pre_commit_version: '4.0.0'
+repos:
+  - repo: local
+    hooks:
+      - id: hyunwoo-security-rules
+        name: Bills Python security rules
+        entry: ruff check --no-cache --select S
+        language: python
+        additional_dependencies: ['ruff==0.17.1']
+        files: ^hyunwoo/backend/.*\.py$
+
+      - id: hyunwoo-secrets
+        name: Bills secret detection
+        entry: detect-secrets-hook --no-verify
+        language: python
+        additional_dependencies: ['detect-secrets==1.5.0']
+        files: ^hyunwoo/
+        types: [text]
+        exclude: ^hyunwoo/\.(security-venv|security-cache)/
+
+      - id: hyunwoo-dependencies
+        name: Bills dependency vulnerability audit
+        entry: pip-audit --strict --progress-spinner off --cache-dir hyunwoo/.security-cache -r hyunwoo/backend/requirements.txt -r hyunwoo/tests/requirements.txt -r hyunwoo/security/requirements.txt
+        language: python
+        additional_dependencies: ['pip-audit==2.10.1']
+        files: ^hyunwoo/
+        pass_filenames: false

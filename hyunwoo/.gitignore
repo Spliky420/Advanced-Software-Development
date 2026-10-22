@@ -1,0 +1,3 @@
+# Local security tools and downloaded audit data.
+.security-venv/
+.security-cache/
