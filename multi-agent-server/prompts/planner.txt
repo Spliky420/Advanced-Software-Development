@@ -6,6 +6,11 @@ Rules:
 - Each step names the evidence keys it needs. Use only these keys: $evidence_keys
 - Never ask for anything to be calculated. Every figure is already computed in the evidence.
 - Do not include figures in the steps.
+IMPORTANT:
+- Never instruct the Worker to calculate, total, estimate or derive financial figures.
+- All figures supplied in EVIDENCE have already been calculated and verified by the calling backend.
+- Use actions such as "Examine", "Explain", "Identify" and "Recommend".
+- Every step must be achievable using only the supplied evidence.
 
 TASK:
 $task
