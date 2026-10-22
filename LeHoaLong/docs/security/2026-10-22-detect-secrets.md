@@ -19,8 +19,8 @@ real one, so two canaries were planted and scanned with the same settings:
 
 | Canary | Detected as |
 | ------ | ----------- |
-| `aws_access_key_id = "AKIAIOSFODNN7EXAMPLE"` | AWS Access Key |
-| `password = "hunter2-Sup3rS3cret!"` | Secret Keyword |
+| `aws_access_key_id = "AKIAIOSFODNN7EXAMPLE"` | AWS Access Key | <!-- pragma: allowlist secret -->
+| `password = "hunter2-Sup3rS3cret!"` | Secret Keyword | <!-- pragma: allowlist secret -->
 
 Planted inside `LeHoaLong/backend/app/` with the hooks installed, the AWS
 canary blocked the commit (`ERROR: Potential secrets about to be committed`).
