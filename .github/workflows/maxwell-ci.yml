@@ -118,7 +118,7 @@ jobs:
 
       - name: Run pre-commit security scans
         env:
-          PRE_COMMIT_HOME: /tmp/pre-commit
+          PRE_COMMIT_HOME: /tmp/pre-commit-${{ github.run_id }}
         run: |
           pip install pre-commit
           pre-commit run --all-files --show-diff-on-failure
