@@ -1,0 +1,110 @@
+# Cloud deployment to Azure Container Apps.
+#
+# Runs every student's CI workflow first (each one is called through its
+# workflow_call trigger, so it runs in full regardless of which paths
+# changed). Only if all six pass does the deploy job run: it logs in to Azure
+# with OIDC as a user-assigned managed identity, builds and pushes every image
+# to ACR, and updates the container apps -- using the same scripts as a manual
+# deploy (scripts/deploy/02-build-images.sh and 03-deploy-apps.sh).
+#
+# No passwords or client secrets: azure/login exchanges GitHub's OIDC token
+# for an Azure token. The three IDs it needs are repository variables, not
+# secrets. Infrastructure (scripts/deploy/01-infra.sh) is created once by
+# hand; this workflow's identity can only push images and update apps in the
+# project's resource group.
+
+name: cloud-deployment
+
+on:
+  push:
+    branches:
+      - main
+      # Lets the cloud-deployment PR branch be tested before merge.
+      # workflow_dispatch alone cannot do this, because GitHub only offers
+      # the manual "Run workflow" button for workflows that exist on main.
+      # Remove once merged.
+      - cloud-deployment
+  workflow_dispatch:
+
+# Default for every job; the deploy job adds id-token: write for OIDC.
+permissions:
+  contents: read
+
+# Never run two deploys at once; queue instead of cancelling a deploy halfway.
+concurrency:
+  group: cloud-deployment
+  cancel-in-progress: false
+
+jobs:
+  # --- Gate: every student's CI must pass ------------------------------------
+  joshua-ci:
+    uses: ./.github/workflows/joshua-ci.yml
+  maxwell-ci:
+    uses: ./.github/workflows/maxwell-ci.yml
+  thomas-ci:
+    uses: ./.github/workflows/thomas-ci.yml
+  enerel-ci:
+    uses: ./.github/workflows/enerel-ci.yml
+  hyunwoo-ci:
+    uses: ./.github/workflows/hyunwoo-ci.yml
+  lehoalong-ci:
+    uses: ./.github/workflows/lehoalong-ci.yml
+
+  # --- Deploy ------------------------------------------------------------------
+  deploy:
+    needs: [joshua-ci, maxwell-ci, thomas-ci, enerel-ci, hyunwoo-ci, lehoalong-ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # lets azure/login request GitHub's OIDC token
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+      BUILD_MODE: docker   # ACR Tasks are not available on Azure for Students
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so 02-build-images.sh can also fetch and archive
+          # origin/Joshua-Release-1 (temporary override, see config.sh).
+          fetch-depth: 0
+
+      - name: Azure login (OIDC, user-assigned managed identity)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push images
+        run: bash scripts/deploy/02-build-images.sh
+
+      - name: Update container apps
+        run: bash scripts/deploy/03-deploy-apps.sh
+
+      - name: Smoke test
+        run: |
+          source scripts/deploy/config.sh
+          set +e   # report every check, then fail at the end if any failed
+          domain="$(env_domain)"
+          check() {  # url expected-text; retries while a replica wakes up
+            local body
+            for i in $(seq 1 12); do
+              body="$(curl -fsS --max-time 30 "$1")" && [[ "$body" == *"$2"* ]] && { echo "OK   $1"; return 0; }
+              sleep 10
+            done
+            echo "FAIL $1"; return 1
+          }
+          status=0
+          check "https://shared-frontend.$domain/" "joshua-frontend.$domain" || status=1
+          for s in joshua maxwell thomas enerel hyunwoo lehoalong; do
+            check "https://$s-frontend.$domain/" "<" || status=1
+          done
+          check "https://joshua-frontend.$domain/api/holdings" "ticker" || status=1
+          {
+            echo "### Deployed \`${IMAGE_TAG::7}\`"
+            echo
+            echo "- Home page: https://shared-frontend.$domain"
+            for s in joshua maxwell thomas enerel hyunwoo lehoalong; do
+              echo "- $s: https://$s-frontend.$domain"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
