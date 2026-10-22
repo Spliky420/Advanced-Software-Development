@@ -98,17 +98,31 @@ PULL_PRINCIPAL="$(azq identity show -n "$PULL_IDENTITY" -g "$RESOURCE_GROUP" --q
 # A user-assigned managed identity with a federated credential replaces an app
 # registration / service principal, which the UTS directory does not allow
 # students to create. GitHub presents an OIDC token whose subject must match.
-log "Federated credentials for $GITHUB_REPO"
+#
+# GitHub's subject now carries the owner's and repo's numeric IDs, e.g.
+#   repo:Spliky420@200171683/Advanced-Software-Development@1343397534:ref:refs/heads/main
+# (immune to a rename being re-registered by someone else). The IDs come from
+# GitHub's public API; set GITHUB_SUBJECT_REPO to override, e.g. with the
+# plain "owner/repo" form for repos still on the old format.
+if [[ -z "${GITHUB_SUBJECT_REPO:-}" ]]; then
+  # az rest + --query, so neither jq nor a separate Python is needed.
+  GITHUB_SUBJECT_REPO="$(azq rest --method get --url "https://api.github.com/repos/$GITHUB_REPO" --skip-authorization-header \
+    --query "join('', [owner.login, '@', to_string(owner.id), '/', name, '@', to_string(id)])" -o tsv 2>/dev/null || true)"
+  [[ -n "$GITHUB_SUBJECT_REPO" ]] || { echo "Could not look up $GITHUB_REPO on GitHub; set GITHUB_SUBJECT_REPO." >&2; exit 1; }
+fi
+log "Federated credentials for $GITHUB_SUBJECT_REPO"
 for branch in $GITHUB_BRANCHES; do
   fc_name="github-${branch//[^A-Za-z0-9-]/-}"
-  if ! az identity federated-credential show -n "$fc_name" --identity-name "$GITHUB_IDENTITY" -g "$RESOURCE_GROUP" -o none 2>/dev/null; then
-    az identity federated-credential create -n "$fc_name" \
-      --identity-name "$GITHUB_IDENTITY" -g "$RESOURCE_GROUP" \
-      --issuer "https://token.actions.githubusercontent.com" \
-      --subject "repo:${GITHUB_REPO}:ref:refs/heads/${branch}" \
-      --audiences "api://AzureADTokenExchange" --only-show-errors -o none
-  fi
-  echo "  $fc_name -> repo:${GITHUB_REPO}:ref:refs/heads/${branch}"
+  subject="repo:${GITHUB_SUBJECT_REPO}:ref:refs/heads/${branch}"
+  # create when missing, update when present (keeps the subject current).
+  verb=create
+  az identity federated-credential show -n "$fc_name" --identity-name "$GITHUB_IDENTITY" -g "$RESOURCE_GROUP" -o none 2>/dev/null && verb=update
+  az identity federated-credential "$verb" -n "$fc_name" \
+    --identity-name "$GITHUB_IDENTITY" -g "$RESOURCE_GROUP" \
+    --issuer "https://token.actions.githubusercontent.com" \
+    --subject "$subject" \
+    --audiences "api://AzureADTokenExchange" --only-show-errors -o none
+  echo "  $fc_name -> $subject"
 done
 
 # New identities can take a minute to become visible to role assignment;
