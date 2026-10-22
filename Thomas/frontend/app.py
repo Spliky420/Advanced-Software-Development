@@ -104,6 +104,47 @@ def ai_classify():
         content_type=response.headers.get("Content-Type"),
     )
 
+@app.route("/api/transactions/multi-agent", methods=["POST"])
+def multi_agent_workflow():
+    response = requests.post(
+        f"{BACKEND_URL}/api/transactions/multi-agent",
+        timeout=(5, 190)
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type"),
+    )
+
+
+@app.route("/api/transactions/multi-agent/<run_id>", methods=["GET"])
+def multi_agent_status(run_id):
+    response = requests.get(
+        f"{BACKEND_URL}/api/transactions/multi-agent/{run_id}",
+        timeout=15
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type"),
+    )
+
+
+@app.route("/api/transactions/multi-agent/<run_id>/review", methods=["POST"])
+def multi_agent_review(run_id):
+    response = requests.post(
+        f"{BACKEND_URL}/api/transactions/multi-agent/{run_id}/review",
+        json=request.get_json(silent=True) or request.form.to_dict(),
+        timeout=15
+    )
+
+    return Response(
+        response.content,
+        status=response.status_code,
+        content_type=response.headers.get("Content-Type"),
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

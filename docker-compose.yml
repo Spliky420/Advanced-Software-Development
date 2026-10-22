@@ -213,6 +213,7 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
       RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
+      MULTI_AGENT_URL: http://host.docker.internal:5004
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

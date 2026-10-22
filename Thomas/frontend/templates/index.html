@@ -380,12 +380,176 @@
 
 </section>
 
+<!-- MULTI-AGENT WORKFLOW -->
+<section class="card">
+    <div class="section-heading">
+        <div>
+            <h2>Multi-Agent Financial Review</h2>
+            <p>Planner → Worker → Reviewer → Human Review</p>
+        </div>
+    </div>
+
+    <div class="button-row">
+        <button type="button"
+                class="button button-primary"
+                id="agent-start"
+                onclick="startAgentReview()">
+            Run Multi-Agent Review
+        </button>
+    </div>
+
+    <div id="agent-status" class="ai-result"></div>
+    <div id="agent-results" class="ai-result"></div>
+
+    <div id="human-review" style="display:none;">
+        <h3>Human Review</h3>
+
+        <div class="form-group">
+            <label for="review-decision">Decision</label>
+            <select id="review-decision">
+                <option value="approve">Approve</option>
+                <option value="correct">Correct</option>
+                <option value="partial">Partially Accept</option>
+                <option value="reject">Reject</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="review-note">Review Note</label>
+            <textarea id="review-note" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="review-corrected">
+                Corrected Output (required for Correct)
+            </label>
+            <textarea id="review-corrected" rows="3"></textarea>
+        </div>
+
+        <div class="button-row">
+            <button type="button"
+                    class="button button-primary"
+                    onclick="submitAgentReview()">
+                Submit Human Review
+            </button>
+        </div>
+    </div>
+</section>
+
     </main>
 
 
     <footer>
         <p>Personal Finance Assistant</p>
     </footer>
+
+<script>
+let currentRunId = null;
+
+function showAgentData(data) {
+    const container = document.getElementById("agent-results");
+    container.replaceChildren();
+
+    const sections = [
+        ["Planner", data.plan],
+        ["Worker", data.work],
+        ["Reviewer", data.review]
+    ];
+
+    for (const [title, value] of sections) {
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+
+        const content = document.createElement("pre");
+        content.style.whiteSpace = "pre-wrap";
+        content.style.overflowWrap = "anywhere";
+        content.textContent = typeof value === "string"
+            ? value
+            : JSON.stringify(value, null, 2);
+
+        container.append(heading, content);
+    }
+}
+
+async function startAgentReview() {
+    const status = document.getElementById("agent-status");
+    const button = document.getElementById("agent-start");
+
+    button.disabled = true;
+    status.textContent = "Running Planner, Worker and Reviewer...";
+    document.getElementById("human-review").style.display = "none";
+
+    try {
+        const response = await fetch("/api/transactions/multi-agent", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || data.error || "Workflow failed");
+        }
+
+        currentRunId = data.run_id;
+        showAgentData(data);
+        status.textContent = "Status: " + data.status;
+
+        if (data.status === "awaiting_human") {
+            document.getElementById("human-review").style.display = "block";
+        }
+    } catch (error) {
+        status.textContent = "Error: " + error.message;
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function submitAgentReview() {
+    if (!currentRunId) return;
+
+    const decision = document.getElementById("review-decision").value;
+    const note = document.getElementById("review-note").value.trim();
+    const corrected = document.getElementById("review-corrected").value.trim();
+
+    if (decision === "correct" && !corrected) {
+        alert("Corrected output is required.");
+        return;
+    }
+
+    if (decision === "partial" && !note) {
+        alert("Explain which part is accepted.");
+        return;
+    }
+
+    const body = { decision, note };
+    if (decision === "correct") body.corrected = corrected;
+
+    try {
+        const response = await fetch(
+            `/api/transactions/multi-agent/${currentRunId}/review`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || data.error || "Review failed");
+        }
+
+        document.getElementById("agent-status").textContent =
+            "Status: " + data.status + " | Decision: " + data.decision;
+
+        document.getElementById("human-review").style.display = "none";
+    } catch (error) {
+        document.getElementById("agent-status").textContent =
+            "Error: " + error.message;
+    }
+}
+</script>
 
 </body>
 
