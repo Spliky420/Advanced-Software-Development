@@ -129,11 +129,15 @@ def test_ollama_unavailable_is_503_naming_the_problem(client, monkeypatch):
     assert payload["run_id"]
 
 
-def test_real_mode_before_agents_exist_is_503_not_500(app):
+def test_real_mode_with_ollama_down_is_503_not_500(app, monkeypatch):
+    def refused(*args, **kwargs):
+        raise agents.requests.ConnectionError("connection refused")
+
+    monkeypatch.setattr(agents.requests, "post", refused)
     app.config["STUB_AGENTS"] = False
     response = app.test_client().post("/workflow", json={"task": "t", "evidence": {}})
     assert response.status_code == 503
-    assert "STUB_AGENTS=true" in response.get_json()["detail"]
+    assert "could not reach Ollama" in response.get_json()["detail"]
 
 
 # --------------------------------------------------------------------------

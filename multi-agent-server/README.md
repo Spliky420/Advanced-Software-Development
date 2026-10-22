@@ -153,6 +153,43 @@ step. No Ollama call is made. It runs the full state machine, including
 400s, so you can write real integration tests against it with no model.
 Stub runs report `"stub": true` and `"model": "stub"`.
 
+## How the real agents work
+
+The prompts live in `prompts/` (`planner.txt`, `worker.txt`,
+`reviewer.txt`). Each agent makes one Ollama call to `/api/generate`, and
+the model only writes words. Python owns everything structural:
+
+- **Planner** answers in JSON. Python numbers the steps itself, caps them
+  at 8, and keeps only evidence keys you actually sent. A field reference
+  like `"goal.saved"` maps back to `goal`; an invented key is dropped.
+- **Worker** writes plain text, one `Step N:` paragraph per step.
+- **Reviewer** answers in JSON with `risks` and `recommendations`.
+
+A Planner or Reviewer reply that is not usable is retried once, then
+replaced by deterministic output: the one-step-per-key plan, or a review
+that says no model reviewed the work. A bad answer is never a 503; only
+Ollama being unreachable, missing the model, or timing out is. Both
+attempts share the agent's one `AGENT_TIMEOUT_SECONDS` budget, and each
+reply is capped at 768 tokens, so a runaway reply cannot overrun the
+timeout chain.
+
+**Two Python checks guard the arithmetic rule.** Their findings go first
+in `review.risks`, ahead of anything the Reviewer said:
+
+- `Figure check:` names any number in the work that appears nowhere in the
+  task or evidence (compared by value, so `12.50` matches `12.5`).
+- `Arithmetic check:` names any calculation the work writes out
+  (`5000.0 - 3200.0 = 1800.0`), even when every figure in it was supplied.
+
+Neither check judges meaning. A sentence with the right figures and the
+wrong reasoning passes. The Reviewer is a model too and can be wrong about
+the evidence (in testing it claimed a supplied figure was missing), which
+is why the human gate decides, not the Reviewer.
+
+Each phase's audit record (prompt, raw reply, every attempt, whether the
+fallback was used, and the checks' findings) is kept with the run but
+never returned by the API.
+
 ## Timeouts
 
 `POST /workflow` is **synchronous**: three Ollama calls in sequence, roughly
@@ -175,6 +212,22 @@ that, and none of them says "timeout" when it gives up:
    A (connect, read) tuple fails fast when the server is down and waits
    long enough when it is busy. A read timeout above 180s lets the server's
    own 503 reach you before your client gives up.
+
+### Model speed
+
+Measured warm on a development laptop: `qwen2.5:0.5b` finished whole runs
+in 2–8 seconds. `llama3.1:8b`, with only part of the model fitting in GPU
+memory, generated about 3.6 tokens a second. One Worker reply took longer
+than 55s, and a full run took 121s with `AGENT_TIMEOUT_SECONDS=300`. On
+hardware like that, the 8b model does not fit the default timeout chain.
+Check a machine's speed before relying on it (`ollama run llama3.1:8b
+--verbose` prints the eval rate).
+
+**This server is demoed on `qwen2.5:0.5b`.** The demo laptop (RTX 3050,
+4GB) runs `llama3.1:8b` at 3.6–4.6 tokens a second, and a smaller context
+does not change that. The 0.5b model's weaker output is what the Figure and
+Arithmetic checks and the human gate are there to catch. This is an
+exception to CLAUDE.md's "demo on `llama3.1:8b`" for this server only.
 
 ### Cold model
 
