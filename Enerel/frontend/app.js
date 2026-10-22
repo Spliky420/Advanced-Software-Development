@@ -262,8 +262,8 @@ function renderDetail(doc) {
       <div class="detail-block">
         <h4>Glossary lookup <span class="mode-chip" id="mcp-mode-chip">MCP</span></h4>
         <p class="muted">
-          Double-click a word in the document (or select a phrase) to define
-          it with the shared MCP server's <code>glossary_lookup</code> tool.
+          Open the document and double-click a word (or select a phrase) to
+          define it with the shared MCP server's <code>glossary_lookup</code> tool.
         </p>
         <form id="glossary-form" class="rag-form">
           <input type="text" id="glossary-term" maxlength="60"
@@ -273,8 +273,24 @@ function renderDetail(doc) {
         <div id="glossary-result" aria-live="polite"></div>
       </div>
       <div class="detail-block">
+        <h4>Research brief <span class="mode-chip" id="multi-agent-mode-chip">Multi-Agent</span></h4>
+        <p class="muted">
+          Sends this document's details and its text to the team's shared
+          Multi-Agent Server.
+          A Planner, a Worker and a Reviewer agent work through the task in
+          turn. No agent calculates a figure. The run is only complete once you
+          record a decision.
+        </p>
+        <div id="brief-result" aria-live="polite"></div>
+        <button class="btn" id="multi-agent-btn">Start Multi-Agent Review</button>
+        <div id="multi-agent-result" aria-live="polite"></div>
+      </div>
+      <div class="detail-block">
         <h4>Full document</h4>
-        <div class="body-text" id="detail-body-text">${escapeHtml(doc.body_text)}</div>
+        <button type="button" class="file-btn" id="open-doc-btn">
+          <span class="file-icon" aria-hidden="true">📄</span>
+          <span class="file-name">${escapeHtml(doc.title)}</span>
+        </button>
       </div>
     </div>
   `;
@@ -283,19 +299,24 @@ function renderDetail(doc) {
     e.preventDefault();
     lookupGlossaryTerm(doc.id, el("glossary-term").value);
   });
-  el("detail-body-text").addEventListener("mouseup", () => {
-    const selected = window.getSelection().toString().trim();
-    if (selected && selected.length <= 60) el("glossary-term").value = selected;
-  });
-  el("detail-body-text").addEventListener("dblclick", () => {
-    const selected = window.getSelection().toString().trim();
-    if (selected) lookupGlossaryTerm(doc.id, selected);
-  });
+  el("open-doc-btn").addEventListener("click", () => openDocumentViewer(doc));
   applyModeChips();
 
+  el("multi-agent-btn").addEventListener("click", () => startMultiAgentRun(doc.id));
+  loadBrief(doc.id);
   el("summarize-btn").addEventListener("click", () => triggerSummarize(doc.id));
   el("edit-btn").addEventListener("click", () => openForm(doc));
   el("delete-btn").addEventListener("click", () => deleteDocument(doc.id));
+}
+
+// The full text opens in a dialog rather than filling the detail pane.
+// Selecting a phrase there fills the glossary box; double-clicking a word
+// closes the dialog and looks it up, so the definition is visible in the pane.
+function openDocumentViewer(doc) {
+  el("doc-view-title").textContent = doc.title;
+  el("detail-body-text").textContent = doc.body_text;
+  el("doc-view-modal").showModal();
+  el("detail-body-text").scrollTop = 0;
 }
 
 function renderSummaryBlock(doc) {
@@ -408,7 +429,7 @@ async function handleFilePicked(event) {
       try {
         const text = await extractPdfText(file);
         if (!text) {
-          fileError.textContent = `"${file.name}" has no extractable text (likely a scanned image) — paste the text below instead.`;
+          fileError.textContent = `"${file.name}" has no extractable text (likely a scanned image). Paste the text below instead.`;
           fileError.classList.remove("muted");
           event.target.value = "";
           return;
@@ -496,6 +517,7 @@ function applyModeChips() {
   const chips = [
     ["mcp-mode-chip", "MCP", integrations && integrations.mcp],
     ["rag-mode-chip", "RAG", integrations && integrations.rag],
+    ["multi-agent-mode-chip", "Multi-Agent", integrations && integrations.multi_agent],
   ];
   for (const [id, label, mode] of chips) {
     const chip = el(id);
@@ -614,6 +636,402 @@ function renderAskResult(result) {
 }
 
 // --------------------------------------------------------------------------
+// Release 2 -- shared Multi-Agent Server: Planner -> Worker -> Reviewer ->
+// human review. The backend starts the run asynchronously, so the UI polls
+// and shows each agent finishing. Each stage gets its own numbered section,
+// the same layout as Joshua's Multi-Agent Review page.
+// --------------------------------------------------------------------------
+
+// How often to ask for the run's progress, and the most time to wait in all.
+// The server bounds a run at three agent timeouts (3 x 55s); 180s sits above
+// that, in case the server restarts mid-run and the run can never finish.
+const MULTI_AGENT_POLL_MS = 1500;
+const MULTI_AGENT_DEADLINE_MS = 180000;
+
+const IN_FLIGHT = ["planning", "working", "reviewing"];
+
+const STAGES = {
+  planner: { step: 1, title: "Planner", tagline: "Break the task into steps" },
+  worker: { step: 2, title: "Worker", tagline: "Carry out each step" },
+  reviewer: { step: 3, title: "Reviewer", tagline: "Check the work for risks" },
+  human: { step: 4, title: "Human review", tagline: "Your decision completes the run" },
+};
+
+// The three agents in order, with the run status that means each is running
+// and the error.phase name the server uses when it fails.
+const AGENTS = [
+  { phase: "plan", label: "Planner", running: "planning" },
+  { phase: "work", label: "Worker", running: "working" },
+  { phase: "review", label: "Reviewer", running: "reviewing" },
+];
+
+const AGENT_STATE_LABELS = {
+  done: "Done",
+  running: "Running…",
+  waiting: "Waiting",
+  failed: "Failed",
+  skipped: "Not run",
+  unknown: "Unknown",
+};
+
+const AGENT_STATE_MARKS = { done: "✓", failed: "✗", running: "◌" };
+
+const DECISIONS = [
+  { value: "approve", label: "Approve", hint: "Accept the agents’ output as it is." },
+  { value: "correct", label: "Correct", hint: "Replace the output with your corrected text." },
+  { value: "partial", label: "Partially accept", hint: "Say in the note which part you accept." },
+  { value: "reject", label: "Reject", hint: "Do not accept the output." },
+];
+
+// The run being shown: { run, evidence, task, documentId, lastStatus }.
+// Bumped token stops a stale poll loop when a new run starts or the detail
+// pane moves to another document.
+let multiAgent = null;
+let multiAgentToken = 0;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function agentState(run, index) {
+  if (run.status === "failed") {
+    const failedAt = AGENTS.findIndex((agent) => agent.phase === (run.error || {}).phase);
+    if (index < failedAt) return "done";
+    return index === failedAt ? "failed" : "skipped";
+  }
+  if (run.status === "lost" || run.status === "timed_out") {
+    const runningAt = AGENTS.findIndex((agent) => agent.running === run.lastStatus);
+    return runningAt !== -1 && index < runningAt ? "done" : "unknown";
+  }
+  const runningAt = AGENTS.findIndex((agent) => agent.running === run.status);
+  if (runningAt === -1) return "done"; // awaiting_human or complete
+  if (index < runningAt) return "done";
+  return index === runningAt ? "running" : "waiting";
+}
+
+function renderAgentProgress(run) {
+  return `
+    <ol class="agent-progress" aria-label="Agent progress">
+      ${AGENTS.map((agent, index) => {
+        const state = agentState(run, index);
+        return `
+          <li class="agent-step agent-step-${state}">
+            <span class="agent-step-mark" aria-hidden="true">${AGENT_STATE_MARKS[state] || "•"}</span>
+            <strong>${agent.label}</strong>
+            <span class="agent-step-state">${AGENT_STATE_LABELS[state]}</span>
+          </li>
+        `;
+      }).join("")}
+    </ol>
+  `;
+}
+
+function renderStage(stage, body) {
+  return `
+    <section class="stage">
+      <header class="stage-header">
+        <span class="stage-step" aria-hidden="true">${stage.step}</span>
+        <div>
+          <h5 class="stage-title"><span class="stage-label">Stage ${stage.step}</span>${stage.title}</h5>
+          <p class="stage-tagline">${stage.tagline}</p>
+        </div>
+      </header>
+      <div class="stage-body">${body}</div>
+    </section>
+  `;
+}
+
+function renderItemList(items, empty) {
+  if (!items || items.length === 0) return `<p class="muted">${empty}</p>`;
+  return `<ul class="key-points">${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+}
+
+function renderErrorBanner(title, err) {
+  const detail = err.body && err.body.detail ? `<p class="muted">${escapeHtml(err.body.detail)}</p>` : "";
+  return `
+    <div class="banner error" role="alert">
+      <strong>${escapeHtml(title)}</strong>
+      <p>${escapeHtml(err.message)}</p>
+      ${detail}
+    </div>
+  `;
+}
+
+async function startMultiAgentRun(documentId) {
+  const token = ++multiAgentToken;
+  const btn = el("multi-agent-btn");
+  btn.disabled = true;
+  btn.textContent = "Running…";
+  multiAgent = null;
+  el("multi-agent-result").innerHTML = `<p class="muted spinner-text">Starting the agents</p>`;
+
+  const stillCurrent = () => token === multiAgentToken && state.selectedId === documentId;
+
+  try {
+    const started = await apiFetch(`/documents/${documentId}/multi-agent`, { method: "POST" });
+    if (!stillCurrent()) return;
+    multiAgent = { run: started, sent: started.sent, task: started.task, documentId };
+    renderMultiAgent();
+
+    const startedAt = Date.now();
+    while (IN_FLIGHT.includes(multiAgent.run.status)) {
+      await sleep(MULTI_AGENT_POLL_MS);
+      if (!stillCurrent()) return;
+      if (Date.now() - startedAt > MULTI_AGENT_DEADLINE_MS) {
+        stopPolling("timed_out", {
+          message:
+            "The agents did not finish within 3 minutes. The Multi-Agent Server may have " +
+            "restarted, or the model is very slow. Start a new review to try again.",
+        });
+        return;
+      }
+      try {
+        multiAgent.run = await apiFetch(`/multi-agent/runs/${multiAgent.run.run_id}`);
+      } catch (err) {
+        if (stillCurrent()) stopPolling("lost", err);
+        return;
+      }
+      if (!stillCurrent()) return;
+      renderMultiAgent();
+    }
+  } catch (err) {
+    if (stillCurrent()) {
+      el("multi-agent-result").innerHTML = renderErrorBanner("The Multi-Agent Review could not be run", err);
+    }
+  } finally {
+    if (token === multiAgentToken && el("multi-agent-btn")) {
+      el("multi-agent-btn").disabled = false;
+      el("multi-agent-btn").textContent = multiAgent ? "Start a new review" : "Start Multi-Agent Review";
+    }
+  }
+}
+
+// The page stopped polling for its own reasons -- the server could not be
+// reached, or the deadline passed -- keeping the last status it saw.
+function stopPolling(status, err) {
+  multiAgent.run = { ...multiAgent.run, lastStatus: multiAgent.run.status, status };
+  renderMultiAgent(renderErrorBanner("Lost contact with the Multi-Agent Review", err));
+}
+
+function renderMultiAgent(extra = "") {
+  const { run, sent } = multiAgent;
+  const resultEl = el("multi-agent-result");
+  const busy = IN_FLIGHT.includes(run.status);
+  const finished = run.status === "awaiting_human" || run.status === "complete";
+
+  let html = renderAgentProgress(run) + extra;
+
+  if (busy) {
+    html += `<p class="muted spinner-text">The agents are working. Three run one after another, so this can take a minute</p>`;
+  }
+
+  if (run.status === "failed") {
+    const failedAgent = AGENTS.find((agent) => agent.phase === (run.error || {}).phase);
+    html += `
+      <div class="banner error" role="alert">
+        <strong>The ${failedAgent ? failedAgent.label : "agent"} could not run, so this review stopped</strong>
+        <p>${escapeHtml((run.error || {}).detail || "unknown error")}</p>
+        <p class="muted">Check Ollama is running on the host with the model pulled, or start the
+        Multi-Agent Server with <code>STUB_AGENTS=true</code>. Then start a new review.</p>
+      </div>
+    `;
+  }
+
+  if (finished) {
+    html += `
+      ${run.stub ? `
+        <div class="banner warning" role="status">
+          <strong>Stub agents</strong>
+          <p>The Multi-Agent Server is running with <code>STUB_AGENTS=true</code>, so this output is canned and no model was called.</p>
+        </div>` : ""}
+      <dl class="run-facts">
+        <div><dt>Run</dt><dd><code>${escapeHtml(run.run_id)}</code></dd></div>
+        <div><dt>Model</dt><dd><code>${escapeHtml(run.model || "unknown")}</code></dd></div>
+        <div><dt>Document words</dt><dd>${sent.word_count}</dd></div>
+        <div><dt>Text sent</dt><dd>${sent.cut_short ? `first ${sent.characters_sent} characters` : "whole document"}</dd></div>
+      </dl>
+      ${renderStage(STAGES.planner, run.plan.length === 0
+        ? `<p class="muted">The planner returned no steps.</p>`
+        : `<ol class="key-points">${run.plan.map((step) => `
+            <li>${escapeHtml(step.action)}${(step.evidence || []).length
+              ? ` <span class="muted">(evidence: ${step.evidence.map(escapeHtml).join(", ")})</span>` : ""}</li>`).join("")}
+          </ol>`)}
+      ${renderStage(STAGES.worker, `
+        <div class="summary-text worker-output">${escapeHtml(run.work || "The worker returned no output.")}</div>
+        ${run.work_repeated_lines_removed ? `<p class="muted">${run.work_repeated_lines_removed} repeated line${run.work_repeated_lines_removed === 1 ? "" : "s"} hidden. The model got stuck repeating itself.</p>` : ""}
+      `)}
+      ${renderStage(STAGES.reviewer, `
+        <h6 class="stage-subheading">Risks</h6>
+        ${renderItemList(run.review && run.review.risks, "No risks reported.")}
+        <h6 class="stage-subheading">Recommendations</h6>
+        ${renderItemList(run.review && run.review.recommendations, "No recommendations.")}
+      `)}
+      ${renderStage(STAGES.human, `<div id="human-review"></div>`)}
+    `;
+  }
+
+  resultEl.innerHTML = html;
+
+  if (finished) {
+    if (run.status === "complete") {
+      renderDecisionBanner({ run_id: run.run_id, status: run.status, ...run.human_review });
+    } else {
+      renderHumanReviewForm(run);
+    }
+  }
+}
+
+const DECISION_LABELS = { approve: "Approved", correct: "Corrected", partial: "Partially accepted" };
+
+// The latest brief a person accepted for this document, kept by the backend
+// so it shows on every visit, even with the Multi-Agent Server stopped.
+async function loadBrief(documentId) {
+  let brief = null;
+  try {
+    brief = await apiFetch(`/documents/${documentId}/brief`);
+  } catch (err) {
+    if (err.status !== 404) brief = { error: err };
+  }
+  if (state.selectedId !== documentId || !el("brief-result")) return;
+  el("brief-result").innerHTML = renderBrief(brief);
+}
+
+function renderBrief(brief) {
+  if (!brief) {
+    return `<p class="muted brief-empty">No research brief accepted yet. Run a review and approve, correct or partially accept it to keep its main takeaways here.</p>`;
+  }
+  if (brief.error) {
+    return `<p class="banner error">Could not load the research brief: ${escapeHtml(brief.error.message)}</p>`;
+  }
+  const points = brief.takeaways.length
+    ? `<ul class="key-points">${brief.takeaways.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>`
+    : `<div class="summary-text">${escapeHtml(brief.brief_text)}</div>`;
+  return `
+    <div class="brief-card">
+      <div class="rag-result-meta">
+        <strong>${brief.takeaways.length ? "Main takeaways" : "Research brief"}</strong>
+        <span class="badge">${escapeHtml(DECISION_LABELS[brief.decision] || brief.decision)}</span>
+      </div>
+      ${points}
+      ${brief.note ? `<p class="muted">Reviewer note: ${escapeHtml(brief.note)}</p>` : ""}
+      ${brief.takeaways.length ? `
+        <details class="brief-full">
+          <summary>Full brief</summary>
+          <div class="summary-text">${escapeHtml(brief.brief_text)}</div>
+        </details>` : ""}
+      <p class="muted">Run <code>${escapeHtml(brief.run_id.slice(0, 8))}</code> · decided ${escapeHtml(brief.decided_at)}</p>
+    </div>
+  `;
+}
+
+function renderDecisionBanner(decided) {
+  const label = (DECISIONS.find((d) => d.value === decided.decision) || {}).label || decided.decision;
+  el("human-review").innerHTML = `
+    <div class="banner success decision-${escapeHtml(decided.decision)}" role="status">
+      <strong>Decision recorded: ${escapeHtml(label)}</strong>
+      <p>Run <code>${escapeHtml(decided.run_id)}</code> is <strong>${escapeHtml(decided.status)}</strong>${decided.decided_at ? ` as of ${escapeHtml(decided.decided_at)}` : ""}.</p>
+      ${decided.note ? `<p>Note: ${escapeHtml(decided.note)}</p>` : ""}
+      ${decided.corrected ? `<p>Corrected text:</p><div class="summary-text">${escapeHtml(decided.corrected)}</div>` : ""}
+    </div>
+  `;
+}
+
+// Mirrors the server's rules so the common mistakes are caught before a
+// round trip; the server still has the final say and its errors are shown too.
+function validateReview({ decision, note, corrected }) {
+  const errors = {};
+  if (!decision) errors.decision = "Choose a decision.";
+  if (decision === "partial" && !note.trim()) errors.note = "Say which part you accept.";
+  if (decision === "correct" && !corrected.trim()) errors.corrected = "Enter the corrected text.";
+  return errors;
+}
+
+function renderHumanReviewForm(run) {
+  el("human-review").innerHTML = `
+    <form id="human-review-form" class="human-review-form" novalidate>
+      <fieldset class="decision-options" data-field="decision">
+        <legend>Decision</legend>
+        ${DECISIONS.map((option) => `
+          <label class="decision-option">
+            <input type="radio" name="decision" value="${option.value}" />
+            <span><strong>${option.label}</strong> <span class="muted">${option.hint}</span></span>
+          </label>
+        `).join("")}
+        <p class="field-error" hidden></p>
+      </fieldset>
+      <div data-field="note">
+        <label for="human-review-note">Note <span id="note-required" class="muted">(optional)</span></label>
+        <textarea id="human-review-note" rows="3" maxlength="2000"></textarea>
+        <p class="field-error" hidden></p>
+      </div>
+      <div data-field="corrected" hidden>
+        <label for="human-review-corrected">Corrected text (required)</label>
+        <textarea id="human-review-corrected" rows="5"></textarea>
+        <p class="field-error" hidden></p>
+      </div>
+      <div id="human-review-error"></div>
+      <button type="submit" class="btn btn-primary">Submit decision</button>
+    </form>
+  `;
+
+  const form = el("human-review-form");
+  form.addEventListener("change", () => {
+    const decision = form.elements.decision.value;
+    const correctedField = form.querySelector('[data-field="corrected"]');
+    const corrected = el("human-review-corrected");
+    if (decision === "correct" && !corrected.value) corrected.value = run.work || "";
+    correctedField.hidden = decision !== "correct";
+    el("note-required").textContent = decision === "partial" ? "(required)" : "(optional)";
+  });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitHumanReview(run.run_id, form);
+  });
+}
+
+function showFieldErrors(form, errors) {
+  for (const field of form.querySelectorAll("[data-field]")) {
+    const message = errors[field.dataset.field];
+    const errorEl = field.querySelector(".field-error");
+    field.classList.toggle("field-invalid", Boolean(message));
+    errorEl.textContent = message || "";
+    errorEl.hidden = !message;
+  }
+}
+
+async function submitHumanReview(runId, form) {
+  const review = {
+    decision: form.elements.decision.value,
+    note: el("human-review-note").value,
+    corrected: el("human-review-corrected").value,
+  };
+  const errors = validateReview(review);
+  showFieldErrors(form, errors);
+  if (Object.keys(errors).length > 0) return;
+
+  const payload = { decision: review.decision };
+  if (review.note.trim()) payload.note = review.note.trim();
+  if (review.decision === "correct") payload.corrected = review.corrected.trim();
+
+  const submitBtn = form.querySelector("button[type=submit]");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting…";
+  el("human-review-error").innerHTML = "";
+  try {
+    const decided = await apiFetch(`/multi-agent/runs/${runId}/review`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    multiAgent.run = { ...multiAgent.run, status: decided.status, human_review: { ...payload, decided_at: decided.decided_at } };
+    renderMultiAgent();
+    loadBrief(multiAgent.documentId);
+  } catch (err) {
+    el("human-review-error").innerHTML = renderErrorBanner("The decision could not be recorded", err);
+    if (err.body && err.body.fields) showFieldErrors(form, err.body.fields);
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit decision";
+  }
+}
+
+// --------------------------------------------------------------------------
 // wiring
 // --------------------------------------------------------------------------
 
@@ -654,6 +1072,23 @@ function init() {
   el("field-body-file").addEventListener("change", handleFilePicked);
 
   el("close-detail-btn").addEventListener("click", closeDetail);
+
+  el("close-doc-view-btn").addEventListener("click", () => el("doc-view-modal").close());
+  el("doc-view-modal").addEventListener("click", (e) => {
+    // A click on the backdrop lands on the dialog element itself.
+    if (e.target === el("doc-view-modal")) el("doc-view-modal").close();
+  });
+  el("detail-body-text").addEventListener("mouseup", () => {
+    const selected = window.getSelection().toString().trim();
+    if (selected && selected.length <= 60 && el("glossary-term")) el("glossary-term").value = selected;
+  });
+  el("detail-body-text").addEventListener("dblclick", () => {
+    const selected = window.getSelection().toString().trim();
+    if (!selected || state.selectedId === null) return;
+    el("doc-view-modal").close();
+    lookupGlossaryTerm(state.selectedId, selected);
+    el("glossary-result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
 
   el("ask-form").addEventListener("submit", askLibrary);
 

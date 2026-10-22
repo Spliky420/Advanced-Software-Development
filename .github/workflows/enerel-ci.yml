@@ -14,14 +14,25 @@
 # the shared MCP and RAG servers run on a developer's host, never in CI. The
 # tests stub the MCP/RAG network legs, and a final step proves the running
 # app reports both modes off and refuses MCP/RAG requests with a 503.
+#
+# Release 2: post-commit CI/CD endpoint testing. The two endpoint functions
+# under test are the Research Library's Multi-Agent workflow endpoints:
+#   1. start_multi_agent_workflow  POST /api/documents/<id>/multi-agent
+#   2. review_multi_agent_run      POST /api/multi-agent/runs/<run_id>/review
+# They run as their own step with a JUnit report uploaded as evidence, then
+# again against the real shared Multi-Agent Server started in stub mode
+# (STUB_AGENTS=true: canned agents, no model, no Ollama). Multi-agent mode is
+# otherwise DISABLED in CI, matching the cloud baseline.
 
 name: enerel-ci
 
 on:
   push:
     branches:
+      - main
       - Enerel-Research-Library
       - enerel-release1
+      - enerel-release2
     paths:
       - 'Enerel/**'
       - '.github/workflows/enerel-ci.yml'
@@ -56,6 +67,8 @@ jobs:
       MCP_SERVER_URL: http://127.0.0.1:1/mcp
       RAG_ENABLED: "false"
       RAG_SERVER_URL: http://127.0.0.1:1
+      MULTI_AGENT_ENABLED: "false"
+      MULTI_AGENT_URL: http://127.0.0.1:1
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
@@ -83,7 +96,93 @@ jobs:
       - name: Run pytest
         run: pytest Enerel/tests -v
 
-      - name: Confirm MCP and RAG modes are disabled
+      - name: Post-commit endpoint tests (2 endpoint functions)
+        # The two endpoint functions this student is assessed on, run on
+        # their own so the JUnit report and job summary are evidence of
+        # exactly those. The Multi-Agent Server is stubbed at its one network
+        # leg (multi_agent_client.requests.request).
+        run: |
+          mkdir -p test-reports
+          pytest Enerel/tests/test_release2_multi_agent.py -v \
+            -k "start_workflow or human_decision or invalid_review or second_review" \
+            --junitxml=test-reports/enerel-endpoint-tests.xml
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          suite = ET.parse("test-reports/enerel-endpoint-tests.xml").getroot().find("testsuite")
+          print("## Enerel -- post-commit endpoint tests\n")
+          print("| Endpoint function | Route |\n| --- | --- |")
+          print("| `start_multi_agent_workflow` | `POST /api/documents/<id>/multi-agent` |")
+          print("| `review_multi_agent_run` | `POST /api/multi-agent/runs/<run_id>/review` |\n")
+          print(f"**{suite.get('tests')} tests, {suite.get('failures')} failures, {suite.get('errors')} errors**\n")
+          for case in suite.iter("testcase"):
+              ok = case.find("failure") is None and case.find("error") is None
+              print(f"- {'PASS' if ok else 'FAIL'} `{case.get('name')}`")
+          PY
+
+      - name: Upload endpoint test report
+        if: always()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: enerel-endpoint-tests
+          path: test-reports/
+
+      - name: Endpoint tests against the shared Multi-Agent Server (stub agents)
+        # Starts the real multi-agent-server/server.py with STUB_AGENTS=true
+        # (no model is called) and drives the two endpoints through the full
+        # Planner -> Worker -> Reviewer -> human review state machine.
+        working-directory: Enerel/backend
+        env:
+          MULTI_AGENT_ENABLED: "true"
+          MULTI_AGENT_URL: http://127.0.0.1:5004
+        run: |
+          pip install -r ../../multi-agent-server/requirements.txt
+          (cd ../../multi-agent-server && STUB_AGENTS=true \
+            WORKFLOW_HISTORY_PATH="$RUNNER_TEMP/workflow_history.jsonl" \
+            nohup python server.py < /dev/null > "$RUNNER_TEMP/multi-agent.log" 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5004/health && break; sleep 1; done
+          python - <<'PY'
+          import json, os, sqlite3, tempfile, time
+          import db, embeddings
+          embeddings.index_document = lambda *a: {"indexed": False}
+          path = os.path.join(tempfile.mkdtemp(), "library.db")
+          conn = sqlite3.connect(path)
+          conn.executescript(open("../database/init.sql").read())
+          conn.commit(); conn.close()
+          db.DB_PATH = path
+          from app import create_app
+          client = create_app().test_client()
+
+          doc = client.post("/api/documents", json={
+              "title": "CI brief", "doc_type": "report",
+              "body_text": "ETF fees fell to 0.15% in 2025. Compare them before buying.",
+          }).get_json()
+
+          started = client.post(f"/api/documents/{doc['id']}/multi-agent")
+          print("start_multi_agent_workflow ->", started.status_code, started.get_json()["status"])
+          assert started.status_code == 202
+          run_id = started.get_json()["run_id"]
+
+          for _ in range(50):
+              run = client.get(f"/api/multi-agent/runs/{run_id}").get_json()
+              if run["status"] in ("awaiting_human", "failed"):
+                  break
+              time.sleep(0.2)
+          print("agents finished       ->", run["status"], f"{len(run['plan'])} plan steps")
+          assert run["status"] == "awaiting_human"
+
+          review = client.post(f"/api/multi-agent/runs/{run_id}/review",
+                               json={"decision": "approve", "note": "CI"})
+          print("review_multi_agent_run ->", review.status_code, review.get_json())
+          assert review.status_code == 200 and review.get_json()["status"] == "complete"
+
+          again = client.post(f"/api/multi-agent/runs/{run_id}/review", json={"decision": "reject"})
+          print("second review          ->", again.status_code)
+          assert again.status_code == 409
+          PY
+          echo "--- workflow history ---"
+          cat "$RUNNER_TEMP/workflow_history.jsonl" | cut -c1-200
+
+      - name: Confirm MCP, RAG and Multi-Agent modes are disabled
         # Exercises the real app (Flask test client against a schema-only
         # database) with the job's env: the integrations endpoint must report
         # both modes off, and both MCP and RAG endpoints must refuse with 503
@@ -109,6 +208,7 @@ jobs:
           print(json.dumps(status, indent=2))
           assert status["mcp"]["enabled"] is False, "MCP must be disabled in CI"
           assert status["rag"]["enabled"] is False, "RAG must be disabled in CI"
+          assert status["multi_agent"]["enabled"] is False, "Multi-Agent must be disabled in CI"
 
           mcp = client.post("/api/documents/1/glossary", json={"term": "ETF"})
           rag = client.post("/api/library/ask", json={"question": "what is an ETF"})
@@ -116,7 +216,10 @@ jobs:
           print("RAG ask             ->", rag.status_code, rag.get_json())
           assert mcp.status_code == 503 and mcp.get_json()["mcp_enabled"] is False
           assert rag.status_code == 503 and rag.get_json()["rag_enabled"] is False
-          print("MCP and RAG integration present and disabled for CI/CD.")
+          agents = client.post("/api/documents/1/multi-agent")
+          print("Multi-Agent workflow ->", agents.status_code, agents.get_json())
+          assert agents.status_code == 503 and agents.get_json()["multi_agent_enabled"] is False
+          print("MCP, RAG and Multi-Agent integration present and disabled for CI/CD.")
           PY
 
   images:
