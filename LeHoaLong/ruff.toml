@@ -9,7 +9,10 @@
 #
 # `ruff format` is deliberately NOT a CI gate. The rules below catch real
 # mistakes -- unused imports, undefined names, shadowed builtins, mutable
-# default arguments -- and formatting is left to the author.
+# default arguments, insecure patterns -- and formatting is left to the author.
+#
+# The same config runs from the root .pre-commit-config.yaml, so a finding
+# stops the commit locally before CI ever sees it.
 
 # Matches python:3.11-slim in the backend and database Dockerfiles, so ruff
 # judges the code against the interpreter the containers actually ship.
@@ -33,13 +36,21 @@ select = [
     "UP",   # pyupgrade -- syntax that is outdated for target-version
     "B",    # flake8-bugbear -- likely bugs, e.g. mutable default arguments
     "C4",   # flake8-comprehensions
+    "S",    # flake8-bandit -- security: SQL built from strings, bind-all, assert, ...
 ]
 
 [lint.per-file-ignores]
 # The tests import `app` only after editing sys.path, so those imports
 # cannot come first. conftest.py already carries an inline noqa; this keeps
 # a future test file from tripping over the same unavoidable ordering.
-"tests/*" = ["E402"]
+#
+# S101 (assert): pytest is built on bare asserts, so in tests the rule is
+# all noise (813 hits). Outside tests it stays on, because asserts are
+# stripped under `python -O` -- a check that must hold is an explicit raise.
+"tests/*" = ["E402", "S101"]
+
+# The post-commit endpoint tests are pytest too: bare asserts are the point.
+"endpoint_tests/*" = ["S101"]
 
 # tools/build_corpus.py holds the corpus prose itself, as string literals.
 # A fact wrapped across two source lines is harder to read and easy to break

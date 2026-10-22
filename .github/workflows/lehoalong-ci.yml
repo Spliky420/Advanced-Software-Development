@@ -4,8 +4,8 @@
 # filters below keep it off the other five students' work, and nothing here
 # reads or writes outside LeHoaLong/ and this file.
 #
-# AI-Mode, MCP and RAG are all DISABLED in CI, and none of the three is
-# needed to run the suite. The Release 1 brief requires this; the `backend`
+# AI-Mode, MCP, RAG and the multi-agent server are all DISABLED in CI, and
+# none of the four is needed to run the suite. The Release 1 brief requires this; the `backend`
 # job below states it explicitly in its own step so it is visible in the
 # Actions log rather than only in this comment.
 #
@@ -52,6 +52,11 @@ on:
   # So the whole pipeline can be re-run by hand from the Actions tab without
   # pushing an empty commit.
   workflow_dispatch:
+  # Weekly, on main. pip-audit's answer changes when an advisory is
+  # published, not only when a requirements file does, and the push
+  # triggers above would never notice that.
+  schedule:
+    - cron: '0 3 * * 1'
 
 # Least privilege: nothing here needs to write to the repository.
 permissions:
@@ -84,6 +89,15 @@ jobs:
       MCP_SERVER_URL: http://127.0.0.1:1/mcp
       RAG_ENABLED: 'false'
       RAG_SERVER_URL: http://127.0.0.1:1
+
+      # Release 2. The test app pins AI_MODE_ENABLED on and drives a fake
+      # model in-process (see tests/conftest.py); this is the outer layer,
+      # matching what the endpoint job and the cloud deployment run. The
+      # multi-agent tests use the real server in stub mode through the
+      # client's transport seam, so it is off here too.
+      AI_MODE_ENABLED: 'false'
+      MULTI_AGENT_ENABLED: 'false'
+      MULTI_AGENT_URL: http://127.0.0.1:1
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
@@ -106,9 +120,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r LeHoaLong/tests/requirements.txt
-          pip install ruff==0.16.6
+          pip install ruff==0.16.6 pip-audit==2.10.1
 
-      - name: Confirm AI-Mode, MCP and RAG are disabled
+      - name: Confirm AI-Mode, MCP, RAG and the multi-agent server are disabled
         # The Release 1 brief requires all three to be off in CI. Printed as
         # a step rather than left in a comment so it is visible in the Actions
         # log, and asserted rather than only printed so that deleting an env
@@ -119,12 +133,21 @@ jobs:
           echo "MCP_SERVER_URL  = ${MCP_SERVER_URL}  (dead port)"
           echo "RAG_ENABLED     = ${RAG_ENABLED}"
           echo "RAG_SERVER_URL  = ${RAG_SERVER_URL}  (dead port)"
+          echo "AI_MODE_ENABLED     = ${AI_MODE_ENABLED}"
+          echo "MULTI_AGENT_ENABLED = ${MULTI_AGENT_ENABLED}"
+          echo "MULTI_AGENT_URL     = ${MULTI_AGENT_URL}  (dead port)"
           test "${MCP_ENABLED}" = "false"
           test "${RAG_ENABLED}" = "false"
-          case "${OLLAMA_BASE_URL}${MCP_SERVER_URL}${RAG_SERVER_URL}" in
-            *127.0.0.1:1*) ;;
-            *) echo "a service URL is not pointed at a dead port"; exit 1 ;;
-          esac
+          test "${AI_MODE_ENABLED}" = "false"
+          test "${MULTI_AGENT_ENABLED}" = "false"
+          # Each URL on its own: the old single `case` over the concatenation
+          # passed if any one of them was dead.
+          for url in "${OLLAMA_BASE_URL}" "${MCP_SERVER_URL}" "${RAG_SERVER_URL}" "${MULTI_AGENT_URL}"; do
+            case "${url}" in
+              *127.0.0.1:1*) ;;
+              *) echo "${url} is not pointed at a dead port"; exit 1 ;;
+            esac
+          done
           # The suite must never speak the MCP protocol, so the SDK is not
           # installed. app/mcp/client.py imports it lazily inside the one
           # transport function every test replaces, which is why 400+ tests
@@ -138,8 +161,19 @@ jobs:
 
       - name: Lint Python (ruff)
         # Config is LeHoaLong/ruff.toml -- scoped to this directory so it
-        # imposes no style on anyone else's code.
+        # imposes no style on anyone else's code. Includes the "S" security
+        # rules; the root pre-commit hook runs the same check before commit.
         run: ruff check LeHoaLong
+
+      - name: Audit dependencies (pip-audit)
+        # Fails on any pinned version with a known vulnerability. One run per
+        # file, as in .pre-commit-config.yaml. The backend file includes
+        # gunicorn and the mcp SDK, which pip-audit resolves in its own
+        # temporary environment, so nothing is installed into this one --
+        # the "mcp SDK is absent" check above still holds.
+        run: |
+          pip-audit -r LeHoaLong/backend/requirements.txt
+          pip-audit -r LeHoaLong/tests/requirements.txt
 
       - name: Build and seed the database
         # init_db.py asserts every table carries at least MIN_ROWS_PER_TABLE
@@ -236,3 +270,103 @@ jobs:
         run: |
           docker run --rm -v lehoalong-ci-db:/data             --entrypoint python lehoalong-db:ci             /app/init_db.py --db /data/goals.db --force
           docker volume rm lehoalong-ci-db
+
+  # ---------------------------------------------------------------------
+  # Post-commit: the built images, serving over real HTTP, tested on two
+  # endpoints. Everything above tests code; this tests what ships.
+  # ---------------------------------------------------------------------
+  post-commit-endpoint-tests:
+    name: Post-commit endpoint tests (2 endpoints, real HTTP)
+    # Only once the unit suite has passed: an endpoint failure should mean
+    # "the running service is wrong", never "a unit test would have said so".
+    needs: backend
+    runs-on: ubuntu-24.04
+    env:
+      BASE_URL: http://127.0.0.1:8061
+      REPORT_DIR: endpoint-report
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: LeHoaLong/tests/requirements.txt
+
+      - name: Install the test client
+        # requests and pytest only. The backend runs from its image, so none
+        # of its own dependencies are installed on the runner.
+        run: pip install -r LeHoaLong/tests/requirements.txt
+
+      - name: Build the database and backend images
+        run: |
+          docker build -t lehoalong-db:ci LeHoaLong/database
+          docker build -t lehoalong-backend:ci LeHoaLong/backend
+
+      - name: Start the database and backend (AI-Mode, MCP, RAG and multi-agent off)
+        # The same pairing compose runs: the database image seeds a volume,
+        # the backend image serves it with gunicorn. Every AI service URL is a
+        # dead port, as in the backend job -- neither endpoint calls a model,
+        # and this proves it, because a call would fail rather than succeed.
+        # Bound to 127.0.0.1 so nothing outside the runner can reach it.
+        run: |
+          docker volume create lehoalong-ci-data
+          docker run -d --name lehoalong-db -v lehoalong-ci-data:/data lehoalong-db:ci
+          for i in $(seq 1 60); do
+            docker logs lehoalong-db 2>&1 | grep -q '\[database\] ready' && break
+            sleep 1
+          done
+          docker logs lehoalong-db 2>&1 | grep -q '\[database\] ready' || { docker logs lehoalong-db; exit 1; }
+
+          docker run -d --name lehoalong-backend -p 127.0.0.1:8061:5000 \
+            -v lehoalong-ci-data:/data \
+            -e AI_MODE_ENABLED=false -e OLLAMA_BASE_URL=http://127.0.0.1:1 \
+            -e MCP_ENABLED=false -e MCP_SERVER_URL=http://127.0.0.1:1/mcp \
+            -e RAG_ENABLED=false -e RAG_SERVER_URL=http://127.0.0.1:1 \
+            -e MULTI_AGENT_ENABLED=false -e MULTI_AGENT_URL=http://127.0.0.1:1 \
+            lehoalong-backend:ci
+          # Ready when one of the two endpoints under test answers 200.
+          for i in $(seq 1 60); do
+            curl --silent --fail --output /dev/null "${BASE_URL}/api/budget/summary" && exit 0
+            sleep 1
+          done
+          docker logs lehoalong-backend
+          exit 1
+
+      - name: Snapshot the database for the oracle
+        # The tests recompute every expected figure from this copy with plain
+        # SQL. Taken before any test runs; nothing the tests call changes a
+        # contribution, step, goal or budget.
+        run: docker cp lehoalong-backend:/data/goals.db "${RUNNER_TEMP}/oracle.db"
+
+      - name: Run the endpoint tests
+        env:
+          ENDPOINT_BASE_URL: ${{ env.BASE_URL }}
+          ENDPOINT_DB_PATH: ${{ runner.temp }}/oracle.db
+          ENDPOINT_REPORT_DIR: ${{ env.REPORT_DIR }}
+        run: pytest LeHoaLong/endpoint_tests -v --junitxml="${REPORT_DIR}/junit.xml"
+
+      - name: Add the report to the run summary
+        if: always()
+        run: |
+          mkdir -p "${REPORT_DIR}"
+          docker logs lehoalong-backend > "${REPORT_DIR}/backend.log" 2>&1 || true
+          if [ -f "${REPORT_DIR}/endpoint-report.md" ]; then
+            cat "${REPORT_DIR}/endpoint-report.md" >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "No endpoint report was written -- see the earlier steps." >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload the report artefact
+        # Markdown for people, JSON for anything that wants to compare runs,
+        # JUnit XML for tooling, and the backend's own log. Uploaded on
+        # failure too -- that is when it is needed.
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: endpoint-report-${{ github.sha }}
+          path: ${{ env.REPORT_DIR }}/
+          retention-days: 30
+          if-no-files-found: warn

@@ -20,6 +20,8 @@ import shutil
 import socket
 import sqlite3
 import sys
+import threading
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -105,6 +107,17 @@ def app(db_path):
             "RAG_SERVER_URL": "http://rag.invalid:5003",
             "RAG_TIMEOUT_SECONDS": 150.0,
             "RAG_TOP_K": 5,
+            # Release 2. AI-Mode is pinned ON here, deliberately against the
+            # CI environment (AI_MODE_ENABLED=false): the suite never reaches
+            # Ollama because `fake_model` replaces it, and the tests of the
+            # model path need that path taken. The tests of the switched-off
+            # path set it False themselves.
+            "AI_MODE_ENABLED": True,
+            # The multi-agent server: off, exactly as in CI, until the
+            # `multi_agent` fixture switches it on.
+            "MULTI_AGENT_ENABLED": False,
+            "MULTI_AGENT_URL": "http://multi-agent.invalid:5004",
+            "MULTI_AGENT_TIMEOUT_SECONDS": 10.0,
         }
     )
     yield application
@@ -534,3 +547,99 @@ def stub_rag(app, monkeypatch):
         return calls
 
     return install
+
+
+# ---------------------------------------------------------------------------
+# Multi-agent server (Release 2)
+# ---------------------------------------------------------------------------
+
+MULTI_AGENT_DIR = REPO_ROOT / "multi-agent-server"
+
+
+@pytest.fixture
+def multi_agent(app, tmp_path, monkeypatch):
+    """The real shared multi-agent server, in stub mode, behind the client's seam.
+
+    Not a hand-written fake: `multi-agent-server/server.py` itself, built
+    with STUB_AGENTS=true and its history in this test's tmp_path, and
+    reached through its Flask test client. So the async start, the state
+    machine, the one-decision rule and every 404/409 are the server's own,
+    and a change to its contract fails these tests -- which is the point.
+    Only app/multiagent/client.py's `_request` is replaced; every line that
+    reads a response is the real code. No socket is opened.
+
+    Installing it switches MULTI_AGENT_ENABLED on, because that is the only
+    reason to install it. Returns a namespace with:
+
+        calls          every {method, path, payload} this backend sent
+        server         the server's Flask test client, to act on it directly
+        store          its WorkflowStore, to inspect a run
+        wait_for(id, *statuses)   block until the run reaches one of them
+        unavailable(exc)          make every later call raise exc
+        hold_worker()             park runs at `working` until release() is called
+    """
+    monkeypatch.syspath_prepend(str(MULTI_AGENT_DIR))
+    # server.py builds an app at import; point that one at tmp_path too, or
+    # importing it would replay a real workflow_history.jsonl on this machine.
+    monkeypatch.setenv("WORKFLOW_HISTORY_PATH", str(tmp_path / "import-history.jsonl"))
+    import agents as ma_agents
+    import server as ma_server
+    from app.multiagent import client as ma_client
+
+    monkeypatch.setattr(ma_agents, "ping", lambda config: False)
+    server_app = ma_server.create_app(
+        {
+            "TESTING": True,
+            "STUB_AGENTS": True,
+            "WORKFLOW_HISTORY_PATH": str(tmp_path / "workflow_history.jsonl"),
+            "OLLAMA_BASE_URL": "http://ollama.invalid:11434",
+        }
+    )
+    server = server_app.test_client()
+    calls: list[dict] = []
+    state = {"unavailable": None}
+
+    def _request(method, path, payload=None, timeout=None):
+        calls.append({"method": method, "path": path, "payload": payload})
+        if state["unavailable"] is not None:
+            raise state["unavailable"]
+        response = server.open(path, method=method, json=payload)
+        return response.status_code, response.get_json()
+
+    monkeypatch.setattr(ma_client, "_request", _request)
+    app.config["MULTI_AGENT_ENABLED"] = True
+
+    def wait_for(run_id, *statuses, seconds=5.0):
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            run = server.get(f"/workflow/{run_id}").get_json()
+            if run["status"] in statuses:
+                return run
+            time.sleep(0.01)
+        raise AssertionError(f"run {run_id} never reached {statuses}; it is {run['status']!r}")
+
+    def unavailable(exc=None):
+        state["unavailable"] = exc or ma_client.MultiAgentUnavailable("could not reach the multi-agent server")
+
+    released = threading.Event()
+
+    def hold_worker():
+        real_work = ma_agents.work
+
+        def held(*args, **kwargs):
+            released.wait(5)
+            return real_work(*args, **kwargs)
+
+        monkeypatch.setattr(ma_agents, "work", held)
+        return released
+
+    yield SimpleNamespace(
+        calls=calls,
+        server=server,
+        store=server_app.extensions["workflow_store"],
+        wait_for=wait_for,
+        unavailable=unavailable,
+        hold_worker=hold_worker,
+    )
+    released.set()
+

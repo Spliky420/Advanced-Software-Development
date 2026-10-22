@@ -6,7 +6,7 @@ import sqlite3
 
 COLUMNS = ("contribution_id", "goal_id", "amount", "contribution_date", "notes")
 
-_SELECT = f"SELECT {', '.join(COLUMNS)} FROM contributions"
+_SELECT = f"SELECT {', '.join(COLUMNS)} FROM contributions"  # noqa: S608 -- table and columns are module constants; no input reaches this string
 
 
 def list_for_goal(conn: sqlite3.Connection, goal_id: int) -> list[sqlite3.Row]:
@@ -40,7 +40,7 @@ def totals_by_goal(conn: sqlite3.Connection, goal_ids: list[int]) -> dict[int, f
           FROM contributions
          WHERE goal_id IN ({placeholders})
          GROUP BY goal_id
-        """,
+        """,  # noqa: S608 -- only "?" placeholders are interpolated; the ids are bound parameters
         goal_ids,
     ).fetchall()
     totals = dict.fromkeys(goal_ids, 0.0)
