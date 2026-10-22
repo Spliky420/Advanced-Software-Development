@@ -6,12 +6,14 @@ import HoldingEditPage from './pages/HoldingEditPage'
 import AllocationPage from './pages/AllocationPage'
 import TargetsPage from './pages/TargetsPage'
 import DriftReviewPage from './pages/DriftReviewPage'
+import MultiAgentReviewPage from './pages/MultiAgentReviewPage'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Holdings', end: true },
   { to: '/allocation', label: 'Allocation' },
   { to: '/targets', label: 'Targets' },
   { to: '/drift', label: 'Drift review' },
+  { to: '/multi-agent', label: 'Multi-Agent Review' },
 ]
 
 function NotFoundPage() {
@@ -54,6 +56,7 @@ export default function App() {
           <Route path="/allocation" element={<AllocationPage />} />
           <Route path="/targets" element={<TargetsPage />} />
           <Route path="/drift" element={<DriftReviewPage />} />
+          <Route path="/multi-agent" element={<MultiAgentReviewPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
