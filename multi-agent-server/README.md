@@ -57,8 +57,10 @@ server (or run `python server.py` directly).
   it, so give them meaningful names (`"monthly_totals"`, not `"data"`).
 - `caller` is optional and defaults to `"unknown"`. It identifies you in the
   audit trail, so send it.
+- `async` is optional and defaults to `false`. See
+  [Asynchronous runs](#asynchronous-runs).
 
-It blocks until all three agents have run, then returns **201**:
+By default it blocks until all three agents have run, then returns **201**:
 
 ```json
 {
@@ -79,10 +81,35 @@ It blocks until all three agents have run, then returns **201**:
 `human_review` and `error` are additions to the circulated contract. Every
 circulated key is unchanged.
 
+#### Asynchronous runs
+
+Send `"async": true` and the POST returns **202** straight away, before any
+agent has run, with the same body at status `planning` and a `Location:
+/workflow/<run_id>` header:
+
+```json
+{ "run_id": "785b...", "status": "planning", "plan": [], "work": "",
+  "review": { "risks": [], "recommendations": [] }, "model": "qwen2.5:0.5b",
+  "stub": false, "human_review": null, "error": null }
+```
+
+The agents then run on a background thread, and you poll `GET
+/workflow/<run_id>` until the status is `awaiting_human` or `failed`. That
+is the only way to show a user each agent finishing: with the default
+synchronous POST you do not have the `run_id` until everything is done.
+
+The pipeline is the same in both modes, so a finished async run is
+identical to a synchronous one. What differs is where a failure shows up.
+An agent that cannot run gives no 503 on an async POST, because the
+response has already gone; the run goes to `failed` with `error.phase` and
+`error.detail`, exactly as a 503'd synchronous run does. Validation still
+happens before anything starts, so a bad body is a 400 in both modes.
+
 ### `GET /workflow/<run_id>`
 
-**200** with the same body, reflecting the current state. Poll it from
-another request while a `POST /workflow` is still running to show progress.
+**200** with the same body, reflecting the current state. Each agent's
+output appears as soon as that agent finishes. Poll it after an async POST
+to show progress.
 
 | `status`         | Meaning                                              |
 | ---------------- | ---------------------------------------------------- |
@@ -193,7 +220,7 @@ never returned by the API.
 
 ## Timeouts
 
-`POST /workflow` is **synchronous**: three Ollama calls in sequence, roughly
+A synchronous `POST /workflow` runs three Ollama calls in sequence, roughly
 **15–40 seconds warm on CPU**. Every layer in the chain has to allow for
 that, and none of them says "timeout" when it gives up:
 
@@ -213,6 +240,14 @@ that, and none of them says "timeout" when it gives up:
    A (connect, read) tuple fails fast when the server is down and waits
    long enough when it is busy. A read timeout above 180s lets the server's
    own 503 reach you before your client gives up.
+
+**An async POST takes none of this chain.** It returns in milliseconds and
+every poll is just as quick, so ordinary short client timeouts are fine and
+gunicorn's worker timeout never comes into it. The per-agent
+`AGENT_TIMEOUT_SECONDS` still bounds the run itself, so a run cannot stay
+in flight longer than three agent timeouts. Your poll loop needs its own
+overall deadline above that (say 180s) in case the server is restarted
+mid-run; the run is then marked failed on startup, as below.
 
 ### Model speed
 
@@ -270,7 +305,7 @@ fallback flag and check findings, so the file is a complete audit trail,
 including the parts the API never returns.
 
 A run that was still planning, working or reviewing when the server
-stopped can never finish, because the request driving it is gone. On
+stopped can never finish, because the request or thread driving it is gone. On
 startup it is marked `failed` with the detail "the server restarted before
 this run finished", and that is written to the file too. A truncated last
 line from a crash mid-write is skipped with a warning, not fatal.
@@ -284,7 +319,9 @@ Runs are served from memory and the history file is written by one
 process, so `run.sh` starts **one** gunicorn worker with eight threads.
 The single worker means every request for a run reaches the process that
 holds it, and only one process appends to the file. The threads let
-`GET /workflow/<id>` answer while a `POST /workflow` is blocked.
+`GET /workflow/<id>` answer while a synchronous `POST /workflow` is blocked.
+An async run's agents run on a thread of their own, outside that pool, so
+async runs do not use up request threads.
 
 ## Tests
 
