@@ -62,10 +62,6 @@ jobs:
       BUILD_MODE: docker   # ACR Tasks are not available on Azure for Students
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Full history so 02-build-images.sh can also fetch and archive
-          # origin/Joshua-Release-1 (temporary override, see config.sh).
-          fetch-depth: 0
 
       - name: Azure login (OIDC, user-assigned managed identity)
         uses: azure/login@v2

@@ -4,10 +4,9 @@
 #   1. Export MAIN_REF (default HEAD) into a temporary staging directory with
 #      `git archive` -- committed files only, no local node_modules, .env or
 #      databases.
-#   2. TEMPORARY: replace joshua/ with JOSHUA_REF (see config.sh).
-#   3. Apply cloud-rewrites.sh to the staging copy (needs the environment's
+#   2. Apply cloud-rewrites.sh to the staging copy (needs the environment's
 #      domain, so 01-infra.sh must have run).
-#   4. Build and push each image as $ACR_SERVER/<service>:$IMAGE_TAG.
+#   3. Build and push each image as $ACR_SERVER/<service>:$IMAGE_TAG.
 #
 # BUILD_MODE: docker (local Docker daemon, also what GitHub Actions uses),
 #             acr    (az acr build -- builds inside Azure, no Docker needed;
@@ -33,18 +32,6 @@ trap 'rm -rf "$STAGE"' EXIT
 
 log "Staging $MAIN_REF ($(git -C "$REPO_ROOT" rev-parse --short "$MAIN_REF")) into $STAGE"
 git -C "$REPO_ROOT" archive --format=tar "$MAIN_REF" | tar -x -C "$STAGE"
-
-# >>> TEMPORARY OVERRIDE -- REMOVE ONCE JOSHUA'S PR IS MERGED TO main <<<
-if [[ -n "$JOSHUA_REF" ]]; then
-  log "TEMPORARY: joshua/ from $JOSHUA_REF instead of $MAIN_REF (Joshua's PR not merged yet)"
-  if [[ "$JOSHUA_REF" == origin/* ]]; then
-    git -C "$REPO_ROOT" fetch --quiet origin "${JOSHUA_REF#origin/}:refs/remotes/$JOSHUA_REF"
-  fi
-  rm -rf "$STAGE/joshua"
-  git -C "$REPO_ROOT" archive --format=tar "$JOSHUA_REF" joshua | tar -x -C "$STAGE"
-  echo "  joshua/ at $(git -C "$REPO_ROOT" rev-parse --short "$JOSHUA_REF")"
-fi
-# >>> END TEMPORARY OVERRIDE <<<
 
 log "Applying cloud rewrites"
 bash "$DEPLOY_DIR/cloud-rewrites.sh" "$STAGE" "$DOMAIN"

@@ -60,16 +60,6 @@ GITHUB_BRANCHES="${GITHUB_BRANCHES:-main cloud-deployment}"
 # What to build. MAIN_REF is the base for every service.
 MAIN_REF="${MAIN_REF:-HEAD}"
 
-# >>> TEMPORARY OVERRIDE -- REMOVE ONCE JOSHUA'S PR IS MERGED TO main <<<
-# Joshua's Release 2 work (Portfolio Holdings, incl. the AI_MODE_ENABLED
-# switch) is on Joshua-Release-1 and not yet on main. Until it is merged, the
-# cloud build takes joshua/ (and only joshua/) from that branch. Every other
-# service still comes from MAIN_REF.
-# To remove: set the default below to "" (or delete this block). Setting
-# JOSHUA_REF="" in the environment disables it without editing the file.
-JOSHUA_REF="${JOSHUA_REF-origin/Joshua-Release-1}"
-# >>> END TEMPORARY OVERRIDE <<<
-
 # Image tag: commit SHA in CI, otherwise a timestamp plus the local commit.
 IMAGE_TAG="${IMAGE_TAG:-$(date -u +%Y%m%d%H%M%S)-$(git -C "$REPO_ROOT" rev-parse --short "$MAIN_REF")}"
 

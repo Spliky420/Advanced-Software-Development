@@ -26,12 +26,6 @@ Run them from Git Bash or Linux, logged in with `az login`.
 AI is off in the cloud. Every backend gets `AI_MODE_ENABLED=false` and empty
 Ollama / MCP / RAG URLs, because none of those servers is deployed.
 
-## Temporary override
-
-Until Joshua's Release 2 PR is merged, `joshua/` is built from
-`origin/Joshua-Release-1` (see `JOSHUA_REF` in `config.sh` and
-`02-build-images.sh`). Remove that block once the PR is merged.
-
 ## Secrets
 
 None. GitHub Actions logs in with OIDC as a user-assigned managed identity,
