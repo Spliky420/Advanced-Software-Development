@@ -184,7 +184,8 @@ deploy hyunwoo-backend 5000 external 1 1 \
 
 deploy lehoalong-backend 5000 internal 1 1 \
   --db lehoalong-database /usr/local/bin/entrypoint.sh "DB_FILE=/data/goals.db" "INIT_DB_FORCE=0" -- \
-  "DB_PATH=/data/goals.db" "OLLAMA_MODEL=qwen2.5:0.5b" "${NO_AI[@]}"
+  "DB_PATH=/data/goals.db" "OLLAMA_MODEL=qwen2.5:0.5b" \
+  "MCP_ENABLED=false" "RAG_ENABLED=false" "MULTI_AGENT_ENABLED=false" "MULTI_AGENT_URL=" "${NO_AI[@]}"
 
 # --- Frontends: public, scale to zero when idle. ---
 
