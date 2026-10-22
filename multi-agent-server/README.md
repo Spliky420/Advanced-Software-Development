@@ -42,6 +42,7 @@ server (or run `python server.py` directly).
 | `OLLAMA_MODEL`          | `qwen2.5:0.5b`            | model tag; never hardcoded              |
 | `AGENT_TIMEOUT_SECONDS` | `55`                      | per-agent Ollama call timeout           |
 | `MULTI_AGENT_PORT`      | `5004`                    | listen port                             |
+| `WORKFLOW_HISTORY_PATH` | `workflow_history.jsonl`  | audit log, next to `server.py`          |
 
 ## API contract
 
@@ -56,8 +57,10 @@ server (or run `python server.py` directly).
   it, so give them meaningful names (`"monthly_totals"`, not `"data"`).
 - `caller` is optional and defaults to `"unknown"`. It identifies you in the
   audit trail, so send it.
+- `async` is optional and defaults to `false`. See
+  [Asynchronous runs](#asynchronous-runs).
 
-It blocks until all three agents have run, then returns **201**:
+By default it blocks until all three agents have run, then returns **201**:
 
 ```json
 {
@@ -78,10 +81,35 @@ It blocks until all three agents have run, then returns **201**:
 `human_review` and `error` are additions to the circulated contract. Every
 circulated key is unchanged.
 
+#### Asynchronous runs
+
+Send `"async": true` and the POST returns **202** straight away, before any
+agent has run, with the same body at status `planning` and a `Location:
+/workflow/<run_id>` header:
+
+```json
+{ "run_id": "785b...", "status": "planning", "plan": [], "work": "",
+  "review": { "risks": [], "recommendations": [] }, "model": "qwen2.5:0.5b",
+  "stub": false, "human_review": null, "error": null }
+```
+
+The agents then run on a background thread, and you poll `GET
+/workflow/<run_id>` until the status is `awaiting_human` or `failed`. That
+is the only way to show a user each agent finishing: with the default
+synchronous POST you do not have the `run_id` until everything is done.
+
+The pipeline is the same in both modes, so a finished async run is
+identical to a synchronous one. What differs is where a failure shows up.
+An agent that cannot run gives no 503 on an async POST, because the
+response has already gone; the run goes to `failed` with `error.phase` and
+`error.detail`, exactly as a 503'd synchronous run does. Validation still
+happens before anything starts, so a bad body is a 400 in both modes.
+
 ### `GET /workflow/<run_id>`
 
-**200** with the same body, reflecting the current state. Poll it from
-another request while a `POST /workflow` is still running to show progress.
+**200** with the same body, reflecting the current state. Each agent's
+output appears as soon as that agent finishes. Poll it after an async POST
+to show progress.
 
 | `status`         | Meaning                                              |
 | ---------------- | ---------------------------------------------------- |
@@ -153,9 +181,46 @@ step. No Ollama call is made. It runs the full state machine, including
 400s, so you can write real integration tests against it with no model.
 Stub runs report `"stub": true` and `"model": "stub"`.
 
+## How the real agents work
+
+The prompts live in `prompts/` (`planner.txt`, `worker.txt`,
+`reviewer.txt`). Each agent makes one Ollama call to `/api/generate`, and
+the model only writes words. Python owns everything structural:
+
+- **Planner** answers in JSON. Python numbers the steps itself, caps them
+  at 8, and keeps only evidence keys you actually sent. A field reference
+  like `"goal.saved"` maps back to `goal`; an invented key is dropped.
+- **Worker** writes plain text, one `Step N:` paragraph per step.
+- **Reviewer** answers in JSON with `risks` and `recommendations`.
+
+A Planner or Reviewer reply that is not usable is retried once, then
+replaced by deterministic output: the one-step-per-key plan, or a review
+that says no model reviewed the work. A bad answer is never a 503; only
+Ollama being unreachable, missing the model, or timing out is. Both
+attempts share the agent's one `AGENT_TIMEOUT_SECONDS` budget, and each
+reply is capped at 768 tokens, so a runaway reply cannot overrun the
+timeout chain.
+
+**Two Python checks guard the arithmetic rule.** Their findings go first
+in `review.risks`, ahead of anything the Reviewer said:
+
+- `Figure check:` names any number in the work that appears nowhere in the
+  task or evidence (compared by value, so `12.50` matches `12.5`).
+- `Arithmetic check:` names any calculation the work writes out
+  (`5000.0 - 3200.0 = 1800.0`), even when every figure in it was supplied.
+
+Neither check judges meaning. A sentence with the right figures and the
+wrong reasoning passes. The Reviewer is a model too and can be wrong about
+the evidence (in testing it claimed a supplied figure was missing), which
+is why the human gate decides, not the Reviewer.
+
+Each phase's audit record (prompt, raw reply, every attempt, whether the
+fallback was used, and the checks' findings) is kept with the run but
+never returned by the API.
+
 ## Timeouts
 
-`POST /workflow` is **synchronous**: three Ollama calls in sequence, roughly
+A synchronous `POST /workflow` runs three Ollama calls in sequence, roughly
 **15–40 seconds warm on CPU**. Every layer in the chain has to allow for
 that, and none of them says "timeout" when it gives up:
 
@@ -176,6 +241,30 @@ that, and none of them says "timeout" when it gives up:
    long enough when it is busy. A read timeout above 180s lets the server's
    own 503 reach you before your client gives up.
 
+**An async POST takes none of this chain.** It returns in milliseconds and
+every poll is just as quick, so ordinary short client timeouts are fine and
+gunicorn's worker timeout never comes into it. The per-agent
+`AGENT_TIMEOUT_SECONDS` still bounds the run itself, so a run cannot stay
+in flight longer than three agent timeouts. Your poll loop needs its own
+overall deadline above that (say 180s) in case the server is restarted
+mid-run; the run is then marked failed on startup, as below.
+
+### Model speed
+
+Measured warm on a development laptop: `qwen2.5:0.5b` finished whole runs
+in 2–8 seconds. `llama3.1:8b`, with only part of the model fitting in GPU
+memory, generated about 3.6 tokens a second. One Worker reply took longer
+than 55s, and a full run took 121s with `AGENT_TIMEOUT_SECONDS=300`. On
+hardware like that, the 8b model does not fit the default timeout chain.
+Check a machine's speed before relying on it (`ollama run llama3.1:8b
+--verbose` prints the eval rate).
+
+**This server is demoed on `qwen2.5:0.5b`.** The demo laptop (RTX 3050,
+4GB) runs `llama3.1:8b` at 3.6–4.6 tokens a second, and a smaller context
+does not change that. The 0.5b model's weaker output is what the Figure and
+Arithmetic checks and the human gate are there to catch. This is an
+exception to CLAUDE.md's "demo on `llama3.1:8b`" for this server only.
+
 ### Cold model
 
 The first call after Ollama loads a model adds roughly **100 seconds**, which
@@ -190,12 +279,49 @@ Ollama unloads an idle model after 5 minutes by default. Set
 `OLLAMA_KEEP_ALIVE=30m` on the host's Ollama to keep it loaded through a
 demo.
 
+## Workflow history
+
+Every change to a run is appended to `workflow_history.jsonl` as it
+happens, one JSON event per line, before it takes effect:
+
+| `event`          | Written when                                                |
+| ---------------- | ----------------------------------------------------------- |
+| `created`        | the run starts; carries task, evidence, caller and model     |
+| `phase`          | an agent finishes; its output and full audit record          |
+| `status`         | the Worker or Reviewer starts                                |
+| `failed`         | an agent could not run, or a restart interrupted the run     |
+| `awaiting_human` | all three agents are done                                    |
+| `decided`        | the human review                                             |
+
+```json
+{"at": "2026-10-22T03:23:17+00:00", "event": "decided", "run_id": "f05a...",
+ "human_review": {"decision": "approve", "note": "", "corrected": null, "reviewer": "me"}}
+```
+
+**A run can be rebuilt from this file alone**, and that is how the server
+starts: it replays the file, so runs and their decisions survive a
+restart. The `phase` events carry each agent's prompt, raw reply, retries,
+fallback flag and check findings, so the file is a complete audit trail,
+including the parts the API never returns.
+
+A run that was still planning, working or reviewing when the server
+stopped can never finish, because the request or thread driving it is gone. On
+startup it is marked `failed` with the detail "the server restarted before
+this run finished", and that is written to the file too. A truncated last
+line from a crash mid-write is skipped with a warning, not fatal.
+
+The file is append-only, never rewritten, and is git-ignored. Delete it to
+start with no runs.
+
 ## Process model
 
-Runs are held in memory, so `run.sh` starts **one** gunicorn worker with
-eight threads. The single worker means every request for a run reaches the
-process that holds it. The threads let `GET /workflow/<id>` answer while a
-`POST /workflow` is blocked.
+Runs are served from memory and the history file is written by one
+process, so `run.sh` starts **one** gunicorn worker with eight threads.
+The single worker means every request for a run reaches the process that
+holds it, and only one process appends to the file. The threads let
+`GET /workflow/<id>` answer while a synchronous `POST /workflow` is blocked.
+An async run's agents run on a thread of their own, outside that pool, so
+async runs do not use up request threads.
 
 ## Tests
 

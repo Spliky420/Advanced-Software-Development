@@ -7,18 +7,27 @@ agents over it. It never fetches data and never computes a figure.
 
     POST /workflow                  run all three agents, park the run
                                     at awaiting_human, return 201
+                                    ("async": true -- return 202 at once
+                                    and run the agents on a thread)
     GET  /workflow/<run_id>         current state of a run
     POST /workflow/<run_id>/review  the human decision that completes it
     GET  /health                    liveness, model tag, Ollama reachability
 
-The POST is synchronous: it blocks for all three agents (15-40s warm on
-CPU). Each phase is stored as it finishes, so a GET from another client
-during the wait shows real progress. See README.md for the timeout chain.
+By default the POST is synchronous: it blocks for all three agents
+(15-40s warm on CPU) and the caller only learns the run_id at the end. With
+"async": true it returns the run_id straight away and the caller polls the
+GET, which shows each phase as it is stored. Both modes run the same
+pipeline. Every change is also appended to workflow_history.jsonl, and a
+restart rebuilds every run from that file. See README.md for the timeout
+chain.
 """
 
 from __future__ import annotations
 
+import logging
 import os
+import threading
+from pathlib import Path
 
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
@@ -35,6 +44,8 @@ from store import (
 
 DECISIONS = ("approve", "correct", "partial", "reject")
 
+log = logging.getLogger(__name__)
+
 # Host-process defaults: Ollama on the same host, so localhost rather than
 # host.docker.internal. The model fallback matches every other service
 # (CLAUDE.md); override with OLLAMA_MODEL in the environment.
@@ -42,6 +53,9 @@ DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen2.5:0.5b"
 # Three agents x 55s stays inside gunicorn's 180s worker timeout in run.sh.
 DEFAULT_AGENT_TIMEOUT_SECONDS = 55.0
+# Next to this file rather than the working directory, so it is the same
+# file however the server is started.
+DEFAULT_HISTORY_PATH = Path(__file__).resolve().parent / "workflow_history.jsonl"
 
 
 def _env_flag(name: str) -> bool:
@@ -57,11 +71,12 @@ def create_app(config: dict | None = None) -> Flask:
         AGENT_TIMEOUT_SECONDS=float(
             os.getenv("AGENT_TIMEOUT_SECONDS", DEFAULT_AGENT_TIMEOUT_SECONDS)
         ),
+        WORKFLOW_HISTORY_PATH=os.getenv("WORKFLOW_HISTORY_PATH", str(DEFAULT_HISTORY_PATH)),
     )
     if config:
         app.config.update(config)
 
-    store = WorkflowStore()
+    store = WorkflowStore(app.config["WORKFLOW_HISTORY_PATH"])
     app.extensions["workflow_store"] = store
 
     def agent_config() -> agents.AgentConfig:
@@ -111,6 +126,10 @@ def create_app(config: dict | None = None) -> Flask:
         if not isinstance(caller, str) or not caller.strip():
             fields["caller"] = "must be a non-empty string when supplied"
 
+        background = body.get("async", False)
+        if not isinstance(background, bool):
+            fields["async"] = "must be true or false when supplied"
+
         if fields:
             return _validation_error(fields)
 
@@ -124,37 +143,25 @@ def create_app(config: dict | None = None) -> Flask:
         )
         run_id = run["run_id"]
 
-        task = run["task"]
-        phase = "plan"
-
-        def run_phase(field, call):
-            started_at = now_iso()
-            result = call()
-            store.record_phase(
-                run_id, phase, field=field, output=result.output,
-                record=_phase_record(result, started_at),
-            )
-            return result.output
+        if background:
+            # daemon: a run still going at shutdown is failed on the next
+            # startup anyway, so it must not hold the process open.
+            threading.Thread(
+                target=_run_in_background, args=(store, run, config),
+                name=f"workflow-{run_id}", daemon=True,
+            ).start()
+            response = jsonify(_public_view(run))
+            response.headers["Location"] = f"/workflow/{run_id}"
+            return response, 202
 
         try:
-            steps = run_phase("plan", lambda: agents.plan(task, evidence, config))
-
-            phase = "work"
-            store.set_status(run_id, STATUS_WORKING)
-            work_text = run_phase("work", lambda: agents.work(task, evidence, steps, config))
-
-            phase = "review"
-            store.set_status(run_id, STATUS_REVIEWING)
-            run_phase(
-                "review", lambda: agents.review(task, evidence, steps, work_text, config)
-            )
+            finished = _run_agents(store, run, config)
         except agents.AgentUnavailable as exc:
-            store.fail(run_id, phase=phase, error=str(exc))
+            phase = store.get(run_id)["error"]["phase"]
             return _error(
                 503, "agent_unavailable", f"{phase} phase failed: {exc}", run_id=run_id
             )
-
-        return jsonify(_public_view(store.await_human(run_id))), 201
+        return jsonify(_public_view(finished)), 201
 
     @app.get("/workflow/<run_id>")
     def get_workflow(run_id):
@@ -245,6 +252,57 @@ def create_app(config: dict | None = None) -> Flask:
 # ----------------------------------------------------------------------
 
 
+def _run_agents(store: WorkflowStore, run: dict, config: agents.AgentConfig) -> dict:
+    """Planner, Worker, Reviewer, each stored as it finishes; park at awaiting_human.
+
+    Any exception fails the run in the store before it propagates, so no
+    caller -- a request or a background thread -- can leave a run stuck in
+    an in-flight status until the next restart.
+    """
+    run_id, task, evidence = run["run_id"], run["task"], run["evidence"]
+    phase = "plan"
+
+    def run_phase(field, call):
+        started_at = now_iso()
+        result = call()
+        store.record_phase(
+            run_id, phase, field=field, output=result.output,
+            record=_phase_record(result, started_at),
+        )
+        return result.output
+
+    try:
+        steps = run_phase("plan", lambda: agents.plan(task, evidence, config))
+
+        phase = "work"
+        store.set_status(run_id, STATUS_WORKING)
+        work_text = run_phase("work", lambda: agents.work(task, evidence, steps, config))
+
+        phase = "review"
+        store.set_status(run_id, STATUS_REVIEWING)
+        run_phase("review", lambda: agents.review(task, evidence, steps, work_text, config))
+    except agents.AgentUnavailable as exc:
+        store.fail(run_id, phase=phase, error=str(exc))
+        raise
+    except Exception as exc:
+        store.fail(run_id, phase=phase, error=f"unexpected error: {exc}")
+        raise
+
+    return store.await_human(run_id)
+
+
+def _run_in_background(store: WorkflowStore, run: dict, config: agents.AgentConfig) -> None:
+    """Thread target for an async run. The failure is already on the run;
+    nobody is waiting for an exception, so log it rather than let the thread
+    die noisily."""
+    try:
+        _run_agents(store, run, config)
+    except agents.AgentUnavailable as exc:
+        log.warning("workflow %s failed: %s", run["run_id"], exc)
+    except Exception:
+        log.exception("workflow %s failed unexpectedly", run["run_id"])
+
+
 def _public_view(run: dict) -> dict:
     """The contract body. Internal audit fields (prompts, evidence) stay out."""
     return {
@@ -298,4 +356,5 @@ if __name__ == "__main__":
     print("Starting shared Multi-Agent Server...")
     print(f"Listening on http://0.0.0.0:{port}")
     print(f"Stub agents: {app.config['STUB_AGENTS']}  Model: {app.config['OLLAMA_MODEL']}")
+    print(f"History: {app.config['WORKFLOW_HISTORY_PATH']}")
     app.run(host="0.0.0.0", port=port, threaded=True)
