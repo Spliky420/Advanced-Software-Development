@@ -119,6 +119,7 @@ jobs:
       - name: Run pre-commit security scans
         run: |
           pip install pre-commit
+          pre-commit clean
           pre-commit run --all-files --show-diff-on-failure
 
       - name: Run simple integration test (check frontend serves)
