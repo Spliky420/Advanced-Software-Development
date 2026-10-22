@@ -310,9 +310,9 @@ def validate_user_id_arg(args: Any, default_user_id: int) -> int:
     if raw is None:
         return default_user_id
     user_id = clean_user_id(raw, errors)
-    if errors:
+    # raw is not None, so clean_user_id returns None exactly when it recorded an error.
+    if user_id is None:
         raise ValidationFailed(errors)
-    assert user_id is not None
     return user_id
 
 

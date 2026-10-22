@@ -174,7 +174,7 @@ def _downgrade_to_release_0(conn):
     """
     conn.execute("PRAGMA foreign_keys = OFF")
     conn.executescript(
-        RELEASE_0_AI_PLAN_LOG
+        RELEASE_0_AI_PLAN_LOG  # noqa: S608 -- two string constants, no input
         + """
         INSERT INTO release_0_log SELECT * FROM ai_plan_log;
         DROP TABLE ai_plan_log;

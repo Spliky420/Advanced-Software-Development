@@ -309,6 +309,29 @@ malformed JSON.
 
 ---
 
+## Security checks
+
+Three checks run before every commit, from the root
+[`.pre-commit-config.yaml`](../.pre-commit-config.yaml). **Each teammate
+runs this once per clone:**
+
+```bash
+pip install pre-commit && pre-commit install
+```
+
+| Check | What it stops |
+| ----- | ------------- |
+| ruff with the `S` (flake8-bandit) rules | SQL built from strings, binding to `0.0.0.0`, `assert` in production code, ... |
+| pip-audit | a pin with a known vulnerability, in `backend/` or `tests/requirements.txt` |
+| detect-secrets | anything that looks like a key or password, anywhere in the repo |
+
+CI runs ruff and pip-audit again on every push, plus pip-audit weekly,
+because a new advisory can land against an unchanged pin. Findings, fixes
+and the reasoning behind every suppression are in dated reports in
+[`docs/security/`](docs/security/README.md).
+
+---
+
 ## CI
 
 [`.github/workflows/lehoalong-ci.yml`](../.github/workflows/lehoalong-ci.yml) runs on
@@ -318,7 +341,7 @@ another student's work and never reports on it. Three parallel jobs:
 
 | Job        | Steps                                                                           |
 | ---------- | ------------------------------------------------------------------------------- |
-| `backend`  | `ruff check LeHoaLong` → seed and verify the database → `pytest LeHoaLong/tests` |
+| `backend`  | `ruff check LeHoaLong` → `pip-audit` both requirements files → seed and verify the database → `pytest LeHoaLong/tests` |
 | `frontend` | `npm ci` → `npm run lint` (eslint) → `npm run build` (vite)                      |
 | `images`   | Build all three Dockerfiles, then run the database initialiser in its image      |
 
@@ -345,7 +368,8 @@ directory, so it imposes no style on anyone else's Python) and
 To reproduce a CI run locally:
 
 ```bash
-pip install ruff==0.16.6 && ruff check LeHoaLong
+pip install ruff==0.16.6 pip-audit==2.10.1 && ruff check LeHoaLong
+pip-audit -r LeHoaLong/backend/requirements.txt && pip-audit -r LeHoaLong/tests/requirements.txt
 pytest LeHoaLong/tests -v
 cd LeHoaLong/frontend && npm ci && npm run lint && npm run build && cd ../..
 docker build -t lehoalong-db:ci LeHoaLong/database

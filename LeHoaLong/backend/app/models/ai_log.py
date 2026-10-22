@@ -36,7 +36,7 @@ RAG_SERVER = "rag-server"
 
 COLUMNS = ("log_id", "goal_id", "phase", "model_name", "prompt", "response", "created_at")
 
-_SELECT = f"SELECT {', '.join(COLUMNS)} FROM ai_plan_log"
+_SELECT = f"SELECT {', '.join(COLUMNS)} FROM ai_plan_log"  # noqa: S608 -- table and columns are module constants; no input reaches this string
 
 
 def insert_log(

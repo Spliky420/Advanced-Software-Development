@@ -25,7 +25,7 @@ COLUMNS = (
     "updated_at",
 )
 
-_SELECT = f"SELECT {', '.join(COLUMNS)} FROM goals"
+_SELECT = f"SELECT {', '.join(COLUMNS)} FROM goals"  # noqa: S608 -- table and columns are module constants; no input reaches this string
 
 # Highest priority first, then the nearest deadline. This is the order the
 # dashboard shows, and doing it in SQL keeps it stable across endpoints.
@@ -104,7 +104,8 @@ def update_goal(conn: sqlite3.Connection, goal_id: int, changes: dict, *, timest
     assignments = f"{assignments}, updated_at = ?" if assignments else "updated_at = ?"
 
     cursor = conn.execute(
-        f"UPDATE goals SET {assignments} WHERE goal_id = ?",
+        # Column names come only from the UPDATABLE whitelist; every value is a bound parameter.
+        f"UPDATE goals SET {assignments} WHERE goal_id = ?",  # noqa: S608
         (*fields.values(), timestamp, goal_id),
     )
     return cursor.rowcount > 0

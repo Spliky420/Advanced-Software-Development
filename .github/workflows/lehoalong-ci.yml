@@ -50,6 +50,11 @@ on:
   # So the whole pipeline can be re-run by hand from the Actions tab without
   # pushing an empty commit.
   workflow_dispatch:
+  # Weekly, on main. pip-audit's answer changes when an advisory is
+  # published, not only when a requirements file does, and the push
+  # triggers above would never notice that.
+  schedule:
+    - cron: '0 3 * * 1'
 
 # Least privilege: nothing here needs to write to the repository.
 permissions:
@@ -104,7 +109,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r LeHoaLong/tests/requirements.txt
-          pip install ruff==0.16.6
+          pip install ruff==0.16.6 pip-audit==2.10.1
 
       - name: Confirm AI-Mode, MCP and RAG are disabled
         # The Release 1 brief requires all three to be off in CI. Printed as
@@ -136,8 +141,19 @@ jobs:
 
       - name: Lint Python (ruff)
         # Config is LeHoaLong/ruff.toml -- scoped to this directory so it
-        # imposes no style on anyone else's code.
+        # imposes no style on anyone else's code. Includes the "S" security
+        # rules; the root pre-commit hook runs the same check before commit.
         run: ruff check LeHoaLong
+
+      - name: Audit dependencies (pip-audit)
+        # Fails on any pinned version with a known vulnerability. One run per
+        # file, as in .pre-commit-config.yaml. The backend file includes
+        # gunicorn and the mcp SDK, which pip-audit resolves in its own
+        # temporary environment, so nothing is installed into this one --
+        # the "mcp SDK is absent" check above still holds.
+        run: |
+          pip-audit -r LeHoaLong/backend/requirements.txt
+          pip-audit -r LeHoaLong/tests/requirements.txt
 
       - name: Build and seed the database
         # init_db.py asserts every table carries at least MIN_ROWS_PER_TABLE

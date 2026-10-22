@@ -257,7 +257,7 @@ def check(conn: sqlite3.Connection, *, fresh: bool) -> tuple[list[str], list[str
 
     # --- seed-time invariants ----------------------------------------------
     for table in TABLES:
-        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]  # noqa: S608 -- table is from TABLES
         if count < MIN_ROWS_PER_TABLE:
             seeded.append(f"{table} has {count} rows, fewer than the required {MIN_ROWS_PER_TABLE}")
 
@@ -306,7 +306,7 @@ def summarise(conn: sqlite3.Connection) -> None:
     print("Row counts")
     print("-" * 78)
     for table in TABLES:
-        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]  # noqa: S608 -- table is from TABLES
         flag = "ok" if count >= MIN_ROWS_PER_TABLE else "TOO FEW"
         print(f"  {table:<16} {count:>4}   {flag}")
 
