@@ -5,10 +5,11 @@ repos:
     hooks:
       - id: hyunwoo-security-rules
         name: Bills Python security rules
-        entry: ruff check --no-cache --select S
+        entry: ruff check --no-cache --select S hyunwoo/backend
         language: python
         additional_dependencies: ['ruff==0.17.1']
-        files: ^hyunwoo/backend/.*\.py$
+        files: ^hyunwoo/
+        pass_filenames: false
 
       - id: hyunwoo-secrets
         name: Bills secret detection

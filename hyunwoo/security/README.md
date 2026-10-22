@@ -3,7 +3,8 @@
 These checks only apply to Bills files. They do not scan or change another
 member's personal directory.
 
-- Ruff checks the Bills backend's Python security rules.
+- Ruff checks the whole Bills backend whenever a Bills file is committed,
+  including an evidence-only commit.
 - detect-secrets checks Bills text files for possible credentials.
 - pip-audit checks backend, test and security-tool dependencies against
   published vulnerability reports, including their resolved dependencies.
