@@ -10,6 +10,7 @@ the Release 2 checklist). The feature branch itself never modifies
 | -- | ------ | ----- | ------ |
 | A | `LeHoaLong-multi-agent-async` | `multi-agent-server/` | Merged, #40 |
 | B | `LeHoaLong-pre-commit` | `.pre-commit-config.yaml`, `.secrets.baseline`, `README.md` | Committed (94dcdfd), ready to raise |
+| C | `docker-compose.yml` | the `lehoalong-backend` environment | Optional — not raised yet |
 
 ---
 
@@ -114,3 +115,47 @@ Design choices to be ready to defend:
 >
 > Run this once after cloning. From then on every `git commit` runs the
 > checks in `.pre-commit-config.yaml` and stops the commit if one fails …
+
+---
+
+## PR C — `docker-compose.yml`: state the Release 2 settings (optional)
+
+**Not blocking.** `config.py` and the backend Dockerfile already default to
+`MULTI_AGENT_URL=http://host.docker.internal:5004` with both switches on, and
+the block already has `extra_hosts`, so the containerised backend reaches the
+multi-agent server with no compose change. This PR only makes the dependency
+visible in the compose file and switchable from `.env`, the way the Release 1
+PR did for MCP and RAG.
+
+It adds environment entries only. **No service is added**: the multi-agent
+server, like Ollama, MCP and RAG, stays a host process and is never defined
+in `docker-compose.yml` (Release 2 checklist).
+
+```diff
+   lehoalong-backend:
+     environment:
+       DB_PATH: /data/goals.db
+       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:0.5b}
+       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
++      # Release 2. The multi-agent server is a HOST process, like MCP and RAG.
++      # Off or unreachable, plan reviews degrade to Release 1 and say so.
++      AI_MODE_ENABLED: ${LEHOALONG_AI_MODE_ENABLED:-true}
++      MULTI_AGENT_ENABLED: ${LEHOALONG_MULTI_AGENT_ENABLED:-true}
++      MULTI_AGENT_URL: ${MULTI_AGENT_URL:-http://host.docker.internal:5004}
+```
+
+## Contract notes from integrating with the multi-agent server
+
+No gap blocked integration. After PR A, the contract covered everything the
+plan review needs. Two observations, neither requiring a change:
+
+- `POST /workflow/<run_id>/review` returns only `{run_id, status, decision,
+  decided_at}`, not the run body. This backend reads the run with `GET`
+  before deciding and stores that body with the decision, so the decided-on
+  output is in `ai_plan_log` even if the server's history is later reset.
+- `GET /workflow/<run_id>` serves any caller's run to anyone who knows the id.
+  This backend does not rely on that: it serves only runs it started, looked
+  up in its own `ai_plan_log`. Ids are 128-bit random, so on a local host
+  process this is a note, not a hole.
+

@@ -4,8 +4,8 @@
 # filters below keep it off the other five students' work, and nothing here
 # reads or writes outside LeHoaLong/ and this file.
 #
-# AI-Mode, MCP and RAG are all DISABLED in CI, and none of the three is
-# needed to run the suite. The Release 1 brief requires this; the `backend`
+# AI-Mode, MCP, RAG and the multi-agent server are all DISABLED in CI, and
+# none of the four is needed to run the suite. The Release 1 brief requires this; the `backend`
 # job below states it explicitly in its own step so it is visible in the
 # Actions log rather than only in this comment.
 #
@@ -87,6 +87,15 @@ jobs:
       MCP_SERVER_URL: http://127.0.0.1:1/mcp
       RAG_ENABLED: 'false'
       RAG_SERVER_URL: http://127.0.0.1:1
+
+      # Release 2. The test app pins AI_MODE_ENABLED on and drives a fake
+      # model in-process (see tests/conftest.py); this is the outer layer,
+      # matching what the endpoint job and the cloud deployment run. The
+      # multi-agent tests use the real server in stub mode through the
+      # client's transport seam, so it is off here too.
+      AI_MODE_ENABLED: 'false'
+      MULTI_AGENT_ENABLED: 'false'
+      MULTI_AGENT_URL: http://127.0.0.1:1
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
@@ -111,7 +120,7 @@ jobs:
           pip install -r LeHoaLong/tests/requirements.txt
           pip install ruff==0.16.6 pip-audit==2.10.1
 
-      - name: Confirm AI-Mode, MCP and RAG are disabled
+      - name: Confirm AI-Mode, MCP, RAG and the multi-agent server are disabled
         # The Release 1 brief requires all three to be off in CI. Printed as
         # a step rather than left in a comment so it is visible in the Actions
         # log, and asserted rather than only printed so that deleting an env
@@ -122,12 +131,21 @@ jobs:
           echo "MCP_SERVER_URL  = ${MCP_SERVER_URL}  (dead port)"
           echo "RAG_ENABLED     = ${RAG_ENABLED}"
           echo "RAG_SERVER_URL  = ${RAG_SERVER_URL}  (dead port)"
+          echo "AI_MODE_ENABLED     = ${AI_MODE_ENABLED}"
+          echo "MULTI_AGENT_ENABLED = ${MULTI_AGENT_ENABLED}"
+          echo "MULTI_AGENT_URL     = ${MULTI_AGENT_URL}  (dead port)"
           test "${MCP_ENABLED}" = "false"
           test "${RAG_ENABLED}" = "false"
-          case "${OLLAMA_BASE_URL}${MCP_SERVER_URL}${RAG_SERVER_URL}" in
-            *127.0.0.1:1*) ;;
-            *) echo "a service URL is not pointed at a dead port"; exit 1 ;;
-          esac
+          test "${AI_MODE_ENABLED}" = "false"
+          test "${MULTI_AGENT_ENABLED}" = "false"
+          # Each URL on its own: the old single `case` over the concatenation
+          # passed if any one of them was dead.
+          for url in "${OLLAMA_BASE_URL}" "${MCP_SERVER_URL}" "${RAG_SERVER_URL}" "${MULTI_AGENT_URL}"; do
+            case "${url}" in
+              *127.0.0.1:1*) ;;
+              *) echo "${url} is not pointed at a dead port"; exit 1 ;;
+            esac
+          done
           # The suite must never speak the MCP protocol, so the SDK is not
           # installed. app/mcp/client.py imports it lazily inside the one
           # transport function every test replaces, which is why 400+ tests
@@ -285,7 +303,7 @@ jobs:
           docker build -t lehoalong-db:ci LeHoaLong/database
           docker build -t lehoalong-backend:ci LeHoaLong/backend
 
-      - name: Start the database and backend (AI-Mode, MCP and RAG off)
+      - name: Start the database and backend (AI-Mode, MCP, RAG and multi-agent off)
         # The same pairing compose runs: the database image seeds a volume,
         # the backend image serves it with gunicorn. Every AI service URL is a
         # dead port, as in the backend job -- neither endpoint calls a model,
@@ -302,9 +320,10 @@ jobs:
 
           docker run -d --name lehoalong-backend -p 127.0.0.1:8061:5000 \
             -v lehoalong-ci-data:/data \
-            -e OLLAMA_BASE_URL=http://127.0.0.1:1 \
+            -e AI_MODE_ENABLED=false -e OLLAMA_BASE_URL=http://127.0.0.1:1 \
             -e MCP_ENABLED=false -e MCP_SERVER_URL=http://127.0.0.1:1/mcp \
             -e RAG_ENABLED=false -e RAG_SERVER_URL=http://127.0.0.1:1 \
+            -e MULTI_AGENT_ENABLED=false -e MULTI_AGENT_URL=http://127.0.0.1:1 \
             lehoalong-backend:ci
           # Ready when one of the two endpoints under test answers 200.
           for i in $(seq 1 60); do

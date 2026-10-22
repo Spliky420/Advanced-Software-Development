@@ -157,6 +157,43 @@ the evidence for the report.
 
 `GET /health` reports service status and Ollama reachability.
 
+### Multi-agent plan review (Release 2)
+
+Release 2 puts three agents and a person between a plan and the goal. The
+agents run in the shared multi-agent server (`multi-agent-server/`, a host
+process on port 5004); this backend is its client.
+
+| Method | Path                                      | What it does |
+| ------ | ----------------------------------------- | ------------ |
+| `POST` | `/api/goals/<id>/review-plan`             | Python builds the proposed schedule and sends it, with the figures behind it, to the Planner, Worker and Reviewer. **202** with a `run_id`. Writes nothing to the goal. |
+| `GET`  | `/api/agents/workflow/<run_id>`           | Poll this. The agents' progress (`planning` → `working` → `reviewing` → `awaiting_human`) and output, the frozen proposal, and whether it can still be applied (`stale`, `can_apply`). |
+| `POST` | `/api/agents/workflow/<run_id>/review`    | The human decision: `approve`, `correct` (needs `corrected`), `partial` (needs `note`) or `reject`. |
+| `GET`  | `/api/agents/health`                      | Reachability for the status light. Always 200. |
+
+- **Python proposes, the agents comment, a person decides.** The schedule is
+  built by the same `prepare()` that `/plan` uses, before any agent sees it.
+  The agents get it as evidence and are told every figure is final. Nothing
+  they write is read back into the plan.
+- **`approve` and `correct` apply the frozen proposal**: exactly the amounts
+  and dates the agents and the person looked at, with completed steps kept.
+  `correct` also stores the person's corrected rationale. **`partial` and
+  `reject` apply nothing**; they are recorded.
+- **A stale proposal is a 409, not a silent recompute.** If a contribution,
+  a target edit or a completed step changes the goal after the review
+  started, or the first instalment date has passed, approve and correct are
+  refused with the reasons. Reject still works.
+- **The decision is all-or-nothing.** The plan and the log row are written
+  in one transaction that commits only once the multi-agent server accepts
+  the decision, so the goal and the server cannot disagree.
+- **Off or down, the review degrades and says so.** `MULTI_AGENT_ENABLED=false`,
+  an unreachable server, or an answer outside its contract: `review-plan`
+  returns **200** with `review.status: "unavailable"`, the reason, the Python
+  proposal, and `review.fallback` naming `POST /api/goals/<id>/plan`, the
+  Release 1 path. Nothing is applied that the person did not see reviewed.
+- Every step is logged to `ai_plan_log` with phase **`agent`**: the evidence
+  sent and the run id (`model_name: multi-agent`), or why no review started
+  (`python`), and the decision with the agents' full output (`human`).
+
 ---
 
 ## How the AI is wired
@@ -263,6 +300,11 @@ clone runs with no `.env`. Defined in `backend/config.py`.
 | `OLLAMA_TEMPERATURE`         | `0.2`                     | Low, so descriptions stay on instruction      |
 | `PROGRESS_TOLERANCE_PERCENT` | `1.0`                     | Dead band before observe says behind/ahead    |
 | `PROGRESS_TOLERANCE_FLOOR`   | `1.0`                     | Minimum dead band, in dollars                 |
+| `AI_MODE_ENABLED`            | `true`                    | `false`: plan/replan never call Ollama; the deterministic plan stands in, flagged `fallback: true` |
+| `MULTI_AGENT_ENABLED`        | `true`                    | `false`: plan reviews degrade to Release 1 and say so |
+| `MULTI_AGENT_URL`            | `http://host.docker.internal:5004` | The shared multi-agent server        |
+| `MULTI_AGENT_TIMEOUT_SECONDS`| `10`                      | Per call; reviews are async, so no call waits for the agents |
+| `MULTI_AGENT_CALLER`         | `lehoalong-goals-budgeting` | How this backend is named in the server's history |
 | `CORS_ORIGINS`               | `http://localhost:8060,…` | Only fires under `npm run dev`                |
 | `INIT_DB_FORCE`              | `0`                       | Database container: `1` re-seeds from scratch |
 
@@ -408,8 +450,10 @@ docker build -f LeHoaLong/frontend/Dockerfile -t lehoalong-frontend:ci .
 
 ## Scope
 
-Release 0. **No MCP, no RAG, no multi-agent** — those are Releases 1 and 2. The
-code is arranged so they can be added without a rewrite: routes are thin, all
+Release 0 had **no MCP, no RAG, no multi-agent**. Release 1 added MCP and RAG,
+and Release 2 the multi-agent plan review, each behind its own switch and
+each degrading to the release before it when off. The code was arranged so
+they could be added without a rewrite: routes are thin, all
 business logic and arithmetic sits in `app/services/`, and the Ollama client is
 one module behind a small interface.
 

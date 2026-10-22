@@ -50,7 +50,7 @@ MIN_ROWS_PER_TABLE = 10
 # Every phase ai_plan_log must accept. Release 0 shipped three; Release 1's MCP
 # and RAG integrations add two more, and an existing database file still has
 # the old three-phase CHECK constraint -- see migrate_ai_plan_log.
-REQUIRED_PHASES = ("plan", "observe", "adapt", "mcp", "rag")
+REQUIRED_PHASES = ("plan", "observe", "adapt", "mcp", "rag", "agent")
 
 
 def resolve_db_path(cli_value: str | None) -> Path:
