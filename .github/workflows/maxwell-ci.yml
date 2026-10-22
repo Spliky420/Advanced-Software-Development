@@ -117,9 +117,10 @@ jobs:
           PY
 
       - name: Run pre-commit security scans
+        env:
+          PRE_COMMIT_HOME: /tmp/pre-commit
         run: |
           pip install pre-commit
-          pre-commit clean
           pre-commit run --all-files --show-diff-on-failure
 
       - name: Run simple integration test (check frontend serves)
