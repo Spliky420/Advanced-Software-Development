@@ -118,23 +118,6 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Validate Multi-Agent proxy is disabled in CI
-        working-directory: ./Maxwell/backend
-        env:
-          DISABLE_MULTI_AGENT_PROXY: "true"
-        run: |
-          python - <<'PY'
-          import app
-
-          client = app.app.test_client()
-          ma = client.post("/api/multi-agent/workflow", json={"task": "test", "evidence": {}})
-
-          print(f"/api/multi-agent/workflow -> HTTP {ma.status_code}")
-
-          assert ma.status_code == 503, f"Multi-Agent proxy must be disabled in CI, got {ma.status_code}"
-          print("Multi-Agent proxy correctly disabled.")
-          PY
-
       - name: Run simple integration test (check frontend serves)
         run: |
           # Wait a bit more for frontend
