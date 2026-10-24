@@ -1,3 +1,4 @@
+import json
 import os
 import sqlite3
 
@@ -155,3 +156,59 @@ def delete_bill(bill_id, user_id):
         connection.commit()
 
     return cursor.rowcount > 0
+
+
+# Add review links to existing databases without resetting bills.
+def _workflow_table(connection):
+    connection.execute("""
+        CREATE TABLE IF NOT EXISTS bill_workflows (
+            run_id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            evidence_json TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+
+def save_workflow(run_id, user_id, evidence):
+    with connect() as connection:
+        _workflow_table(connection)
+        connection.execute(
+            "INSERT INTO bill_workflows (run_id, user_id, evidence_json) VALUES (?, ?, ?)",
+            (run_id, user_id, json.dumps(evidence)),
+        )
+        connection.commit()
+
+
+def get_workflow(run_id, user_id):
+    with connect() as connection:
+        _workflow_table(connection)
+        row = connection.execute(
+            "SELECT * FROM bill_workflows WHERE run_id = ? AND user_id = ?",
+            (run_id, user_id),
+        ).fetchone()
+    if row is None:
+        return None
+    return {
+        "run_id": row["run_id"],
+        "evidence": json.loads(row["evidence_json"]),
+        "created_at": row["created_at"],
+    }
+
+
+def list_workflows(user_id):
+    with connect() as connection:
+        _workflow_table(connection)
+        rows = connection.execute(
+            """SELECT run_id, evidence_json, created_at FROM bill_workflows
+               WHERE user_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 20""",
+            (user_id,),
+        ).fetchall()
+    return [
+        {
+            "run_id": row["run_id"],
+            "created_at": row["created_at"],
+            "review_date": json.loads(row["evidence_json"])["review_scope"]["review_date"],
+        }
+        for row in rows
+    ]
