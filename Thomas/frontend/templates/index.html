@@ -10,6 +10,48 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<style>
+/* Multi-agent dashboard: scoped so existing ledger styling remains unchanged. */
+.agent-dashboard { --agent-line:#e2e8f0; --agent-muted:#64748b; --agent-ink:#172033; }
+.agent-status { margin:18px 0; padding:12px 15px; background:#f1f5f9; border:1px solid var(--agent-line); border-radius:10px; color:#334155; font-size:14px; }
+.agent-progress { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:18px 0 24px; }
+.agent-stage { display:flex; flex-direction:column; align-items:flex-start; gap:5px; padding:14px; border:1px solid var(--agent-line); border-radius:12px; background:#f8fafc; color:#64748b; font-weight:700; font-size:14px; }
+.agent-stage small { font-weight:400; font-size:12px; }
+.stage-icon { display:grid; place-items:center; width:34px; height:34px; border-radius:10px; background:#e2e8f0; color:#475569; font-size:12px; }
+.agent-stage.is-active { border-color:#93c5fd; background:#eff6ff; color:#1d4ed8; }
+.agent-stage.is-active .stage-icon { background:#2563eb; color:white; }
+.agent-stage.is-done { border-color:#bbf7d0; background:#f0fdf4; color:#166534; }
+.agent-stage.is-done .stage-icon { background:#16a34a; color:white; }
+.agent-results { display:grid; gap:16px; }
+.agent-empty { border:1px dashed var(--agent-line); padding:22px; text-align:center; border-radius:12px; color:var(--agent-muted); }
+.agent-panel { border:1px solid var(--agent-line); border-radius:14px; padding:20px; background:#fff; min-width:0; }
+.agent-panel-heading { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.agent-panel-heading h3 { margin:0; font-size:17px; color:var(--agent-ink); }
+.agent-panel-heading p { margin:4px 0 0; font-size:13px; color:var(--agent-muted); }
+.agent-panel-icon { display:grid; place-items:center; flex:none; width:40px; height:40px; border-radius:12px; background:#eff6ff; color:#2563eb; font-weight:800; }
+.agent-pill { margin-left:auto; border-radius:20px; padding:5px 10px; font-size:12px; background:#f1f5f9; color:#475569; white-space:nowrap; }
+.agent-pill.ready { background:#dcfce7; color:#166534; }
+.agent-step { display:flex; gap:12px; padding:12px 0; border-top:1px solid #f1f5f9; }
+.agent-step:first-child { border-top:0; }
+.agent-step-number { display:grid; place-items:center; flex:none; width:28px; height:28px; background:#eff6ff; border-radius:50%; color:#1d4ed8; font-size:12px; font-weight:700; }
+.agent-step-content { min-width:0; flex:1; }
+.agent-step-content strong { display:block; color:var(--agent-ink); font-size:14px; font-weight:600; }
+.agent-step-content p { margin:6px 0 0; font-size:13px; color:var(--agent-muted); }
+.agent-evidence { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.agent-chip { background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-size:11px; overflow-wrap:anywhere; }
+.agent-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+.agent-metric { border:1px solid var(--agent-line); border-radius:10px; padding:14px; }
+.agent-metric small { display:block; color:var(--agent-muted); margin-bottom:6px; }
+.agent-metric strong { color:var(--agent-ink); font-size:20px; }
+.agent-body-text { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.65; color:#334155; font-size:14px; }
+.agent-notice { padding:13px 15px; border-radius:10px; margin-top:10px; line-height:1.5; font-size:14px; }
+.agent-notice.warning { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+.agent-notice.advice { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
+.agent-notice strong { display:block; margin-bottom:4px; }
+.agent-muted { color:var(--agent-muted); font-size:14px; }
+.human-review-panel { margin-top:18px; border:1px solid #bfdbfe; background:#f8fbff; padding:20px; border-radius:14px; }
+@media(max-width:650px) { .agent-progress { grid-template-columns:repeat(2,minmax(0,1fr)); } .agent-metrics { grid-template-columns:1fr 1fr; } .agent-panel { padding:15px; } }
+</style>
 </head>
 
 <body>
@@ -381,58 +423,34 @@
 </section>
 
 <!-- MULTI-AGENT WORKFLOW -->
-<section class="card">
+<section class="card agent-dashboard">
     <div class="section-heading">
-        <div>
-            <h2>Multi-Agent Financial Review</h2>
-            <p>Planner → Worker → Reviewer → Human Review</p>
-        </div>
+        <div><h2>Multi-Agent Financial Review</h2><p>Structured AI analysis with human oversight.</p></div>
     </div>
-
     <div class="button-row">
-        <button type="button"
-                class="button button-primary"
-                id="agent-start"
-                onclick="startAgentReview()">
-            Run Multi-Agent Review
-        </button>
+        <button type="button" class="button button-primary" id="agent-start" onclick="startAgentReview()">Run Multi-Agent Review</button>
     </div>
-
-    <div id="agent-status" class="ai-result"></div>
-    <div id="agent-results" class="ai-result"></div>
-
-    <div id="human-review" style="display:none;">
-        <h3>Human Review</h3>
-
-        <div class="form-group">
-            <label for="review-decision">Decision</label>
-            <select id="review-decision">
-                <option value="approve">Approve</option>
-                <option value="correct">Correct</option>
-                <option value="partial">Partially Accept</option>
-                <option value="reject">Reject</option>
+    <div id="agent-status" class="agent-status" role="status" aria-live="polite">Ready to analyse your ledger.</div>
+    <div class="agent-progress" aria-label="Workflow progress">
+        <div class="agent-stage" id="stage-planner"><span class="stage-icon">01</span><span>Planner</span><small>Builds the plan</small></div>
+        <div class="agent-stage" id="stage-worker"><span class="stage-icon">02</span><span>Worker</span><small>Analyses evidence</small></div>
+        <div class="agent-stage" id="stage-reviewer"><span class="stage-icon">03</span><span>Reviewer</span><small>Checks quality</small></div>
+        <div class="agent-stage" id="stage-human"><span class="stage-icon">04</span><span>Human</span><small>Final decision</small></div>
+    </div>
+    <div id="agent-results" class="agent-results" aria-live="polite">
+        <div class="agent-empty">Your Planner, Worker and Reviewer results will appear here.</div>
+    </div>
+    <div id="human-review" class="human-review-panel" style="display:none;">
+        <div class="agent-panel-heading"><span class="agent-panel-icon">✓</span><div><h3>Human Review</h3><p>Make the final decision on the AI-generated analysis.</p></div></div>
+        <div class="form-group"><label for="review-decision">Decision</label>
+            <select id="review-decision" onchange="updateReviewFields()">
+                <option value="approve">Approve</option><option value="correct">Correct</option>
+                <option value="partial">Partially Accept</option><option value="reject">Reject</option>
             </select>
         </div>
-
-        <div class="form-group">
-            <label for="review-note">Review Note</label>
-            <textarea id="review-note" rows="3"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="review-corrected">
-                Corrected Output (required for Correct)
-            </label>
-            <textarea id="review-corrected" rows="3"></textarea>
-        </div>
-
-        <div class="button-row">
-            <button type="button"
-                    class="button button-primary"
-                    onclick="submitAgentReview()">
-                Submit Human Review
-            </button>
-        </div>
+        <div class="form-group"><label for="review-note">Review Note</label><textarea id="review-note" rows="3" placeholder="Add an explanation or verification notes..."></textarea></div>
+        <div class="form-group" id="corrected-field" style="display:none;"><label for="review-corrected">Corrected Output (required)</label><textarea id="review-corrected" rows="4" placeholder="Enter the corrected analysis..."></textarea></div>
+        <div class="button-row"><button type="button" class="button button-primary" id="agent-submit" onclick="submitAgentReview()">Submit Human Review</button></div>
     </div>
 </section>
 
@@ -445,109 +463,195 @@
 
 <script>
 let currentRunId = null;
+let agentPollToken = 0;
+const agentSleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const agentElement = (tag, className, text) => {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== undefined) element.textContent = String(text);
+    return element;
+};
+const agentMoney = value => new Intl.NumberFormat('en-AU', { style:'currency', currency:'AUD' }).format(Number(value));
+
+function updateAgentStages(data) {
+    const status = data.status || '';
+    const finished = status === 'complete';
+    const order = ['planner','worker','reviewer','human'];
+    const active = status === 'planning' || status === 'pending' || status === 'created' ? 0
+        : status === 'working' ? 1 : status === 'reviewing' ? 2
+        : status === 'awaiting_human' ? 3 : finished ? 4 : -1;
+    order.forEach((name, i) => {
+        const stage = document.getElementById('stage-' + name);
+        stage.classList.toggle('is-done', finished || (active >= 0 && i < active));
+        stage.classList.toggle('is-active', !finished && active === i);
+    });
+    const message = status === 'awaiting_human' ? 'Analysis complete — awaiting your decision.'
+        : status === 'complete' ? 'Human review completed.'
+        : status === 'failed' ? 'Workflow failed: ' + (typeof data.error === 'string' ? data.error : data.error?.message || data.error?.detail || 'Unknown error')
+        : 'Workflow status: ' + (status || 'starting').replaceAll('_',' ') + '…';
+    document.getElementById('agent-status').textContent = message;
+}
+
+function agentPanel(title, subtitle, number, value) {
+    const panel = agentElement('section','agent-panel');
+    const heading = agentElement('div','agent-panel-heading');
+    const icon = agentElement('span','agent-panel-icon',number);
+    const labels = agentElement('div');
+    labels.append(agentElement('h3','',title),agentElement('p','',subtitle));
+    const pill = agentElement('span','agent-pill'+(value != null ? ' ready':''),value != null ? 'Complete':'Waiting');
+    heading.append(icon,labels,pill);
+    panel.append(heading);
+    return panel;
+}
+
+function renderPlanner(plan) {
+    const panel = agentPanel('Planner','Steps and evidence used for the review','01',plan);
+    if (!Array.isArray(plan) || !plan.length) {
+        panel.append(agentElement('p','agent-muted','Waiting for the Planner to finish.'));
+        return panel;
+    }
+    plan.forEach((step,i) => {
+        const item = agentElement('div','agent-step');
+        item.append(agentElement('span','agent-step-number',step.step ?? i+1));
+        const content = agentElement('div','agent-step-content');
+        content.append(agentElement('strong','',step.action || 'Review evidence'));
+        if (Array.isArray(step.evidence) && step.evidence.length) {
+            const chips = agentElement('div','agent-evidence');
+            step.evidence.forEach(key => chips.append(agentElement('span','agent-chip',key.replaceAll('_',' '))));
+            content.append(chips);
+        }
+        item.append(content);
+        panel.append(item);
+    });
+    return panel;
+}
+
+function renderWorker(work,evidence) {
+    const panel = agentPanel('Worker','Financial evidence and analysis','02',work);
+    if (evidence && typeof evidence === 'object') {
+        const metrics = agentElement('div','agent-metrics');
+        const fields = [['transaction_count','Transactions'],['total_income','Total income'],['total_expenses','Total expenses'],['potential_deductions','Potential deductions']];
+        fields.forEach(([key,label]) => {
+            if (evidence[key] == null) return;
+            const metric = agentElement('div','agent-metric');
+            metric.append(agentElement('small','',label),agentElement('strong','',key === 'transaction_count' ? evidence[key] : agentMoney(evidence[key])));
+            metrics.append(metric);
+        });
+        if (metrics.children.length) panel.append(metrics);
+    }
+    if (!work) {
+        panel.append(agentElement('p','agent-muted','Waiting for the Worker to finish.'));
+        return panel;
+    }
+    const text = typeof work === 'string' ? work : JSON.stringify(work,null,2);
+    const matches = [...text.matchAll(/Step\s+(\d+)\s*:\s*([\s\S]*?)(?=\s*Step\s+\d+\s*:|$)/gi)];
+    if (matches.length) {
+        matches.forEach(match => {
+            const item = agentElement('div','agent-step');
+            item.append(agentElement('span','agent-step-number',match[1]));
+            const content = agentElement('div','agent-step-content');
+            const parts = match[2].split(/Verified evidence:/i);
+            content.append(agentElement('strong','',parts[0].trim()));
+            if (parts.length > 1) content.append(agentElement('p','', 'Verified evidence: ' + parts.slice(1).join('Verified evidence:').trim()));
+            item.append(content); panel.append(item);
+        });
+    } else panel.append(agentElement('div','agent-body-text',text));
+    return panel;
+}
+
+function renderReviewer(review) {
+    const panel = agentPanel('Reviewer','Risks and recommended next actions','03',review);
+    if (!review) {
+        panel.append(agentElement('p','agent-muted','Waiting for the Reviewer to finish.'));
+        return panel;
+    }
+    let result = review;
+    if (typeof review === 'string') {
+        try { result = JSON.parse(review); } catch { panel.append(agentElement('div','agent-body-text',review)); return panel; }
+    }
+    const risks = Array.isArray(result.risks) ? result.risks : [];
+    const recommendations = Array.isArray(result.recommendations) ? result.recommendations : [];
+    if (!risks.length && !recommendations.length) panel.append(agentElement('p','agent-muted','No risks or recommendations were returned.'));
+    risks.forEach(risk => {
+        const box = agentElement('div','agent-notice warning');
+        box.append(agentElement('strong','','⚠ Risk identified'),agentElement('div','',risk)); panel.append(box);
+    });
+    recommendations.forEach(recommendation => {
+        const box = agentElement('div','agent-notice advice');
+        box.append(agentElement('strong','','Recommended action'),agentElement('div','',recommendation)); panel.append(box);
+    });
+    return panel;
+}
 
 function showAgentData(data) {
-    const container = document.getElementById("agent-results");
-    container.replaceChildren();
+    const container = document.getElementById('agent-results');
+    container.replaceChildren(renderPlanner(data.plan),renderWorker(data.work,data.evidence),renderReviewer(data.review));
+    updateAgentStages(data);
+    document.getElementById('human-review').style.display = data.status === 'awaiting_human' ? 'block' : 'none';
+}
 
-    const sections = [
-        ["Planner", data.plan],
-        ["Worker", data.work],
-        ["Reviewer", data.review]
-    ];
-
-    for (const [title, value] of sections) {
-        const heading = document.createElement("h3");
-        heading.textContent = title;
-
-        const content = document.createElement("pre");
-        content.style.whiteSpace = "pre-wrap";
-        content.style.overflowWrap = "anywhere";
-        content.textContent = typeof value === "string"
-            ? value
-            : JSON.stringify(value, null, 2);
-
-        container.append(heading, content);
-    }
+function updateReviewFields() {
+    const decision = document.getElementById('review-decision').value;
+    document.getElementById('corrected-field').style.display = decision === 'correct' ? 'block' : 'none';
+    document.getElementById('review-note').required = decision === 'partial';
 }
 
 async function startAgentReview() {
-    const status = document.getElementById("agent-status");
-    const button = document.getElementById("agent-start");
-
+    const token = ++agentPollToken;
+    const button = document.getElementById('agent-start');
     button.disabled = true;
-    status.textContent = "Running Planner, Worker and Reviewer...";
-    document.getElementById("human-review").style.display = "none";
-
+    currentRunId = null;
+    document.getElementById('human-review').style.display = 'none';
+    document.getElementById('agent-results').replaceChildren(agentElement('div','agent-empty','Starting workflow…'));
+    document.getElementById('agent-status').textContent = 'Submitting financial review…';
     try {
-        const response = await fetch("/api/transactions/multi-agent", {
-            method: "POST"
-        });
-
+        const response = await fetch('/api/transactions/multi-agent',{method:'POST'});
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.detail || data.error || "Workflow failed");
-        }
-
+        if (!response.ok) throw new Error(data.detail || data.error || 'Workflow failed');
+        if (!data.run_id) throw new Error('Server did not return a workflow ID');
         currentRunId = data.run_id;
         showAgentData(data);
-        status.textContent = "Status: " + data.status;
-
-        if (data.status === "awaiting_human") {
-            document.getElementById("human-review").style.display = "block";
+        if (data.status === 'awaiting_human' || data.status === 'complete' || data.status === 'failed') return;
+        for (let attempt=0; attempt<120 && token===agentPollToken; attempt++) {
+            await agentSleep(2000);
+            if (token!==agentPollToken) return;
+            const result = await fetch('/api/transactions/multi-agent/'+encodeURIComponent(currentRunId));
+            const workflow = await result.json();
+            if (!result.ok) throw new Error(workflow.detail || workflow.error || 'Could not fetch workflow');
+            showAgentData(workflow);
+            if (['awaiting_human','complete','failed'].includes(workflow.status)) return;
         }
-    } catch (error) {
-        status.textContent = "Error: " + error.message;
+        if (token===agentPollToken) throw new Error('Polling timed out; workflow may still be running.');
+    } catch(error) {
+        if (token===agentPollToken) document.getElementById('agent-status').textContent = 'Error: '+error.message;
     } finally {
-        button.disabled = false;
+        if (token===agentPollToken) button.disabled = false;
     }
 }
 
 async function submitAgentReview() {
     if (!currentRunId) return;
-
-    const decision = document.getElementById("review-decision").value;
-    const note = document.getElementById("review-note").value.trim();
-    const corrected = document.getElementById("review-corrected").value.trim();
-
-    if (decision === "correct" && !corrected) {
-        alert("Corrected output is required.");
-        return;
-    }
-
-    if (decision === "partial" && !note) {
-        alert("Explain which part is accepted.");
-        return;
-    }
-
-    const body = { decision, note };
-    if (decision === "correct") body.corrected = corrected;
-
+    const decision = document.getElementById('review-decision').value;
+    const note = document.getElementById('review-note').value.trim();
+    const corrected = document.getElementById('review-corrected').value.trim();
+    if (decision === 'correct' && !corrected) { alert('Corrected output is required.'); return; }
+    if (decision === 'partial' && !note) { alert('Explain which part is accepted.'); return; }
+    const body = {decision,note};
+    if (decision === 'correct') body.corrected = corrected;
+    const button = document.getElementById('agent-submit');
+    button.disabled = true;
     try {
-        const response = await fetch(
-            `/api/transactions/multi-agent/${currentRunId}/review`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            }
-        );
-
+        const response = await fetch('/api/transactions/multi-agent/'+encodeURIComponent(currentRunId)+'/review',{
+            method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)
+        });
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.detail || data.error || "Review failed");
-        }
-
-        document.getElementById("agent-status").textContent =
-            "Status: " + data.status + " | Decision: " + data.decision;
-
-        document.getElementById("human-review").style.display = "none";
-    } catch (error) {
-        document.getElementById("agent-status").textContent =
-            "Error: " + error.message;
-    }
+        if (!response.ok) throw new Error(data.detail || data.error || 'Review failed');
+        document.getElementById('agent-status').textContent = 'Human review complete — '+data.decision+'.';
+        document.getElementById('human-review').style.display = 'none';
+        updateAgentStages({status:'complete'});
+    } catch(error) {
+        document.getElementById('agent-status').textContent = 'Error: '+error.message;
+    } finally { button.disabled = false; }
 }
 </script>
 
