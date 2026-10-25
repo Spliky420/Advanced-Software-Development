@@ -917,3 +917,74 @@ code {
   letter-spacing: 0.04em;
   color: var(--colour-text-muted);
 }
+
+/* Multi-Agent Review: the human decision controls and the worker's output. */
+.decision-options {
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.decision-options legend {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0 var(--space-xs);
+}
+
+.decision-option {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+}
+
+.worker-output {
+  white-space: pre-wrap;
+}
+
+/* Multi-Agent Review: each agent ticking off while the run is polled. */
+.agent-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  list-style: none;
+  margin: var(--space-md) 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background: var(--colour-surface);
+}
+
+.agent-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.agent-step-mark {
+  display: inline-flex;
+  justify-content: center;
+  width: 1.25rem;
+  font-weight: 700;
+}
+
+.agent-step-state {
+  font-size: 0.85rem;
+  color: var(--colour-text-muted);
+}
+
+.agent-step-done .agent-step-mark {
+  color: var(--colour-gain);
+}
+
+.agent-step-failed .agent-step-mark,
+.agent-step-failed .agent-step-state {
+  color: var(--colour-loss);
+}
+
+.agent-step-waiting,
+.agent-step-skipped,
+.agent-step-unknown {
+  opacity: 0.6;
+}

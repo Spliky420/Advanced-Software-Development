@@ -103,6 +103,15 @@ CREATE TABLE contributions (
 --          the response, so model_name is 'rag-server' rather than a tag this
 --          service can honestly claim to know. See the README's known issues.
 --
+-- Release 2 adds one more:
+--
+--   'agent'  the multi-agent plan review. One row when the review starts
+--            (the Python-computed proposal and the run id it was sent as),
+--            and one when a person decides on it (the decision, the agents'
+--            output they decided on, and whether the plan was applied).
+--            model_name is 'multi-agent' for the first -- the models ran in
+--            the shared multi-agent server -- and 'human' for the second.
+--
 -- Adding to this CHECK is not a free change: an existing goals.db on the
 -- lehoalong-db-data volume keeps the old three-phase constraint, and every
 -- Release 1 log write against it would fail. init_db.py migrates such a file
@@ -112,7 +121,7 @@ CREATE TABLE contributions (
 CREATE TABLE ai_plan_log (
     log_id     INTEGER PRIMARY KEY AUTOINCREMENT,
     goal_id    INTEGER REFERENCES goals (goal_id) ON DELETE SET NULL,
-    phase      TEXT    NOT NULL CHECK (phase IN ('plan', 'observe', 'adapt', 'mcp', 'rag')),
+    phase      TEXT    NOT NULL CHECK (phase IN ('plan', 'observe', 'adapt', 'mcp', 'rag', 'agent')),
     model_name TEXT    NOT NULL,                     -- e.g. qwen2.5:0.5b, llama3.1:8b, python, mcp, rag-server
     prompt     TEXT    NOT NULL,                     -- exact text sent, figures already computed
     response   TEXT,                                 -- raw response, before parsing

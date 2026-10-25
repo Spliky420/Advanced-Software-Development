@@ -2,7 +2,7 @@
 FROM alpine:3.20
 
 # Install SQLite.
-RUN apk add --no-cache sqlite
+RUN apk add --no-cache sqlite=3.45.3-r3
 
 WORKDIR /database
 

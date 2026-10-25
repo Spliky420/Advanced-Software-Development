@@ -73,6 +73,14 @@ class Config:
     # drifting away from the instructions.
     OLLAMA_TEMPERATURE = _float_env("OLLAMA_TEMPERATURE", 0.2)
 
+    # Release 2. Off means this backend never calls Ollama: plan and replan
+    # use the deterministic even-split schedule they already fall back to when
+    # the model misbehaves, flagged `fallback: true` with this as the reason.
+    # It is how the cloud deployment runs, where there is no Ollama to reach.
+    # The schedule is Python's either way, so the plan is identical; only the
+    # step descriptions differ.
+    AI_MODE_ENABLED = _bool_env("AI_MODE_ENABLED", True)
+
     # --- Progress ---------------------------------------------------------
     # How far a goal may sit either side of its plan before the observe phase
     # calls it behind or ahead, as a percentage of the amount the plan
@@ -134,6 +142,24 @@ class Config:
     # Identifies this backend in the RAG server's own audit log
     # (rag-server/rag-audit.jsonl), which records a `caller` per request.
     RAG_CALLER = os.environ.get("RAG_CALLER") or "lehoalong-goals-budgeting"
+
+    # --- Multi-agent (Release 2) ------------------------------------------
+    # The shared multi-agent server (multi-agent-server/, port 5004): Planner,
+    # Worker and Reviewer agents, then a human decision. Another host process,
+    # so the same host.docker.internal reasoning as MCP and RAG above.
+    MULTI_AGENT_ENABLED = _bool_env("MULTI_AGENT_ENABLED", True)
+    MULTI_AGENT_URL = os.environ.get("MULTI_AGENT_URL") or "http://host.docker.internal:5004"
+
+    # Short, because no request here waits for the agents. Reviews are started
+    # with "async": true, which returns as soon as the run exists; the agents'
+    # 15-40s happens on the server while the browser polls. Every call this
+    # backend makes -- start, poll, decide, health -- is a quick read or write
+    # against the server's own store, so a slow one means the server is in
+    # trouble, and the request should fail rather than hold a gunicorn thread.
+    MULTI_AGENT_TIMEOUT_SECONDS = _float_env("MULTI_AGENT_TIMEOUT_SECONDS", 10.0)
+
+    # Identifies this backend in the multi-agent server's workflow history.
+    MULTI_AGENT_CALLER = os.environ.get("MULTI_AGENT_CALLER") or "lehoalong-goals-budgeting"
 
     # --- CORS -------------------------------------------------------------
     # The Vite dev server and the containerised frontend both live on 8060.

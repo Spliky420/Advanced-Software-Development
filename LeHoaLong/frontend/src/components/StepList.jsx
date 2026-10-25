@@ -113,7 +113,10 @@ function StepRow({ goalId, step, currency, onChanged }) {
                 due {longDate(step.due_date)}
                 {overdue && ' (overdue)'}
               </span>
-              <span>{step.source === 'ai' ? 'written by the model' : 'edited by you'}</span>
+              {/* 'ai' covers a model-written step, the deterministic fallback
+                  and an agent-reviewed plan -- the last two have the app's own
+                  wording -- so the label claims only what is true of all three. */}
+              <span>{step.source === 'ai' ? 'generated plan' : 'edited by you'}</span>
             </span>
           </>
         )}

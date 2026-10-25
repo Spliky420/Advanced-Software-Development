@@ -54,6 +54,16 @@ class ValidationFailed(ApiError):
         super().__init__(message, details=details)
 
 
+class Conflict(ApiError):
+    """The request is valid but the resource is in the wrong state for it -- 409.
+
+    Used when a plan review is decided twice, or decided after the goal has
+    changed underneath the plan the agents reviewed.
+    """
+
+    status_code = 409
+
+
 class ServiceUnavailable(ApiError):
     """A dependency this endpoint needs is down -- 503.
 

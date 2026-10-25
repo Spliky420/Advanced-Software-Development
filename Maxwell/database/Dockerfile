@@ -2,7 +2,7 @@
 # Owns the named volume holding glossary.sqlite and initialises it once.
 FROM alpine:3.20
 
-RUN apk add --no-cache sqlite
+RUN apk add --no-cache sqlite=3.45.3-r3
 
 COPY init.sql seed.sql seed_glossary.sh /sql/
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

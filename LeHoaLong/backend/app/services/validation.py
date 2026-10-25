@@ -310,9 +310,9 @@ def validate_user_id_arg(args: Any, default_user_id: int) -> int:
     if raw is None:
         return default_user_id
     user_id = clean_user_id(raw, errors)
-    if errors:
+    # raw is not None, so clean_user_id returns None exactly when it recorded an error.
+    if user_id is None:
         raise ValidationFailed(errors)
-    assert user_id is not None
     return user_id
 
 
@@ -618,3 +618,52 @@ def validate_rag_options(payload: Any, args: Any = None) -> dict:
     if errors:
         raise ValidationFailed(errors)
     return clean
+
+
+# ---------------------------------------------------------------------------
+# Multi-agent plan review (Release 2)
+# ---------------------------------------------------------------------------
+
+REVIEW_DECISIONS = ("approve", "correct", "partial", "reject")
+MAX_REVIEW_NOTE_LENGTH = 1000
+MAX_CORRECTED_LENGTH = 2000
+
+
+def validate_review_decision(payload: Any) -> dict:
+    """Validate a POST /api/agents/workflow/<run_id>/review body.
+
+    The same rules the multi-agent server enforces, checked here first so a
+    bad body is a 400 naming the field and never reaches the server:
+
+        approve   note optional
+        correct   `corrected` required -- the person's corrected rationale
+        partial   `note` required -- which part is accepted
+        reject    note optional
+
+    `corrected` with any other decision is refused rather than ignored, so a
+    form bug that sends it cannot quietly lose what the person typed.
+    """
+    payload = require_object(payload)
+    errors: list[str] = []
+
+    decision = payload.get("decision")
+    if decision is None:
+        errors.append("decision is required")
+    elif decision not in REVIEW_DECISIONS:
+        errors.append(f"decision must be one of: {', '.join(REVIEW_DECISIONS)}")
+
+    note = clean_string(payload, "note", errors, required=False, max_length=MAX_REVIEW_NOTE_LENGTH, allow_empty=True)
+    corrected = clean_string(
+        payload, "corrected", errors, required=False, max_length=MAX_CORRECTED_LENGTH, allow_empty=True
+    )
+
+    if decision == "partial" and not note:
+        errors.append("note is required for a partial decision -- say which part is accepted")
+    if decision == "correct" and not corrected:
+        errors.append("corrected is required for a correct decision -- the corrected rationale")
+    if decision in REVIEW_DECISIONS and decision != "correct" and corrected:
+        errors.append("corrected is only accepted with decision 'correct'")
+
+    if errors:
+        raise ValidationFailed(errors)
+    return {"decision": decision, "note": note or "", "corrected": corrected if decision == "correct" else None}

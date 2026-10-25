@@ -5,10 +5,12 @@ from datetime import datetime, timezone
 
 from flask import Flask, jsonify, request
 
+import ai_mode
 import db
 import allocation
 import drift
 import llm
+import multi_agent_client
 from db import DEFAULT_USER_ID
 from validation import ValidationError, validate_holding_payload, validate_targets_payload
 
@@ -75,6 +77,30 @@ def _build_insight_prompt(portfolio):
     return "\n".join(lines)
 
 
+AI_OFF_MESSAGES = {
+    "disabled": "AI is disabled on this server, so no summary was generated. "
+                "Holdings, allocation and the drift figures still work.",
+    "unavailable": "AI is unavailable right now (Ollama could not produce a response), "
+                   "so no summary was generated. Holdings, allocation and the drift "
+                   "figures still work.",
+}
+
+
+def _ai_off_response(status, detail):
+    """503 for an AI-only endpoint that could not use the model.
+
+    error is the message for people; ai_status ("disabled" or "unavailable")
+    is for code to branch on; detail keeps the technical reason. Never a
+    stack trace.
+    """
+    return jsonify({
+        "error": AI_OFF_MESSAGES[status],
+        "ai_enabled": status != "disabled",
+        "ai_status": status,
+        "detail": detail,
+    }), 503
+
+
 def _round(value):
     return round(value, 2) if isinstance(value, float) else value
 
@@ -113,6 +139,84 @@ def _round_report(report):
             ],
         },
     }
+
+
+MULTI_AGENT_TASK = "Review my portfolio allocation and drift"
+
+
+def build_workflow_evidence():
+    """The evidence object sent to the Multi-Agent Server.
+
+    Every figure is computed in Python before it leaves this backend:
+    holdings and allocation by allocation.build_portfolio_report, drift by
+    drift.act/observe from that same report. Rounded to 2dp at this output
+    layer, as every other response is. The agents only plan, describe and
+    review around these figures; none is ever asked to calculate one.
+    """
+    targets = db.list_targets(DEFAULT_USER_ID)
+    report = allocation.build_portfolio_report(db.list_holdings(DEFAULT_USER_ID))
+    rounded = _round_report(report)
+
+    plan_result = drift.plan(targets)
+    act_result = drift.act(report["portfolio"], plan_result)
+    observe_result = drift.observe(act_result, plan_result)
+
+    return {
+        "holdings": [
+            {
+                key: holding[key]
+                for key in ("ticker", "asset_name", "asset_class", "units",
+                            "market_value", "cost_basis", "gain_loss", "gain_loss_percent")
+            }
+            for holding in rounded["holdings"]
+        ],
+        "allocation": rounded["portfolio"],
+        "drift": {
+            "threshold_percent": _round(observe_result["threshold_percent"]),
+            "breaches": [_round_drift_row(row) for row in observe_result["breaches"]],
+            "within_threshold": [_round_drift_row(row) for row in observe_result["within_threshold"]],
+        },
+    }
+
+
+# Friendly message per failure, for the UI; code is for clients to branch on.
+MULTI_AGENT_FAILURES = {
+    "disabled": (503, "AI is disabled on this server, so the Multi-Agent Review cannot run."),
+    "unreachable": (503, "The Multi-Agent Server is not running. Start it on the host "
+                         "(multi-agent-server/run.sh) and try again."),
+    "timeout": (504, "The Multi-Agent Server is not responding. It may be busy -- try again "
+                     "in a moment."),
+    "error": (502, "The Multi-Agent Server sent a response this app could not read."),
+    "validation_failed": (400, "The Multi-Agent Server rejected the request."),
+    "not_found": (404, "That run does not exist on the Multi-Agent Server (its history may have "
+                       "been cleared). Start a new run."),
+    "conflict": (409, "This run has already been reviewed (or failed), so it cannot be reviewed again."),
+    "agent_unavailable": (503, "The agents could not run. Check Ollama is running on the host, "
+                               "or start the Multi-Agent Server with STUB_AGENTS=true."),
+}
+
+
+def _multi_agent_failure(result, own_request=False):
+    """Turn a failed multi_agent_client result into (body, status).
+
+    own_request: True when this backend built the whole request body (start
+    a workflow), so a 400 from the server is this backend's fault, not the
+    user's, and is reported as 502 rather than passed on as 400.
+    """
+    code = result["status"]
+    data = result["data"] if isinstance(result["data"], dict) else {}
+    if code == "rejected":
+        code = data.get("error") if data.get("error") in MULTI_AGENT_FAILURES else "error"
+    http_status, message = MULTI_AGENT_FAILURES[code]
+    if code == "validation_failed" and own_request:
+        http_status = 502
+
+    body = {"error": message, "code": code, "detail": result["error"]}
+    if data.get("fields"):
+        body["fields"] = data["fields"]
+    if data.get("run_id"):
+        body["run_id"] = data["run_id"]
+    return jsonify(body), http_status
 
 
 def create_app():
@@ -187,10 +291,14 @@ def create_app():
         figures = _build_insight_prompt(portfolio)
         prompt_sent = INSIGHT_SYSTEM_PROMPT + "\n\n" + figures
 
+        if not ai_mode.is_enabled():
+            return _ai_off_response("disabled", ai_mode.DISABLED_MESSAGE)
         try:
             response_text, model_name = llm.generate(figures, system=INSIGHT_SYSTEM_PROMPT)
+        except llm.LLMDisabledError as exc:
+            return _ai_off_response("disabled", str(exc))
         except llm.LLMUnavailableError as exc:
-            return jsonify({"error": f"insight generation is unavailable: {exc}"}), 503
+            return _ai_off_response("unavailable", str(exc))
 
         entry = db.create_insight_log(
             {
@@ -216,10 +324,10 @@ def create_app():
         observe_result = drift.observe(act_result, plan_result)
         context_result = drift.gather_context(observe_result)
 
-        try:
-            adapt_result = drift.adapt(observe_result, context_result=context_result)
-        except llm.LLMUnavailableError as exc:
-            return jsonify({"error": f"drift review is unavailable: {exc}"}), 503
+        # Never raises for Ollama: with AI off or unreachable, ADAPT returns
+        # the Python-built fallback summary and ai_used=False, so the figures
+        # computed above still reach the client.
+        adapt_result = drift.adapt(observe_result, context_result=context_result)
 
         insight_log_id = None
         if adapt_result["llm_called"]:
@@ -289,8 +397,12 @@ def create_app():
                 "unsupplied_figures": adapt_result["unsupplied_figures"],
                 "misattributed": adapt_result["misattributed"],
                 "citations": adapt_result["citations"],
+                "ai_used": adapt_result["ai_used"],
+                "ai_error": adapt_result["ai_error"],
                 "run_id": adapt_result.get("run_id", "-"),
             },
+            "ai_enabled": ai_mode.is_enabled(),
+            "ai_used": adapt_result["ai_used"],
             "insight_log_id": insight_log_id,
             # Same id the four [agentic-loop <run_id>] log lines carry, lifted
             # to the top level so a response and a terminal capture can be
@@ -298,10 +410,48 @@ def create_app():
             "run_id": plan_result.get("run_id", "-"),
         }), 200
 
+    @app.post("/api/multi-agent/workflow")
+    def start_multi_agent_workflow():
+        # Asynchronous: the Multi-Agent Server answers 202 at once with the
+        # run at "planning" and runs the agents on its own thread. The
+        # client polls GET /api/multi-agent/workflow/<run_id> for progress.
+        evidence = build_workflow_evidence()
+        result = multi_agent_client.start_workflow(MULTI_AGENT_TASK, evidence)
+        if not result["ok"]:
+            return _multi_agent_failure(result, own_request=True)
+        return jsonify({"task": MULTI_AGENT_TASK, "evidence": evidence, "run": result["data"]}), 202
+
+    @app.get("/api/multi-agent/workflow/<run_id>")
+    def get_multi_agent_workflow(run_id):
+        # The run's current state, passed through. A run whose agent could
+        # not run is a 200 here with status "failed" and an error saying
+        # which phase -- the poller decides what to show, not this layer.
+        result = multi_agent_client.get_workflow(run_id)
+        if not result["ok"]:
+            return _multi_agent_failure(result)
+        return jsonify({"run": result["data"]}), 200
+
+    @app.post("/api/multi-agent/workflow/<run_id>/review")
+    def review_multi_agent_workflow(run_id):
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict):
+            return jsonify({
+                "error": "The review must be a JSON object with a decision.",
+                "code": "validation_failed",
+                "fields": {"body": "must be a JSON object"},
+            }), 400
+        result = multi_agent_client.submit_review(run_id, body)
+        if not result["ok"]:
+            return _multi_agent_failure(result)
+        return jsonify(result["data"]), 200
+
     return app
 
 
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    # Local development server only; the container runs gunicorn, which binds
+    # 0.0.0.0 inside the container (see Dockerfile). Loopback by default so a
+    # dev run is not exposed to the network; set HOST to override.
+    app.run(host=os.environ.get("HOST", "127.0.0.1"), port=int(os.environ.get("PORT", 5000)))

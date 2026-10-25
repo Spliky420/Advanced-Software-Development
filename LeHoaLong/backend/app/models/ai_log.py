@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sqlite3
 
-PHASES = ("plan", "observe", "adapt", "mcp", "rag")
+PHASES = ("plan", "observe", "adapt", "mcp", "rag", "agent")
 
 # The model_name written when Python did the work itself.
 PYTHON = "python"
@@ -34,9 +34,19 @@ PYTHON = "python"
 MCP = "mcp"
 RAG_SERVER = "rag-server"
 
+# Release 2's `agent` phase writes two more:
+#
+#   MULTI_AGENT  the Planner, Worker and Reviewer ran inside the shared
+#                multi-agent server, on whatever model it was started with.
+#                The server reports that tag in the run body, which is stored
+#                in the row, so this does not have to guess it.
+#   HUMAN        the decision on a plan review was made by a person.
+MULTI_AGENT = "multi-agent"
+HUMAN = "human"
+
 COLUMNS = ("log_id", "goal_id", "phase", "model_name", "prompt", "response", "created_at")
 
-_SELECT = f"SELECT {', '.join(COLUMNS)} FROM ai_plan_log"
+_SELECT = f"SELECT {', '.join(COLUMNS)} FROM ai_plan_log"  # noqa: S608 -- table and columns are module constants; no input reaches this string
 
 
 def insert_log(
@@ -77,3 +87,16 @@ def latest_for_goal(conn: sqlite3.Connection, goal_id: int, phase: str) -> sqlit
         f"{_SELECT} WHERE goal_id = ? AND phase = ? ORDER BY log_id DESC LIMIT 1",
         (goal_id, phase),
     ).fetchone()
+
+
+def agent_events(conn: sqlite3.Connection, run_id: str) -> list[sqlite3.Row]:
+    """Every `agent` row for one multi-agent run, oldest first.
+
+    The run id lives inside the JSON response rather than in a column of its
+    own: Release 2 adds no table and no column, so an existing goals.db needs
+    only the CHECK migration init_db.py already performs.
+    """
+    return conn.execute(
+        f"{_SELECT} WHERE phase = 'agent' AND json_extract(response, '$.run_id') = ? ORDER BY log_id",
+        (run_id,),
+    ).fetchall()

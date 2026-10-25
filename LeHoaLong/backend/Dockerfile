@@ -39,9 +39,16 @@ EXPOSE 5000
 # needs `extra_hosts: ["host.docker.internal:host-gateway"]` on the service;
 # see docs/pull-requests.md. Both integrations are optional at runtime: if
 # either server is absent the feature falls back and says so.
+#
+# Release 2 adds the multi-agent server (a host process on 5004, same
+# reasoning) and AI_MODE_ENABLED. All four switches default to on here, as
+# in config.py; the cloud deployment turns every one of them off.
 ENV DB_PATH=/data/goals.db \
+    AI_MODE_ENABLED=true \
     OLLAMA_BASE_URL=http://ollama:11434 \
     OLLAMA_MODEL=qwen2.5:0.5b \
+    MULTI_AGENT_ENABLED=true \
+    MULTI_AGENT_URL=http://host.docker.internal:5004 \
     MCP_ENABLED=true \
     MCP_SERVER_URL=http://host.docker.internal:5002/mcp \
     RAG_ENABLED=true \

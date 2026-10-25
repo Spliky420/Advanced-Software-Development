@@ -1104,18 +1104,19 @@ def start_multi_agent():
 
     try:
         response = requests.post(
-            f"{MULTI_AGENT_URL}/workflow",
-            json={
-                "task": (
-                    "Review the Transactions Ledger financial summary. "
-                    "Explain the supplied figures, identify possible risks, "
-                    "and recommend actions. Do not calculate new figures."
-                ),
-                "evidence": evidence,
-                "caller": "Thomas"
-            },
-            timeout=(5, 190)
-        )
+    f"{MULTI_AGENT_URL}/workflow",
+    json={
+        "task": (
+            "Review the Transactions Ledger financial summary. "
+            "Explain the supplied figures, identify possible risks, "
+            "and recommend actions. Do not calculate new figures."
+        ),
+        "evidence": evidence,
+        "caller": "Thomas",
+        "async": True
+    },
+    timeout=(5, 10)
+)
 
         return jsonify(response.json()), response.status_code
 

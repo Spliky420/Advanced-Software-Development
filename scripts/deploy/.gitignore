@@ -1,0 +1,2 @@
+# Written by 02-build-images.sh for 03-deploy-apps.sh; local state only.
+.last-image-tag
