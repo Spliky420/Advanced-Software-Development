@@ -43,6 +43,27 @@ The same checks are included in the Bills GitHub Actions workflow. Its
 endpoint evidence step tests the seeded bill list and the create/read/
 update/delete lifecycle, then uploads the test results.
 
+## Run the security tests
+
+Three pytest tests in `hyunwoo/tests/pre_commit/` run Ruff, secret detection
+and dependency auditing. The test requirements include the security tools,
+so the existing CI backend test job installs them too. Ruff checks the
+backend, matching the commit hook. Secret detection checks the backend,
+frontend and tests. The audit covers the backend, test and security-tool
+requirements, not unrelated packages in the local environment.
+
+```bash
+hyunwoo/.security-venv/bin/python -m pip install -r hyunwoo/backend/requirements.txt -r hyunwoo/tests/requirements.txt
+hyunwoo/.security-venv/bin/python -m pytest hyunwoo/tests -v
+```
+
+Dependency auditing needs internet access. The tests fail if a tool fails,
+times out, finds a possible secret or reports a vulnerable dependency.
+The Testing Review reads the saved summary in
+`hyunwoo/tests/pre_commit/security-tests.log`; the matching JUnit results
+are saved alongside it. These manual test results do not replace actual
+commit-time hook evidence.
+
 For the required commit-time evidence, capture the hook output when you
 make your own next Bills commit. A manual run is useful validation, but
 is not evidence that a commit actually ran the hooks.
