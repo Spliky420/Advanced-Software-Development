@@ -258,9 +258,10 @@ def _parse_plan(data, evidence: dict) -> list | None:
             break
     if not steps:
         return None
-    # Reject plans that fail to cover any supplied evidence key.
+    # Reject plans that fail to cover ANY supplied evidence key (i.e., completely unrelated).
+    # Allow partial coverage — the Planner may reasonably skip keys like counts/metadata.
     covered = {key for step in steps for key in step["evidence"]}
-    if set(evidence) - covered:
+    if not covered:
         return None
     return steps
 
