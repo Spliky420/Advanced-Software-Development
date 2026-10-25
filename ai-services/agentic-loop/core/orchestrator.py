@@ -180,11 +180,26 @@ PROJECT EVIDENCE
     adapt_prompt = f"""
 {review_instructions}
 
-Implementation Findings:
+You are performing the ADAPT stage of an agentic testing review.
+
+Your task is to verify the OBSERVE findings against the
+original evidence.
+
+Do not generate a new independent summary of the logs.
+
+=== OBSERVE FINDINGS ===
 {result}
 
-Observed Evidence:
+=== ORIGINAL TESTING EVIDENCE ===
 {evidence}
+
+=== REQUIRED OUTPUT ===
+1. Validated Findings
+2. Unsupported or Incorrect Findings
+3. Missing Evidence
+4. Required Corrections
+5. Human Validation Required
+6. Final Verdict
 """
 
     print("Asking Ollama to validate those findings against the evidence...")

@@ -1,14 +1,22 @@
 import os
+import json
 import requests
 
 
 class AIRunner:
     def __init__(self):
-        self.base_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
+        self.base_url = os.getenv(
+            "OLLAMA_URL",
+            "http://localhost:11434"
+        )
 
-        self.model = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b")
+        self.model = os.getenv(
+            "OLLAMA_MODEL",
+            "qwen2.5:7b"
+        )
 
     def run(self, prompt: str) -> str:
+        print(f"Model: {self.model}")
         print(f"Prompt size: {len(prompt):,} characters")
 
         try:
@@ -19,9 +27,9 @@ class AIRunner:
                     "prompt": prompt,
                     "stream": True,
                     "options": {
-                        "num_predict": 220,
-                        "num_ctx": 4096,
-                        "temperature": 0.1,
+                        "num_predict": 2500,
+                        "num_ctx": 16384,
+                        "temperature": 0,
                     },
                 },
                 stream=True,
@@ -31,19 +39,15 @@ class AIRunner:
             response.raise_for_status()
 
             full_response = ""
+            final_chunk = {}
 
-            print("AI response:")
-            print()
+            print("\nAI response:\n")
 
             for line in response.iter_lines():
                 if not line:
                     continue
 
-                data = line.decode("utf-8")
-
-                import json
-
-                chunk = json.loads(data)
+                chunk = json.loads(line.decode("utf-8"))
 
                 text = chunk.get("response", "")
 
@@ -51,7 +55,27 @@ class AIRunner:
                     print(text, end="", flush=True)
                     full_response += text
 
+                if chunk.get("done"):
+                    final_chunk = chunk
+
             print()
+
+            if final_chunk.get("done_reason") == "length":
+                print(
+                    "\nWARNING: Response reached the "
+                    "generation token limit."
+                )
+
+            print(
+                "Prompt tokens:",
+                final_chunk.get("prompt_eval_count", "unknown")
+            )
+
+            print(
+                "Generated tokens:",
+                final_chunk.get("eval_count", "unknown")
+            )
+
             return full_response
 
         except requests.exceptions.Timeout:

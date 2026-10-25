@@ -1,43 +1,74 @@
 from pathlib import Path
 
+from core.testing_evidence import summarise_log
 from core.review_file_collector import collect_files
 
 
 def collect(repo_root: Path, student: str) -> str:
-    """
-    Collect testing evidence for a student or the whole team.
-    """
+    repo_root = Path(repo_root).resolve()
 
-    evidence = []
+    sections = []
 
-    # Student-specific testing evidence
-    student_evidence = collect_files(
-        repo_root,
-        student,
-        (
-            "tests/**/*.py",
-            "**/pytest.ini",
-            "**/pyproject.toml",
-            "**/ruff.toml",
-            "**/requirements*.txt",
-        ),
+    sections.append("=== TEST IMPLEMENTATION ===")
+    sections.append(
+        collect_files(
+            repo_root,
+            student,
+            (
+                "tests/**/*.py",
+                "**/pytest.ini",
+                "**/ruff.toml",
+                "**/pyproject.toml",
+            ),
+        )
     )
 
-    evidence.append("=== STUDENT TESTING EVIDENCE ===")
-    evidence.append(student_evidence)
-
-    # Shared CI/CD and pre-commit configuration
-    shared_evidence = collect_files(
-        repo_root,
-        "all",
-        (
-            ".pre-commit-config.yaml",
-            ".github/workflows/*ci*.yml",
-            ".github/workflows/*ci*.yaml",
-        ),
+    sections.append("=== CI/CD CONFIGURATION ===")
+    sections.append(
+        collect_files(
+            repo_root,
+            "all",
+            (
+                ".github/workflows/*.yml",
+                ".github/workflows/*.yaml",
+                ".pre-commit-config.yaml",
+            ),
+        )
     )
 
-    evidence.append("=== SHARED TESTING CONFIGURATION ===")
-    evidence.append(shared_evidence)
+    sections.append("=== PRE-COMMIT TEST RESULTS ===")
 
-    return "\n\n".join(evidence)
+    pre_commit_logs = sorted(
+        repo_root.glob("*/tests/pre_commit/*.log")
+    )
+
+    if pre_commit_logs:
+        for path in pre_commit_logs:
+            sections.append(summarise_log(path))
+    else:
+        sections.append("No pre-commit execution logs found.")
+
+    sections.append("=== POST-COMMIT CI/CD RESULTS ===")
+
+    ci_dir = (
+        repo_root
+        / "ai-services"
+        / "agentic-loop"
+        / "evidence"
+        / "post-commit"
+    )
+
+    ci_logs = (
+        sorted(ci_dir.rglob("*.log"))
+        + sorted(ci_dir.rglob("*.txt"))
+        if ci_dir.is_dir()
+        else []
+    )
+
+    if ci_logs:
+        for path in ci_logs:
+            sections.append(summarise_log(path))
+    else:
+        sections.append("No post-commit execution logs found.")
+
+    return "\n\n".join(sections)
