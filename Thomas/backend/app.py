@@ -1152,4 +1152,10 @@ def review_multi_agent(run_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+
+    app.run(
+        host="0.0.0.0",  # noqa: S104 - required for Docker networking
+        port=5001,
+        debug=debug_mode,
+    )
