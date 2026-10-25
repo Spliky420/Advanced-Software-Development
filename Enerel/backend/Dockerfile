@@ -19,9 +19,9 @@ USER appuser
 
 EXPOSE 5000
 
-# DB_PATH, OLLAMA_*, MCP_* and RAG_* are supplied by compose. The MCP and RAG
-# servers run on the host, not in Docker, so they are reached through
-# host.docker.internal.
+# DB_PATH, OLLAMA_*, MCP_*, RAG_* and MULTI_AGENT_* are supplied by compose.
+# The MCP, RAG and Multi-Agent servers run on the host, not in Docker, so
+# they are reached through host.docker.internal.
 ENV DB_PATH=/data/library.db \
     OLLAMA_BASE_URL=http://ollama:11434 \
     OLLAMA_MODEL=qwen2.5:0.5b \
@@ -29,7 +29,9 @@ ENV DB_PATH=/data/library.db \
     MCP_ENABLED=true \
     MCP_SERVER_URL=http://host.docker.internal:5002/mcp \
     RAG_ENABLED=true \
-    RAG_SERVER_URL=http://host.docker.internal:5003
+    RAG_SERVER_URL=http://host.docker.internal:5003 \
+    MULTI_AGENT_ENABLED=true \
+    MULTI_AGENT_URL=http://host.docker.internal:5004
 
 # --timeout 180 must stay above llm.py's 60s Ollama timeout and
 # rag_client.py's 150s /answer timeout; the gunicorn default of 30s would

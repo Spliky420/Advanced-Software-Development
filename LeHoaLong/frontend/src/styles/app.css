@@ -834,3 +834,188 @@
 .plan-outcome .budget-figures {
   margin-top: var(--spacing-md);
 }
+
+/* --------------------------------------------------------------------------
+ * Release 2 -- the Agents tab
+ *
+ * Same shared tokens again. The stage tracker reuses the status-light
+ * palette (green done, amber running, grey waiting) so "ready" means the
+ * same thing in the header and here; red is kept for a failed agent only.
+ * -------------------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.agent-review__heading {
+  font-size: var(--font-size-base);
+  margin: var(--spacing-lg) 0 var(--spacing-xs);
+}
+.agent-review__provenance {
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--spacing-sm);
+}
+
+/* Stage tracker ------------------------------------------------------------ */
+.agent-stages {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-md) 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+}
+.agent-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-top-width: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  min-width: 0;
+}
+.agent-stage__marker {
+  font-weight: bold;
+  min-height: 1.2em;
+}
+.agent-stage__label {
+  font-weight: bold;
+}
+.agent-stage__word {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+.agent-stage--done {
+  border-top-color: var(--color-success);
+}
+.agent-stage--done .agent-stage__marker {
+  color: var(--color-success);
+}
+.agent-stage--active {
+  border-top-color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+.agent-stage--active .agent-stage__marker::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  animation: service-pulse 1.4s ease-in-out infinite;
+}
+.agent-stage--failed {
+  border-top-color: var(--color-secondary);
+  background: var(--color-danger-bg);
+}
+.agent-stage--failed .agent-stage__marker {
+  color: var(--color-secondary);
+}
+.agent-stage--pending {
+  border-top-color: var(--color-border);
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-stage--active .agent-stage__marker::before { animation: none; }
+}
+@media (max-width: 560px) {
+  .agent-stages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* What the agents said ----------------------------------------------------- */
+.agent-output__block {
+  border-left: 3px solid var(--color-border);
+  padding: 0 0 0 var(--spacing-md);
+  margin: var(--spacing-md) 0;
+}
+.agent-output__block h4 {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+.agent-output__block ol,
+.agent-output__block ul {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+}
+.agent-output__block li {
+  margin-bottom: var(--spacing-xs);
+}
+.agent-output__text {
+  white-space: pre-wrap;
+  margin: 0;
+}
+.agent-output__subhead {
+  font-weight: bold;
+  font-size: var(--font-size-sm);
+  margin: var(--spacing-sm) 0 var(--spacing-xs);
+}
+.agent-output__evidence {
+  font-size: 12px;
+}
+.agent-output__check {
+  background: var(--color-info-bg);
+  color: var(--color-primary-dark);
+}
+
+/* The decision ------------------------------------------------------------- */
+.agent-decision {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+.agent-decision__choices {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--spacing-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-sm);
+}
+.agent-choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--spacing-sm);
+  align-items: start;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--color-surface);
+}
+.agent-choice input {
+  margin-top: 3px;
+}
+.agent-choice__label {
+  font-weight: bold;
+}
+.agent-choice__hint {
+  grid-column: 2;
+  font-size: 12px;
+}
+.agent-choice--chosen {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+.agent-choice--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.figure__note {
+  display: block;
+  font-size: 12px;
+}

@@ -1,0 +1,2 @@
+# Local runs of the post-commit endpoint tests (CI uploads its copy as an artefact).
+endpoint_tests/report/

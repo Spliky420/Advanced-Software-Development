@@ -50,7 +50,7 @@ MIN_ROWS_PER_TABLE = 10
 # Every phase ai_plan_log must accept. Release 0 shipped three; Release 1's MCP
 # and RAG integrations add two more, and an existing database file still has
 # the old three-phase CHECK constraint -- see migrate_ai_plan_log.
-REQUIRED_PHASES = ("plan", "observe", "adapt", "mcp", "rag")
+REQUIRED_PHASES = ("plan", "observe", "adapt", "mcp", "rag", "agent")
 
 
 def resolve_db_path(cli_value: str | None) -> Path:
@@ -257,7 +257,7 @@ def check(conn: sqlite3.Connection, *, fresh: bool) -> tuple[list[str], list[str
 
     # --- seed-time invariants ----------------------------------------------
     for table in TABLES:
-        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]  # noqa: S608 -- table is from TABLES
         if count < MIN_ROWS_PER_TABLE:
             seeded.append(f"{table} has {count} rows, fewer than the required {MIN_ROWS_PER_TABLE}")
 
@@ -306,7 +306,7 @@ def summarise(conn: sqlite3.Connection) -> None:
     print("Row counts")
     print("-" * 78)
     for table in TABLES:
-        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]  # noqa: S608 -- table is from TABLES
         flag = "ok" if count >= MIN_ROWS_PER_TABLE else "TOO FEW"
         print(f"  {table:<16} {count:>4}   {flag}")
 

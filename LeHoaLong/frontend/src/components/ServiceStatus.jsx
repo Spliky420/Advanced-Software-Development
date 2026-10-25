@@ -1,7 +1,7 @@
-// The MCP and RAG reachability lights in the page header.
+// The MCP, RAG and Agents reachability lights in the page header.
 //
-// Both are driven by this app's own backend (/api/mcp/health and
-// /api/rag/health), which answer 200 whatever the news is -- a light that
+// All three are driven by this app's own backend (/api/mcp/health,
+// /api/rag/health and /api/agents/health), which answer 200 whatever the news is -- a light that
 // cannot report "off" would not be a status light. Each probe uses a short
 // timeout on the server side, so an absent host process does not hold up the
 // page.
@@ -12,7 +12,8 @@
 //
 //   ready        enabled and reachable
 //   unreachable  enabled, but the host process is not answering
-//   off          disabled by configuration (MCP_ENABLED / RAG_ENABLED)
+//   off          disabled by configuration (MCP_ENABLED / RAG_ENABLED /
+//                MULTI_AGENT_ENABLED)
 
 import { useEffect, useState } from 'react'
 import * as api from '../api/client'
@@ -48,6 +49,7 @@ function Light({ name, status, error }) {
 export default function ServiceStatus() {
   const [mcp, setMcp] = useState({ status: null, error: null })
   const [rag, setRag] = useState({ status: null, error: null })
+  const [agents, setAgents] = useState({ status: null, error: null })
 
   useEffect(() => {
     let cancelled = false
@@ -67,6 +69,7 @@ export default function ServiceStatus() {
     // add background traffic for no benefit.
     probe(api.getMcpHealth, setMcp)
     probe(api.getRagHealth, setRag)
+    probe(api.getAgentsHealth, setAgents)
 
     return () => {
       cancelled = true
@@ -77,6 +80,7 @@ export default function ServiceStatus() {
     <div className="service-status" role="status" aria-label="Integration status">
       <Light name="MCP" status={mcp.status} error={mcp.error} />
       <Light name="RAG" status={rag.status} error={rag.error} />
+      <Light name="Agents" status={agents.status} error={agents.error} />
     </div>
   )
 }

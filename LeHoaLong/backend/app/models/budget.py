@@ -10,7 +10,7 @@ import sqlite3
 
 COLUMNS = ("setting_id", "user_id", "monthly_budget", "currency", "updated_at")
 
-_SELECT = f"SELECT {', '.join(COLUMNS)} FROM budget_settings"
+_SELECT = f"SELECT {', '.join(COLUMNS)} FROM budget_settings"  # noqa: S608 -- table and columns are module constants; no input reaches this string
 
 
 def get_for_user(conn: sqlite3.Connection, user_id: int) -> sqlite3.Row | None:
@@ -44,5 +44,6 @@ def upsert(
         (user_id, monthly_budget, currency, updated_at),
     )
     row = get_for_user(conn, user_id)
-    assert row is not None  # just written
+    if row is None:  # just written, so only a broken database gets here
+        raise RuntimeError(f"budget for user {user_id} was written but cannot be read back")
     return row
