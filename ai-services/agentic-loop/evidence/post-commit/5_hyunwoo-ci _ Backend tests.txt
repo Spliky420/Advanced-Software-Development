@@ -1,0 +1,443 @@
+﻿2026-10-25T04:41:47.9857276Z Current runner version: '2.338.0'
+2026-10-25T04:41:47.9881949Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:47.9882743Z Hosted Compute Agent
+2026-10-25T04:41:47.9883390Z Version: 20261021.618
+2026-10-25T04:41:47.9884055Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:47.9885047Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:47.9885693Z Worker ID: {d9744083-9fc1-47fe-a3aa-2b303b999e1a}
+2026-10-25T04:41:47.9886364Z Region: westus3
+2026-10-25T04:41:47.9886901Z Cloud: Azure
+2026-10-25T04:41:47.9887403Z ##[endgroup]
+2026-10-25T04:41:47.9888886Z ##[group]Operating System
+2026-10-25T04:41:47.9889486Z Ubuntu
+2026-10-25T04:41:47.9889959Z 24.04.5
+2026-10-25T04:41:47.9890455Z LTS
+2026-10-25T04:41:47.9890945Z ##[endgroup]
+2026-10-25T04:41:47.9891810Z ##[group]Runner Image
+2026-10-25T04:41:47.9892460Z Image: ubuntu-24.04
+2026-10-25T04:41:47.9892971Z Version: 20261012.334.1
+2026-10-25T04:41:47.9894170Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:47.9895797Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:47.9896749Z ##[endgroup]
+2026-10-25T04:41:47.9897742Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:47.9899806Z Contents: read
+2026-10-25T04:41:47.9900342Z Metadata: read
+2026-10-25T04:41:47.9900898Z ##[endgroup]
+2026-10-25T04:41:47.9903405Z Secret source: Actions
+2026-10-25T04:41:47.9904565Z Cache mode: write
+2026-10-25T04:41:47.9905416Z Prepare workflow directory
+2026-10-25T04:41:48.0343727Z Prepare all required actions
+2026-10-25T04:41:48.0394341Z Getting action download info
+2026-10-25T04:41:48.3571610Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:48.4852675Z Download action repository 'actions/setup-python@v5.3.0' (SHA:0b93645e9fea7318ecaed2b359559ac225c90a2b)
+2026-10-25T04:41:48.6659073Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/hyunwoo-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:48.6663879Z Complete job name: hyunwoo-ci / Backend tests
+2026-10-25T04:41:48.7431568Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:48.7432471Z with:
+2026-10-25T04:41:48.7433109Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.7437085Z   token: ***
+2026-10-25T04:41:48.7437579Z   ssh-strict: true
+2026-10-25T04:41:48.7438069Z   ssh-user: git
+2026-10-25T04:41:48.7438748Z   persist-credentials: true
+2026-10-25T04:41:48.7439276Z   clean: true
+2026-10-25T04:41:48.7439757Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:48.7440306Z   fetch-depth: 1
+2026-10-25T04:41:48.7440796Z   fetch-tags: false
+2026-10-25T04:41:48.7441261Z   show-progress: true
+2026-10-25T04:41:48.7441740Z   lfs: false
+2026-10-25T04:41:48.7442242Z   submodules: false
+2026-10-25T04:41:48.7442699Z   set-safe-directory: true
+2026-10-25T04:41:48.7443538Z env:
+2026-10-25T04:41:48.7443976Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:48.7444658Z   MCP_ENABLED: false
+2026-10-25T04:41:48.7445146Z   RAG_ENABLED: false
+2026-10-25T04:41:48.7445782Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.7446373Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:48.7446954Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.7447509Z ##[endgroup]
+2026-10-25T04:41:48.8632403Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.8645183Z ##[group]Getting Git version info
+2026-10-25T04:41:48.8647219Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.8649359Z [command]/usr/bin/git version
+2026-10-25T04:41:48.8695828Z git version 2.55.0
+2026-10-25T04:41:48.8717836Z ##[endgroup]
+2026-10-25T04:41:48.8734036Z Temporarily overriding HOME='/home/runner/work/_temp/acb56daa-c7c9-402f-8e80-3310b26b23a6' before making global git config changes
+2026-10-25T04:41:48.8736967Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:48.8741337Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.8795700Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.8799465Z ##[group]Initializing the repository
+2026-10-25T04:41:48.8805798Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.8889841Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:48.8891911Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:48.8893746Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:48.8895403Z hint: call:
+2026-10-25T04:41:48.8896260Z hint:
+2026-10-25T04:41:48.8897263Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:48.8898462Z hint:
+2026-10-25T04:41:48.8899588Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:48.8902464Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:48.8903875Z hint:
+2026-10-25T04:41:48.8904561Z hint: 	git branch -m <name>
+2026-10-25T04:41:48.8905548Z hint:
+2026-10-25T04:41:48.8906647Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:48.8907808Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:48.8909701Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.8945521Z ##[endgroup]
+2026-10-25T04:41:48.8946829Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:48.8950327Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:48.8979500Z ##[endgroup]
+2026-10-25T04:41:48.8980674Z ##[group]Setting up auth
+2026-10-25T04:41:48.8987559Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:48.9018957Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:48.9355746Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:48.9393555Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:48.9606884Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:48.9646585Z ##[endgroup]
+2026-10-25T04:41:48.9647308Z ##[group]Fetching the repository
+2026-10-25T04:41:48.9656057Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:49.7057584Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.7058954Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:49.7061642Z ##[endgroup]
+2026-10-25T04:41:49.7062446Z ##[group]Determining the checkout info
+2026-10-25T04:41:49.7064070Z ##[endgroup]
+2026-10-25T04:41:49.7071325Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:49.7122601Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:49.7151522Z ##[group]Checking out the ref
+2026-10-25T04:41:49.7155373Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:49.7437731Z Switched to a new branch 'main'
+2026-10-25T04:41:49.7439994Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:49.7449974Z ##[endgroup]
+2026-10-25T04:41:49.7488285Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:49.7518166Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:49.7867999Z ##[group]Run actions/setup-python@v5.3.0
+2026-10-25T04:41:49.7869372Z with:
+2026-10-25T04:41:49.7870332Z   python-version: 3.11
+2026-10-25T04:41:49.7871401Z   cache: pip
+2026-10-25T04:41:49.7873113Z   cache-dependency-path: hyunwoo/backend/requirements.txt
+hyunwoo/tests/requirements.txt
+
+2026-10-25T04:41:49.7875331Z   check-latest: false
+2026-10-25T04:41:49.7884352Z   token: ***
+2026-10-25T04:41:49.7885441Z   update-environment: true
+2026-10-25T04:41:49.7886611Z   allow-prereleases: false
+2026-10-25T04:41:49.7887706Z env:
+2026-10-25T04:41:49.7888635Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:49.7889736Z   MCP_ENABLED: false
+2026-10-25T04:41:49.7890756Z   RAG_ENABLED: false
+2026-10-25T04:41:49.7891851Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.7893126Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:49.7894476Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.7895680Z ##[endgroup]
+2026-10-25T04:41:49.9197403Z ##[group]Installed versions
+2026-10-25T04:41:49.9286089Z (node:2171) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.9289378Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.9291076Z Successfully set up CPython (3.11.17)
+2026-10-25T04:41:49.9293722Z ##[endgroup]
+2026-10-25T04:41:49.9598147Z [command]/opt/hostedtoolcache/Python/3.11.17/x64/bin/pip cache dir
+2026-10-25T04:41:50.2136230Z /home/runner/.cache/pip
+2026-10-25T04:41:50.3743461Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:41:50.3754161Z pip cache is not found
+2026-10-25T04:41:50.3852195Z ##[group]Run python -m pip install --upgrade pip
+2026-10-25T04:41:50.3852809Z [36;1mpython -m pip install --upgrade pip[0m
+2026-10-25T04:41:50.3853265Z [36;1mpip install -r hyunwoo/backend/requirements.txt[0m
+2026-10-25T04:41:50.3853732Z [36;1mpip install -r hyunwoo/tests/requirements.txt[0m
+2026-10-25T04:41:50.4027222Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:50.4027608Z env:
+2026-10-25T04:41:50.4027874Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:50.4028143Z   MCP_ENABLED: false
+2026-10-25T04:41:50.4028393Z   RAG_ENABLED: false
+2026-10-25T04:41:50.4028702Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.4029061Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:50.4029385Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.4029758Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.4030230Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:50.4030775Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.4031196Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.4031609Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.4032023Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:50.4032403Z ##[endgroup]
+2026-10-25T04:41:50.8729731Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (26.2.1)
+2026-10-25T04:41:50.9609194Z Collecting pip
+2026-10-25T04:41:51.0098212Z   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:51.0178588Z Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+2026-10-25T04:41:51.0572734Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 91.6 MB/s  0:00:00
+2026-10-25T04:41:51.1006280Z Installing collected packages: pip
+2026-10-25T04:41:51.1006920Z   Attempting uninstall: pip
+2026-10-25T04:41:51.1018964Z     Found existing installation: pip 26.2.1
+2026-10-25T04:41:51.1335910Z     Uninstalling pip-26.2.1:
+2026-10-25T04:41:51.1386193Z       Successfully uninstalled pip-26.2.1
+2026-10-25T04:41:51.8500129Z Successfully installed pip-26.2.2
+2026-10-25T04:41:52.2472259Z Collecting Flask==3.0.3 (from -r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.2941135Z   Downloading flask-3.0.3-py3-none-any.whl.metadata (3.2 kB)
+2026-10-25T04:41:52.3088827Z Collecting gunicorn==22.0.0 (from -r hyunwoo/backend/requirements.txt (line 2))
+2026-10-25T04:41:52.3125695Z   Downloading gunicorn-22.0.0-py3-none-any.whl.metadata (4.4 kB)
+2026-10-25T04:41:52.3311575Z Collecting requests==2.32.3 (from -r hyunwoo/backend/requirements.txt (line 3))
+2026-10-25T04:41:52.3353504Z   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:52.3552079Z Collecting mcp==1.30.0 (from -r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.3605661Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+2026-10-25T04:41:52.3897895Z Collecting Werkzeug>=3.0.0 (from Flask==3.0.3->-r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.3934241Z   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:41:52.4064250Z Collecting Jinja2>=3.1.2 (from Flask==3.0.3->-r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.4099496Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:52.4210518Z Collecting itsdangerous>=2.1.2 (from Flask==3.0.3->-r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.4250394Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:41:52.4393830Z Collecting click>=8.1.3 (from Flask==3.0.3->-r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.4433796Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:52.4542282Z Collecting blinker>=1.6.2 (from Flask==3.0.3->-r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.4577889Z   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:52.4722470Z Collecting packaging (from gunicorn==22.0.0->-r hyunwoo/backend/requirements.txt (line 2))
+2026-10-25T04:41:52.4760627Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:52.5790068Z Collecting charset-normalizer<4,>=2 (from requests==2.32.3->-r hyunwoo/backend/requirements.txt (line 3))
+2026-10-25T04:41:52.5829788Z   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:41:52.5997909Z Collecting idna<4,>=2.5 (from requests==2.32.3->-r hyunwoo/backend/requirements.txt (line 3))
+2026-10-25T04:41:52.6035093Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:41:52.6221514Z Collecting urllib3<3,>=1.21.1 (from requests==2.32.3->-r hyunwoo/backend/requirements.txt (line 3))
+2026-10-25T04:41:52.6260676Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:52.6427784Z Collecting certifi>=2017.4.17 (from requests==2.32.3->-r hyunwoo/backend/requirements.txt (line 3))
+2026-10-25T04:41:52.6465797Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:52.6671614Z Collecting anyio>=4.5 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.6713406Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+2026-10-25T04:41:52.6815100Z Collecting httpx-sse>=0.4 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.6850772Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:52.7009968Z Collecting httpx<1.0.0,>=0.27.1 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.7054574Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-10-25T04:41:52.7225962Z Collecting jsonschema>=4.20.0 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.7264496Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:52.7415093Z Collecting pydantic-settings>=2.5.2 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.7454295Z   Downloading pydantic_settings-2.16.1-py3-none-any.whl.metadata (4.0 kB)
+2026-10-25T04:41:52.8312370Z Collecting pydantic<3.0.0,>=2.11.0 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.8346680Z   Downloading pydantic-2.14.1-py3-none-any.whl.metadata (133 kB)
+2026-10-25T04:41:52.8546831Z Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.8584890Z   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:52.8703179Z Collecting python-multipart>=0.0.9 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.8737127Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+2026-10-25T04:41:52.8891777Z Collecting sse-starlette>=1.6.1 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.8927871Z   Downloading sse_starlette-3.5.1-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:52.9149702Z Collecting starlette>=0.27 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.9189377Z   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:52.9331523Z Collecting typing-extensions>=4.9.0 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.9371692Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-10-25T04:41:52.9470708Z Collecting typing-inspection>=0.4.1 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.9515285Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:52.9712991Z Collecting uvicorn>=0.31.1 (from mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.9754351Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:52.9911193Z Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:52.9951907Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-10-25T04:41:53.0108015Z Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.0145294Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-10-25T04:41:53.0253880Z Collecting annotated-types>=0.6.0 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.0293288Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:53.6123456Z Collecting pydantic-core==2.50.1 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.6164994Z   Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+2026-10-25T04:41:53.6686474Z Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->Flask==3.0.3->-r hyunwoo/backend/requirements.txt (line 1))
+2026-10-25T04:41:53.6725610Z   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:41:53.6849906Z Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.6886658Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-10-25T04:41:53.7020014Z Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.7060154Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:53.7228828Z Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.7269096Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:41:53.9626130Z Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.9667908Z   Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-10-25T04:41:53.9849021Z Collecting python-dotenv>=1.2.2 (from pydantic-settings>=2.5.2->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:53.9884065Z   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+2026-10-25T04:41:54.1393106Z Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:54.1431090Z   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+2026-10-25T04:41:54.2278695Z Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:54.2318042Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+2026-10-25T04:41:54.2428638Z Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r hyunwoo/backend/requirements.txt (line 4))
+2026-10-25T04:41:54.2465995Z   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:54.2678262Z Downloading flask-3.0.3-py3-none-any.whl (101 kB)
+2026-10-25T04:41:54.2738703Z Downloading gunicorn-22.0.0-py3-none-any.whl (84 kB)
+2026-10-25T04:41:54.2796419Z Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+2026-10-25T04:41:54.2855052Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+2026-10-25T04:41:54.2928487Z Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:41:54.2988772Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-10-25T04:41:54.3043172Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-10-25T04:41:54.3097375Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:41:54.3155703Z Downloading pydantic-2.14.1-py3-none-any.whl (488 kB)
+2026-10-25T04:41:54.3224113Z Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+2026-10-25T04:41:54.3357765Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 173.6 MB/s  0:00:00
+2026-10-25T04:41:54.3398414Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:41:54.3453607Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-10-25T04:41:54.3505553Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+2026-10-25T04:41:54.3562455Z Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:41:54.3612524Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:41:54.3666505Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:41:54.3725014Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-10-25T04:41:54.3776844Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+2026-10-25T04:41:54.3826583Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:41:54.3875978Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:41:54.3932890Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+2026-10-25T04:41:54.3986888Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-10-25T04:41:54.4040206Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-10-25T04:41:54.4095743Z Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:41:54.4152319Z Downloading pydantic_settings-2.16.1-py3-none-any.whl (80 kB)
+2026-10-25T04:41:54.4209401Z Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+2026-10-25T04:41:54.4287109Z Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+2026-10-25T04:41:54.4443492Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 336.0 MB/s  0:00:00
+2026-10-25T04:41:54.4485684Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+2026-10-25T04:41:54.4546118Z Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+2026-10-25T04:41:54.4600741Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+2026-10-25T04:41:54.4659151Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-10-25T04:41:54.4714269Z Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (375 kB)
+2026-10-25T04:41:54.4775278Z Downloading sse_starlette-3.5.1-py3-none-any.whl (17 kB)
+2026-10-25T04:41:54.4829842Z Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+2026-10-25T04:41:54.4882864Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-25T04:41:54.4939363Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+2026-10-25T04:41:54.4992162Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+2026-10-25T04:41:54.5050778Z Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:41:54.5108812Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-25T04:41:54.5164790Z Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+2026-10-25T04:41:54.7429764Z Installing collected packages: urllib3, typing-extensions, rpds-py, python-multipart, python-dotenv, pyjwt, pycparser, packaging, MarkupSafe, itsdangerous, idna, httpx-sse, h11, click, charset-normalizer, certifi, blinker, attrs, annotated-types, Werkzeug, uvicorn, typing-inspection, requests, referencing, pydantic-core, Jinja2, httpcore, gunicorn, cffi, anyio, starlette, pydantic, jsonschema-specifications, httpx, Flask, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+2026-10-25T04:41:56.5361547Z 
+2026-10-25T04:41:56.5383167Z Successfully installed Flask-3.0.3 Jinja2-3.1.6 MarkupSafe-3.0.4 Werkzeug-3.1.9 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 blinker-1.9.0 certifi-2026.10.23 cffi-2.1.1 charset-normalizer-3.5.2 click-8.5.0 cryptography-50.0.2 gunicorn-22.0.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 itsdangerous-2.2.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.30.0 packaging-26.3 pycparser-3.12 pydantic-2.14.1 pydantic-core-2.50.1 pydantic-settings-2.16.1 pyjwt-2.15.1 python-dotenv-1.2.4 python-multipart-0.0.32 referencing-0.37.0 requests-2.32.3 rpds-py-2026.9.1 sse-starlette-3.5.1 starlette-1.10.0 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0
+2026-10-25T04:41:57.0549279Z Collecting pytest==8.3.2 (from -r hyunwoo/tests/requirements.txt (line 1))
+2026-10-25T04:41:57.1233575Z   Downloading pytest-8.3.2-py3-none-any.whl.metadata (7.5 kB)
+2026-10-25T04:41:57.1364181Z Collecting iniconfig (from pytest==8.3.2->-r hyunwoo/tests/requirements.txt (line 1))
+2026-10-25T04:41:57.1471792Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:41:57.1505930Z Requirement already satisfied: packaging in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==8.3.2->-r hyunwoo/tests/requirements.txt (line 1)) (26.3)
+2026-10-25T04:41:57.1592555Z Collecting pluggy<2,>=1.5 (from pytest==8.3.2->-r hyunwoo/tests/requirements.txt (line 1))
+2026-10-25T04:41:57.1696830Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-10-25T04:41:57.1843533Z Downloading pytest-8.3.2-py3-none-any.whl (341 kB)
+2026-10-25T04:41:57.2316079Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-10-25T04:41:57.2439801Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-10-25T04:41:57.3009041Z Installing collected packages: pluggy, iniconfig, pytest
+2026-10-25T04:41:57.5090636Z 
+2026-10-25T04:41:57.5112421Z Successfully installed iniconfig-2.3.1 pluggy-1.7.0 pytest-8.3.2
+2026-10-25T04:41:57.5762507Z ##[group]Run pytest hyunwoo/tests -v
+2026-10-25T04:41:57.5762819Z [36;1mpytest hyunwoo/tests -v[0m
+2026-10-25T04:41:57.5803170Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:57.5803434Z env:
+2026-10-25T04:41:57.5803644Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:57.5803869Z   MCP_ENABLED: false
+2026-10-25T04:41:57.5804078Z   RAG_ENABLED: false
+2026-10-25T04:41:57.5804531Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:57.5804876Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:57.5805155Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:57.5805481Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:57.5805893Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:57.5806476Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:57.5806857Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:57.5807293Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:57.5807658Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:57.5807966Z ##[endgroup]
+2026-10-25T04:41:58.6871845Z ============================= test session starts ==============================
+2026-10-25T04:41:58.6872716Z platform linux -- Python 3.11.17, pytest-8.3.2, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:41:58.6873274Z cachedir: .pytest_cache
+2026-10-25T04:41:58.6873741Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:58.8019485Z plugins: anyio-4.15.1
+2026-10-25T04:41:58.8019912Z collecting ... collected 91 items
+2026-10-25T04:41:58.8020123Z 
+2026-10-25T04:41:58.8575312Z hyunwoo/tests/test_api.py::test_health_and_seeded_records PASSED         [  1%]
+2026-10-25T04:41:58.8647183Z hyunwoo/tests/test_api.py::test_endpoints_only_return_the_default_users_bills PASSED [  2%]
+2026-10-25T04:41:58.8734741Z hyunwoo/tests/test_api.py::test_create_read_update_and_delete_bill PASSED [  3%]
+2026-10-25T04:41:58.8783384Z hyunwoo/tests/test_api.py::test_create_rejects_invalid_and_duplicate_bills PASSED [  4%]
+2026-10-25T04:41:58.8831764Z hyunwoo/tests/test_api.py::test_summary_matches_seeded_records PASSED    [  5%]
+2026-10-25T04:41:58.8888922Z hyunwoo/tests/test_api.py::test_review_endpoint_returns_all_four_real_phases PASSED [  6%]
+2026-10-25T04:41:58.8932723Z hyunwoo/tests/test_api.py::test_review_rejects_invalid_period PASSED     [  7%]
+2026-10-25T04:41:58.8981164Z hyunwoo/tests/test_api.py::test_review_reports_when_ollama_is_unavailable PASSED [  8%]
+2026-10-25T04:41:58.8990160Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[weekly-52.0] PASSED [  9%]
+2026-10-25T04:41:58.8996970Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[fortnightly-26.0] PASSED [ 10%]
+2026-10-25T04:41:58.9003234Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[monthly-12.0] PASSED [ 12%]
+2026-10-25T04:41:58.9009865Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[quarterly-4.0] PASSED [ 13%]
+2026-10-25T04:41:58.9016203Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[yearly-1.0] PASSED [ 14%]
+2026-10-25T04:41:58.9022155Z hyunwoo/tests/test_calculations.py::test_summary_uses_active_bills_only PASSED [ 15%]
+2026-10-25T04:41:58.9068988Z hyunwoo/tests/test_integrations.py::test_mcp_returns_shared_tool_result PASSED [ 16%]
+2026-10-25T04:41:58.9079479Z hyunwoo/tests/test_integrations.py::test_mcp_reads_json_text_content PASSED [ 17%]
+2026-10-25T04:41:58.9127430Z hyunwoo/tests/test_integrations.py::test_mcp_rejects_tool_failures[tool_error] PASSED [ 18%]
+2026-10-25T04:41:58.9172063Z hyunwoo/tests/test_integrations.py::test_mcp_rejects_tool_failures[backend_error] PASSED [ 19%]
+2026-10-25T04:41:58.9218797Z hyunwoo/tests/test_integrations.py::test_mcp_rejects_tool_failures[invalid] PASSED [ 20%]
+2026-10-25T04:41:58.9264538Z hyunwoo/tests/test_integrations.py::test_mcp_connection_failure_is_503 PASSED [ 21%]
+2026-10-25T04:41:58.9315912Z hyunwoo/tests/test_integrations.py::test_disabled_modes_never_contact_services PASSED [ 23%]
+2026-10-25T04:41:58.9360120Z hyunwoo/tests/test_integrations.py::test_rag_returns_answer_with_verified_source_and_confidence PASSED [ 24%]
+2026-10-25T04:41:58.9402422Z hyunwoo/tests/test_integrations.py::test_bills_query_ignores_other_features_even_if_words_match PASSED [ 25%]
+2026-10-25T04:41:58.9443890Z hyunwoo/tests/test_integrations.py::test_expanded_corpus_cannot_replace_the_bills_reference PASSED [ 26%]
+2026-10-25T04:41:58.9491978Z hyunwoo/tests/test_integrations.py::test_unrelated_query_skips_answer_generation PASSED [ 27%]
+2026-10-25T04:41:58.9531261Z hyunwoo/tests/test_integrations.py::test_unverified_numerical_answer_uses_original_source PASSED [ 28%]
+2026-10-25T04:41:58.9577300Z hyunwoo/tests/test_integrations.py::test_exact_source_quote_is_preserved PASSED [ 29%]
+2026-10-25T04:41:58.9620342Z hyunwoo/tests/test_integrations.py::test_empty_retrieval_returns_insufficient_context PASSED [ 30%]
+2026-10-25T04:41:58.9664981Z hyunwoo/tests/test_integrations.py::test_model_insufficient_evidence_is_displayed_as_insufficient_context PASSED [ 31%]
+2026-10-25T04:41:58.9710172Z hyunwoo/tests/test_integrations.py::test_declined_bills_answer_can_show_strong_verified_source PASSED [ 32%]
+2026-10-25T04:41:58.9755438Z hyunwoo/tests/test_integrations.py::test_declined_answer_cannot_bypass_citation_validation[citation0] PASSED [ 34%]
+2026-10-25T04:41:58.9798609Z hyunwoo/tests/test_integrations.py::test_declined_answer_cannot_bypass_citation_validation[citation1] PASSED [ 35%]
+2026-10-25T04:41:58.9840251Z hyunwoo/tests/test_integrations.py::test_uncited_or_invented_sources_are_rejected[citations0] PASSED [ 36%]
+2026-10-25T04:41:58.9882840Z hyunwoo/tests/test_integrations.py::test_uncited_or_invented_sources_are_rejected[citations1] PASSED [ 37%]
+2026-10-25T04:41:58.9925012Z hyunwoo/tests/test_integrations.py::test_uncited_or_invented_sources_are_rejected[citations2] PASSED [ 38%]
+2026-10-25T04:41:58.9966847Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload0] PASSED [ 39%]
+2026-10-25T04:41:59.0012486Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload1] PASSED [ 40%]
+2026-10-25T04:41:59.0055507Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload2] PASSED [ 41%]
+2026-10-25T04:41:59.0097600Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload3] PASSED [ 42%]
+2026-10-25T04:41:59.0137229Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload4] PASSED [ 43%]
+2026-10-25T04:41:59.0176740Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload5] PASSED [ 45%]
+2026-10-25T04:41:59.0215606Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload6] PASSED [ 46%]
+2026-10-25T04:41:59.0265815Z hyunwoo/tests/test_integrations.py::test_rag_unavailable_keeps_existing_api_working PASSED [ 47%]
+2026-10-25T04:41:59.0273753Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Netflix_cancel.txt] PASSED [ 48%]
+2026-10-25T04:41:59.0281282Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Netflix_partner.txt] PASSED [ 49%]
+2026-10-25T04:41:59.0288657Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Netflix_billing.txt] PASSED [ 50%]
+2026-10-25T04:41:59.0295701Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Spotify_cancel.txt] PASSED [ 51%]
+2026-10-25T04:41:59.0302875Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Spotify_trial.txt] PASSED [ 52%]
+2026-10-25T04:41:59.0310354Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Spotify_billing.txt] PASSED [ 53%]
+2026-10-25T04:41:59.0362932Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[How do I cancel Netflix?-HyunWoo_provider_Netflix_cancel.txt] PASSED [ 54%]
+2026-10-25T04:41:59.0410420Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[Where can I find my Netflix billing date?-HyunWoo_provider_Netflix_billing.txt] PASSED [ 56%]
+2026-10-25T04:41:59.0460843Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[Why is the Netflix cancel option missing?-HyunWoo_provider_Netflix_partner.txt] PASSED [ 57%]
+2026-10-25T04:41:59.0506140Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[Will I keep my Spotify playlists after cancelling?-HyunWoo_provider_Spotify_cancel.txt] PASSED [ 58%]
+2026-10-25T04:41:59.0554990Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[What happens if I cancel a Spotify free trial?-HyunWoo_provider_Spotify_trial.txt] PASSED [ 59%]
+2026-10-25T04:41:59.0599719Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[How can I change my Spotify billing date?-HyunWoo_provider_Spotify_billing.txt] PASSED [ 60%]
+2026-10-25T04:41:59.0643937Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[How do I cancel Netflix?-HyunWoo_provider_Netflix_cancel.txt] PASSED [ 61%]
+2026-10-25T04:41:59.0695484Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[Where can I find my Netflix billing date?-HyunWoo_provider_Netflix_billing.txt] PASSED [ 62%]
+2026-10-25T04:41:59.0742165Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[Why is the Netflix cancel option missing?-HyunWoo_provider_Netflix_partner.txt] PASSED [ 63%]
+2026-10-25T04:41:59.0798314Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[Will I keep my Spotify playlists after cancelling?-HyunWoo_provider_Spotify_cancel.txt] PASSED [ 64%]
+2026-10-25T04:41:59.0847848Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[What happens if I cancel a Spotify free trial?-HyunWoo_provider_Spotify_trial.txt] PASSED [ 65%]
+2026-10-25T04:41:59.0893427Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[How can I change my Spotify billing date?-HyunWoo_provider_Spotify_billing.txt] PASSED [ 67%]
+2026-10-25T04:41:59.0937726Z hyunwoo/tests/test_integrations.py::test_weak_source_match_does_not_override_model_refusal[answer0] PASSED [ 68%]
+2026-10-25T04:41:59.0983311Z hyunwoo/tests/test_integrations.py::test_weak_source_match_does_not_override_model_refusal[answer1] PASSED [ 69%]
+2026-10-25T04:41:59.1032072Z hyunwoo/tests/test_integrations.py::test_model_refusal_cannot_use_a_retrieved_but_wrong_provider_citation PASSED [ 70%]
+2026-10-25T04:41:59.1078346Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is Netflix's current price in Australia?] PASSED [ 71%]
+2026-10-25T04:41:59.1131531Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is Netflix's cancellation fee?] PASSED [ 72%]
+2026-10-25T04:41:59.1180414Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[Can I get a refund after cancelling Netflix?] PASSED [ 73%]
+2026-10-25T04:41:59.1227119Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is Spotify's student discount?] PASSED [ 74%]
+2026-10-25T04:41:59.1273666Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What promotions does Spotify offer?] PASSED [ 75%]
+2026-10-25T04:41:59.1322423Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is my Netflix password?] PASSED [ 76%]
+2026-10-25T04:41:59.1365497Z hyunwoo/tests/test_integrations.py::test_provider_question_does_not_use_other_provider_or_app_facts PASSED [ 78%]
+2026-10-25T04:41:59.1406603Z hyunwoo/tests/test_integrations.py::test_free_trial_question_requires_trial_context PASSED [ 79%]
+2026-10-25T04:41:59.1450126Z hyunwoo/tests/test_integrations.py::test_provider_policy_hallucination_uses_reference_instead PASSED [ 80%]
+2026-10-25T04:41:59.1493084Z hyunwoo/tests/test_integrations.py::test_model_cannot_choose_a_provider_source_link PASSED [ 81%]
+2026-10-25T04:41:59.1515175Z hyunwoo/tests/test_rag_launcher.py::test_unfiltered_requests_keep_shared_retrieval PASSED [ 82%]
+2026-10-25T04:41:59.1538169Z hyunwoo/tests/test_rag_launcher.py::test_provider_filter_is_applied_before_retrieval PASSED [ 83%]
+2026-10-25T04:41:59.1551143Z hyunwoo/tests/test_rag_launcher.py::test_empty_filter_does_not_search_other_sources PASSED [ 84%]
+2026-10-25T04:41:59.1564332Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[netflix.txt] PASSED [ 85%]
+2026-10-25T04:41:59.1577416Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[sources1] PASSED [ 86%]
+2026-10-25T04:41:59.1590611Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[sources2] PASSED [ 87%]
+2026-10-25T04:41:59.1603719Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[sources3] PASSED [ 89%]
+2026-10-25T04:41:59.1616949Z hyunwoo/tests/test_rag_launcher.py::test_answer_errors_do_not_leak_filter_to_next_request PASSED [ 90%]
+2026-10-25T04:41:59.1629741Z hyunwoo/tests/test_rag_launcher.py::test_other_paths_keep_shared_handler PASSED [ 91%]
+2026-10-25T04:41:59.1635418Z hyunwoo/tests/test_review.py::test_plan_sets_scope_and_priority_order PASSED [ 92%]
+2026-10-25T04:41:59.1641810Z hyunwoo/tests/test_review.py::test_plan_rejects_invalid_window[0] PASSED [ 93%]
+2026-10-25T04:41:59.1647855Z hyunwoo/tests/test_review.py::test_plan_rejects_invalid_window[91] PASSED [ 94%]
+2026-10-25T04:41:59.1653878Z hyunwoo/tests/test_review.py::test_plan_rejects_invalid_window[not-a-number] PASSED [ 95%]
+2026-10-25T04:41:59.1659354Z hyunwoo/tests/test_review.py::test_act_and_observe_return_calculated_findings PASSED [ 96%]
+2026-10-25T04:41:59.1664933Z hyunwoo/tests/test_review.py::test_adapt_prioritises_overdue_bill_and_uses_model_tone PASSED [ 97%]
+2026-10-25T04:41:59.1670117Z hyunwoo/tests/test_review.py::test_adapt_uses_safe_summary_for_unexpected_model_output PASSED [ 98%]
+2026-10-25T04:41:59.1706756Z hyunwoo/tests/test_review.py::test_adapt_skips_model_when_nothing_needs_attention PASSED [100%]
+2026-10-25T04:41:59.1707340Z 
+2026-10-25T04:41:59.1707581Z ============================== 91 passed in 0.48s ==============================
+2026-10-25T04:41:59.3143607Z Post job cleanup.
+2026-10-25T04:41:59.4267178Z (node:2279) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:59.4267806Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:59.4508259Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Advanced-Software-Development/Advanced-Software-Development --files-from manifest.txt --use-compress-program zstdmt
+2026-10-25T04:41:59.5854194Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0l4jdagAAAADqThOYU8xrQI8gmMLnBxrMUEhYMzFFREdFMDIxOQBFZGdl
+2026-10-25T04:41:59.6056345Z Post job cleanup.
+2026-10-25T04:41:59.6906744Z [command]/usr/bin/git version
+2026-10-25T04:41:59.6955206Z git version 2.55.0
+2026-10-25T04:41:59.7001844Z Temporarily overriding HOME='/home/runner/work/_temp/2d05cec3-b30d-4ed1-94b6-bff5da085d88' before making global git config changes
+2026-10-25T04:41:59.7003071Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:59.7009551Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:59.7051980Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:59.7091387Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:59.7317857Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:59.7355684Z http.https://github.com/.extraheader
+2026-10-25T04:41:59.7358056Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:41:59.7392920Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:59.7767883Z Cleaning up orphan processes
+2026-10-25T04:41:59.8109965Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

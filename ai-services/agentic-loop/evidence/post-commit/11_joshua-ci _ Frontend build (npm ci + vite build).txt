@@ -1,0 +1,177 @@
+﻿2026-10-25T04:41:47.9235152Z Current runner version: '2.338.0'
+2026-10-25T04:41:47.9255743Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:47.9256493Z Hosted Compute Agent
+2026-10-25T04:41:47.9257021Z Version: 20261021.618
+2026-10-25T04:41:47.9257628Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:47.9258218Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:47.9258832Z Worker ID: {a01a38d5-6256-4c76-b09e-d31c4af8479e}
+2026-10-25T04:41:47.9259422Z Region: westus3
+2026-10-25T04:41:47.9260179Z Cloud: Azure
+2026-10-25T04:41:47.9260726Z ##[endgroup]
+2026-10-25T04:41:47.9261849Z ##[group]Operating System
+2026-10-25T04:41:47.9262465Z Ubuntu
+2026-10-25T04:41:47.9262909Z 24.04.5
+2026-10-25T04:41:47.9263365Z LTS
+2026-10-25T04:41:47.9263856Z ##[endgroup]
+2026-10-25T04:41:47.9264317Z ##[group]Runner Image
+2026-10-25T04:41:47.9265153Z Image: ubuntu-24.04
+2026-10-25T04:41:47.9265695Z Version: 20261012.334.1
+2026-10-25T04:41:47.9266735Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:47.9268021Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:47.9268776Z ##[endgroup]
+2026-10-25T04:41:47.9269782Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:47.9271486Z Contents: read
+2026-10-25T04:41:47.9272103Z Metadata: read
+2026-10-25T04:41:47.9272567Z ##[endgroup]
+2026-10-25T04:41:47.9274418Z Secret source: Actions
+2026-10-25T04:41:47.9275200Z Cache mode: write
+2026-10-25T04:41:47.9275814Z Prepare workflow directory
+2026-10-25T04:41:47.9595116Z Prepare all required actions
+2026-10-25T04:41:47.9635159Z Getting action download info
+2026-10-25T04:41:48.2735004Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:48.3556195Z Download action repository 'actions/setup-node@v4.1.0' (SHA:39370e3970a6d050c480ffad4ff0ed4d3fdee5af)
+2026-10-25T04:41:48.5954072Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/joshua-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:48.5957675Z Complete job name: joshua-ci / Frontend build (npm ci + vite build)
+2026-10-25T04:41:48.6611556Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:48.6612225Z with:
+2026-10-25T04:41:48.6612640Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.6615974Z   token: ***
+2026-10-25T04:41:48.6616330Z   ssh-strict: true
+2026-10-25T04:41:48.6616688Z   ssh-user: git
+2026-10-25T04:41:48.6617047Z   persist-credentials: true
+2026-10-25T04:41:48.6617436Z   clean: true
+2026-10-25T04:41:48.6617794Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:48.6618205Z   fetch-depth: 1
+2026-10-25T04:41:48.6618551Z   fetch-tags: false
+2026-10-25T04:41:48.6618904Z   show-progress: true
+2026-10-25T04:41:48.6619258Z   lfs: false
+2026-10-25T04:41:48.6619589Z   submodules: false
+2026-10-25T04:41:48.6620096Z   set-safe-directory: true
+2026-10-25T04:41:48.6620612Z ##[endgroup]
+2026-10-25T04:41:48.7428103Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.7430300Z ##[group]Getting Git version info
+2026-10-25T04:41:48.7431522Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.7432623Z [command]/usr/bin/git version
+2026-10-25T04:41:48.7495312Z git version 2.55.0
+2026-10-25T04:41:48.7524046Z ##[endgroup]
+2026-10-25T04:41:48.7541140Z Temporarily overriding HOME='/home/runner/work/_temp/2bcc38da-6ea3-4893-a629-77f3358b77c3' before making global git config changes
+2026-10-25T04:41:48.7543234Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:48.7545264Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.7582762Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.7587289Z ##[group]Initializing the repository
+2026-10-25T04:41:48.7592024Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.7690099Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:48.7691367Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:48.7692115Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:48.7692699Z hint: call:
+2026-10-25T04:41:48.7693025Z hint:
+2026-10-25T04:41:48.7693443Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:48.7693935Z hint:
+2026-10-25T04:41:48.7694406Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:48.7695421Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:48.7696013Z hint:
+2026-10-25T04:41:48.7696353Z hint: 	git branch -m <name>
+2026-10-25T04:41:48.7696736Z hint:
+2026-10-25T04:41:48.7697226Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:48.7702435Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:48.7710880Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.7758993Z ##[endgroup]
+2026-10-25T04:41:48.7760097Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:48.7763233Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:48.7791785Z ##[endgroup]
+2026-10-25T04:41:48.7792428Z ##[group]Setting up auth
+2026-10-25T04:41:48.7800614Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:48.7831168Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:48.8161957Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:48.8192975Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:48.8380758Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:48.8417998Z ##[endgroup]
+2026-10-25T04:41:48.8418697Z ##[group]Fetching the repository
+2026-10-25T04:41:48.8425597Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:49.6214192Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.6215110Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:49.6218222Z ##[endgroup]
+2026-10-25T04:41:49.6219092Z ##[group]Determining the checkout info
+2026-10-25T04:41:49.6227313Z ##[endgroup]
+2026-10-25T04:41:49.6228352Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:49.6277755Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:49.6307624Z ##[group]Checking out the ref
+2026-10-25T04:41:49.6310510Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:49.6605817Z Switched to a new branch 'main'
+2026-10-25T04:41:49.6610762Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:49.6616524Z ##[endgroup]
+2026-10-25T04:41:49.6655831Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:49.6680151Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:49.6947200Z ##[group]Run actions/setup-node@v4.1.0
+2026-10-25T04:41:49.6947881Z with:
+2026-10-25T04:41:49.6948276Z   node-version: 22
+2026-10-25T04:41:49.6948722Z   cache: npm
+2026-10-25T04:41:49.6949330Z   cache-dependency-path: joshua/frontend/package-lock.json
+2026-10-25T04:41:49.6950458Z   always-auth: false
+2026-10-25T04:41:49.6950937Z   check-latest: false
+2026-10-25T04:41:49.6958362Z   token: ***
+2026-10-25T04:41:49.6958800Z ##[endgroup]
+2026-10-25T04:41:49.8055688Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-25T04:41:49.8059599Z (node:2041) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.8062613Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.8065144Z ##[group]Environment details
+2026-10-25T04:41:50.1381672Z node: v22.23.3
+2026-10-25T04:41:50.1383703Z npm: 10.9.9
+2026-10-25T04:41:50.1384861Z yarn: 1.22.22
+2026-10-25T04:41:50.1387097Z ##[endgroup]
+2026-10-25T04:41:50.1402898Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+2026-10-25T04:41:50.2287588Z /home/runner/.npm
+2026-10-25T04:41:50.3311949Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:41:50.3322744Z npm cache is not found
+2026-10-25T04:41:50.3516091Z ##[group]Run npm ci
+2026-10-25T04:41:50.3516812Z [36;1mnpm ci[0m
+2026-10-25T04:41:50.3753336Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:50.3754009Z ##[endgroup]
+2026-10-25T04:41:52.3093336Z 
+2026-10-25T04:41:52.3099014Z added 70 packages, and audited 71 packages in 2s
+2026-10-25T04:41:52.3099410Z 
+2026-10-25T04:41:52.3099594Z 10 packages are looking for funding
+2026-10-25T04:41:52.3100111Z   run `npm fund` for details
+2026-10-25T04:41:52.3155624Z 
+2026-10-25T04:41:52.3156156Z 2 high severity vulnerabilities
+2026-10-25T04:41:52.3156357Z 
+2026-10-25T04:41:52.3156476Z To address all issues, run:
+2026-10-25T04:41:52.3156720Z   npm audit fix
+2026-10-25T04:41:52.3156846Z 
+2026-10-25T04:41:52.3156971Z Run `npm audit` for details.
+2026-10-25T04:41:52.3552589Z ##[group]Run npm run build
+2026-10-25T04:41:52.3552872Z [36;1mnpm run build[0m
+2026-10-25T04:41:52.3615598Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:52.3615857Z ##[endgroup]
+2026-10-25T04:41:52.4432655Z 
+2026-10-25T04:41:52.4433319Z > joshua-portfolio-frontend@1.0.0 build
+2026-10-25T04:41:52.4433793Z > vite build
+2026-10-25T04:41:52.4433982Z 
+2026-10-25T04:41:52.6411533Z [36mvite v6.4.3 [32mbuilding for production...[36m[39m
+2026-10-25T04:41:52.6903046Z transforming...
+2026-10-25T04:41:53.5227005Z [32m✓[39m 55 modules transformed.
+2026-10-25T04:41:53.6514990Z rendering chunks...
+2026-10-25T04:41:53.6568662Z computing gzip size...
+2026-10-25T04:41:53.6668041Z [2mdist/[22m[32mindex.html                 [39m[1m[2m  0.40 kB[22m[1m[22m[2m │ gzip:  0.27 kB[22m
+2026-10-25T04:41:53.6668768Z [2mdist/[22m[2massets/[22m[35mindex-DMuQ2Ox4.css  [39m[1m[2m 13.83 kB[22m[1m[22m[2m │ gzip:  2.91 kB[22m
+2026-10-25T04:41:53.6669637Z [2mdist/[22m[2massets/[22m[36mindex-CVMWdE4W.js   [39m[1m[2m281.83 kB[22m[1m[22m[2m │ gzip: 86.65 kB[22m
+2026-10-25T04:41:53.6670433Z [32m✓ built in 1.00s[39m
+2026-10-25T04:41:53.6994847Z Post job cleanup.
+2026-10-25T04:41:53.7878750Z (node:2149) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:53.7879896Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:53.8062161Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Advanced-Software-Development/Advanced-Software-Development --files-from manifest.txt --use-compress-program zstdmt
+2026-10-25T04:41:53.8909060Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0kYjdagAAAAD6C+tpeXABR4+dPtH5qtxBUEhYMzFFREdFMDIxNgBFZGdl
+2026-10-25T04:41:53.9043691Z Post job cleanup.
+2026-10-25T04:41:53.9734071Z [command]/usr/bin/git version
+2026-10-25T04:41:53.9769468Z git version 2.55.0
+2026-10-25T04:41:53.9799773Z Temporarily overriding HOME='/home/runner/work/_temp/548eaef2-9952-48dc-813b-7ec11d96dc97' before making global git config changes
+2026-10-25T04:41:53.9801831Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:53.9804847Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:53.9838306Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:53.9878478Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:54.0083361Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:54.0113699Z http.https://github.com/.extraheader
+2026-10-25T04:41:54.0122839Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:41:54.0154243Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:54.0487243Z Cleaning up orphan processes
+2026-10-25T04:41:54.0785328Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-node@v4.1.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
