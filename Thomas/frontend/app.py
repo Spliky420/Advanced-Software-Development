@@ -14,7 +14,7 @@ def index():
 
 @app.route("/api/transactions/<int:transaction_id>/edit", methods=["GET"])
 def edit_transaction_form(transaction_id):
-    response = requests.get(f"{BACKEND_URL}/api/transactions/{transaction_id}/edit")
+    response = requests.get(f"{BACKEND_URL}/api/transactions/{transaction_id}/edit",timeout=(5, 30))
 
     return Response(
         response.content,
@@ -25,7 +25,7 @@ def edit_transaction_form(transaction_id):
 
 @app.route("/api/transactions/summary", methods=["GET"])
 def transaction_summary():
-    response = requests.get(f"{BACKEND_URL}/api/transactions/summary")
+    response = requests.get(f"{BACKEND_URL}/api/transactions/summary",timeout=(5, 30))
 
     return Response(
         response.content,
@@ -36,7 +36,7 @@ def transaction_summary():
 @app.route("/api/transactions/mcp-summary", methods=["GET"])
 def mcp_transaction_summary():
     response = requests.get(
-        f"{BACKEND_URL}/api/transactions/mcp-summary"
+        f"{BACKEND_URL}/api/transactions/mcp-summary",timeout=(5, 30)
     )
 
     return Response(
@@ -49,7 +49,7 @@ def mcp_transaction_summary():
 def rag_question():
     response = requests.post(
         f"{BACKEND_URL}/api/transactions/rag",
-        data=request.form
+        data=request.form,timeout=(5, 30)
     )
 
     return Response(
@@ -61,11 +61,11 @@ def rag_question():
 @app.route("/api/transactions", methods=["GET", "POST"])
 def transactions():
     if request.method == "GET":
-        response = requests.get(f"{BACKEND_URL}/api/transactions", params=request.args)
+        response = requests.get(f"{BACKEND_URL}/api/transactions", params=request.args,timeout=(5, 30))
 
     else:
         response = requests.post(
-            f"{BACKEND_URL}/api/transactions", data=request.form, files=request.files
+            f"{BACKEND_URL}/api/transactions", data=request.form, files=request.files,timeout=(5, 30)
         )
 
     return Response(
@@ -79,11 +79,11 @@ def transactions():
 def transaction(transaction_id):
     if request.method == "PUT":
         response = requests.put(
-            f"{BACKEND_URL}/api/transactions/{transaction_id}", data=request.form
+            f"{BACKEND_URL}/api/transactions/{transaction_id}", data=request.form,timeout=(5, 30)
         )
 
     else:
-        response = requests.delete(f"{BACKEND_URL}/api/transactions/{transaction_id}")
+        response = requests.delete(f"{BACKEND_URL}/api/transactions/{transaction_id}",timeout=(5, 30))
 
     return Response(
         response.content,
@@ -95,7 +95,7 @@ def transaction(transaction_id):
 @app.route("/api/transactions/ai-classify", methods=["POST"])
 def ai_classify():
     response = requests.post(
-        f"{BACKEND_URL}/api/transactions/ai-classify", data=request.form
+        f"{BACKEND_URL}/api/transactions/ai-classify", data=request.form,timeout=(5, 30)
     )
 
     return Response(
@@ -146,5 +146,10 @@ def multi_agent_review(run_id):
         content_type=response.headers.get("Content-Type"),
     )
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+
+app.run(
+    host="0.0.0.0",  # noqa: S104 - Docker requires binding to all interfaces
+    port=5000,
+    debug=debug_mode,
+)

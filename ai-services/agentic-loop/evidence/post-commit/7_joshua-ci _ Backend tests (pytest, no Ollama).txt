@@ -1,0 +1,563 @@
+﻿2026-10-25T04:41:47.9715536Z Current runner version: '2.338.0'
+2026-10-25T04:41:47.9739353Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:47.9740252Z Hosted Compute Agent
+2026-10-25T04:41:47.9740837Z Version: 20261021.618
+2026-10-25T04:41:47.9741488Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:47.9742181Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:47.9742825Z Worker ID: {93592d65-6753-4e33-93f3-035b890fb543}
+2026-10-25T04:41:47.9743507Z Region: westcentralus
+2026-10-25T04:41:47.9744275Z Cloud: Azure
+2026-10-25T04:41:47.9744838Z ##[endgroup]
+2026-10-25T04:41:47.9746103Z ##[group]Operating System
+2026-10-25T04:41:47.9747120Z Ubuntu
+2026-10-25T04:41:47.9747710Z 24.04.5
+2026-10-25T04:41:47.9748198Z LTS
+2026-10-25T04:41:47.9748699Z ##[endgroup]
+2026-10-25T04:41:47.9749221Z ##[group]Runner Image
+2026-10-25T04:41:47.9749790Z Image: ubuntu-24.04
+2026-10-25T04:41:47.9750346Z Version: 20261012.334.1
+2026-10-25T04:41:47.9751560Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:47.9753009Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:47.9753894Z ##[endgroup]
+2026-10-25T04:41:47.9755169Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:47.9757155Z Contents: read
+2026-10-25T04:41:47.9757742Z Metadata: read
+2026-10-25T04:41:47.9758265Z ##[endgroup]
+2026-10-25T04:41:47.9760231Z Secret source: Actions
+2026-10-25T04:41:47.9761154Z Cache mode: write
+2026-10-25T04:41:47.9761825Z Prepare workflow directory
+2026-10-25T04:41:48.0178598Z Prepare all required actions
+2026-10-25T04:41:48.0226556Z Getting action download info
+2026-10-25T04:41:48.2980835Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:48.4753173Z Download action repository 'actions/setup-python@v5.3.0' (SHA:0b93645e9fea7318ecaed2b359559ac225c90a2b)
+2026-10-25T04:41:48.8256700Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/joshua-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:48.8261366Z Complete job name: joshua-ci / Backend tests (pytest, no Ollama)
+2026-10-25T04:41:48.9044695Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:48.9045569Z with:
+2026-10-25T04:41:48.9046199Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.9050019Z   token: ***
+2026-10-25T04:41:48.9050524Z   ssh-strict: true
+2026-10-25T04:41:48.9051075Z   ssh-user: git
+2026-10-25T04:41:48.9051583Z   persist-credentials: true
+2026-10-25T04:41:48.9052138Z   clean: true
+2026-10-25T04:41:48.9052661Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:48.9053254Z   fetch-depth: 1
+2026-10-25T04:41:48.9053757Z   fetch-tags: false
+2026-10-25T04:41:48.9054408Z   show-progress: true
+2026-10-25T04:41:48.9054959Z   lfs: false
+2026-10-25T04:41:48.9055440Z   submodules: false
+2026-10-25T04:41:48.9055973Z   set-safe-directory: true
+2026-10-25T04:41:48.9056758Z env:
+2026-10-25T04:41:48.9057284Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.9057897Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:48.9058448Z   MCP_SERVER_URL: 
+2026-10-25T04:41:48.9059044Z   RAG_SERVER_URL: 
+2026-10-25T04:41:48.9059558Z   MULTI_AGENT_URL: 
+2026-10-25T04:41:48.9060039Z ##[endgroup]
+2026-10-25T04:41:49.0081061Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.0084357Z ##[group]Getting Git version info
+2026-10-25T04:41:49.0085927Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:49.0087966Z [command]/usr/bin/git version
+2026-10-25T04:41:49.0187622Z git version 2.55.0
+2026-10-25T04:41:49.0235070Z ##[endgroup]
+2026-10-25T04:41:49.0252354Z Temporarily overriding HOME='/home/runner/work/_temp/87d584b3-04c8-4137-9705-ffa32a2532f9' before making global git config changes
+2026-10-25T04:41:49.0254430Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:49.0256216Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:49.0303866Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:49.0325233Z ##[group]Initializing the repository
+2026-10-25T04:41:49.0348258Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:49.0471846Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:49.0473687Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:49.0475666Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:49.0477050Z hint: call:
+2026-10-25T04:41:49.0477846Z hint:
+2026-10-25T04:41:49.0478875Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:49.0479877Z hint:
+2026-10-25T04:41:49.0480868Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:49.0482406Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:49.0483686Z hint:
+2026-10-25T04:41:49.0484784Z hint: 	git branch -m <name>
+2026-10-25T04:41:49.0485597Z hint:
+2026-10-25T04:41:49.0486666Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:49.0488915Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:49.0493121Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.0549379Z ##[endgroup]
+2026-10-25T04:41:49.0550813Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:49.0553200Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:49.0605722Z ##[endgroup]
+2026-10-25T04:41:49.0607245Z ##[group]Setting up auth
+2026-10-25T04:41:49.0614785Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:49.0651925Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:49.1023829Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:49.1054714Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:49.1244273Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:49.1286713Z ##[endgroup]
+2026-10-25T04:41:49.1287727Z ##[group]Fetching the repository
+2026-10-25T04:41:49.1295977Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:49.7422787Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.7424921Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:49.7429599Z ##[endgroup]
+2026-10-25T04:41:49.7431714Z ##[group]Determining the checkout info
+2026-10-25T04:41:49.7433826Z ##[endgroup]
+2026-10-25T04:41:49.7446107Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:49.7492587Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:49.7528284Z ##[group]Checking out the ref
+2026-10-25T04:41:49.7533123Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:49.7839294Z Switched to a new branch 'main'
+2026-10-25T04:41:49.7844362Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:49.7862333Z ##[endgroup]
+2026-10-25T04:41:49.7941983Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:49.7965691Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:49.8316687Z ##[group]Run actions/setup-python@v5.3.0
+2026-10-25T04:41:49.8318095Z with:
+2026-10-25T04:41:49.8319148Z   python-version: 3.11
+2026-10-25T04:41:49.8320300Z   cache: pip
+2026-10-25T04:41:49.8321950Z   cache-dependency-path: joshua/backend/requirements.txt
+joshua/tests/requirements.txt
+
+2026-10-25T04:41:49.8324028Z   check-latest: false
+2026-10-25T04:41:49.8332528Z   token: ***
+2026-10-25T04:41:49.8333720Z   update-environment: true
+2026-10-25T04:41:49.8335059Z   allow-prereleases: false
+2026-10-25T04:41:49.8336236Z env:
+2026-10-25T04:41:49.8337359Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.8338664Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:49.8339801Z   MCP_SERVER_URL: 
+2026-10-25T04:41:49.8340924Z   RAG_SERVER_URL: 
+2026-10-25T04:41:49.8342021Z   MULTI_AGENT_URL: 
+2026-10-25T04:41:49.8343083Z ##[endgroup]
+2026-10-25T04:41:49.9569389Z ##[group]Installed versions
+2026-10-25T04:41:49.9668410Z (node:2310) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.9671076Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.9672776Z Successfully set up CPython (3.11.17)
+2026-10-25T04:41:49.9675445Z ##[endgroup]
+2026-10-25T04:41:50.0013573Z [command]/opt/hostedtoolcache/Python/3.11.17/x64/bin/pip cache dir
+2026-10-25T04:41:50.2977532Z /home/runner/.cache/pip
+2026-10-25T04:41:50.5356612Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:41:50.5366136Z pip cache is not found
+2026-10-25T04:41:50.5489952Z ##[group]Run python -m pip install --upgrade pip
+2026-10-25T04:41:50.5490699Z [36;1mpython -m pip install --upgrade pip[0m
+2026-10-25T04:41:50.5491227Z [36;1mpip install -r joshua/backend/requirements.txt[0m
+2026-10-25T04:41:50.5491747Z [36;1mpip install -r joshua/tests/requirements.txt[0m
+2026-10-25T04:41:50.5695861Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:50.5696365Z env:
+2026-10-25T04:41:50.5696907Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.5697363Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:50.5697785Z   MCP_SERVER_URL: 
+2026-10-25T04:41:50.5698208Z   RAG_SERVER_URL: 
+2026-10-25T04:41:50.5698574Z   MULTI_AGENT_URL: 
+2026-10-25T04:41:50.5699018Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5699657Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:50.5700219Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5700862Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5701369Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5701905Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:50.5702388Z ##[endgroup]
+2026-10-25T04:41:51.1114386Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (26.2.1)
+2026-10-25T04:41:51.2573708Z Collecting pip
+2026-10-25T04:41:51.3803763Z   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:51.4040575Z Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+2026-10-25T04:41:51.5478266Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 18.1 MB/s  0:00:00
+2026-10-25T04:41:51.5939618Z Installing collected packages: pip
+2026-10-25T04:41:51.5940762Z   Attempting uninstall: pip
+2026-10-25T04:41:51.5956700Z     Found existing installation: pip 26.2.1
+2026-10-25T04:41:51.6290343Z     Uninstalling pip-26.2.1:
+2026-10-25T04:41:51.6334298Z       Successfully uninstalled pip-26.2.1
+2026-10-25T04:41:52.4201856Z Successfully installed pip-26.2.2
+2026-10-25T04:41:52.8769612Z Collecting Flask==3.1.3 (from -r joshua/backend/requirements.txt (line 1))
+2026-10-25T04:41:52.9712781Z   Downloading flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+2026-10-25T04:41:53.0153090Z Collecting Werkzeug==3.1.9 (from -r joshua/backend/requirements.txt (line 2))
+2026-10-25T04:41:53.0352898Z   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:41:53.0754881Z Collecting requests==2.34.2 (from -r joshua/backend/requirements.txt (line 3))
+2026-10-25T04:41:53.0951278Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+2026-10-25T04:41:53.1285057Z Collecting gunicorn==22.0.0 (from -r joshua/backend/requirements.txt (line 6))
+2026-10-25T04:41:53.1483364Z   Downloading gunicorn-22.0.0-py3-none-any.whl.metadata (4.4 kB)
+2026-10-25T04:41:53.1963868Z Collecting mcp==1.30.0 (from -r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:53.2180579Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+2026-10-25T04:41:53.2483784Z Collecting blinker>=1.9.0 (from Flask==3.1.3->-r joshua/backend/requirements.txt (line 1))
+2026-10-25T04:41:53.2683292Z   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:53.3008730Z Collecting click>=8.1.3 (from Flask==3.1.3->-r joshua/backend/requirements.txt (line 1))
+2026-10-25T04:41:53.3206349Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:53.3654448Z Collecting itsdangerous>=2.2.0 (from Flask==3.1.3->-r joshua/backend/requirements.txt (line 1))
+2026-10-25T04:41:53.3853687Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:41:53.4169436Z Collecting jinja2>=3.1.2 (from Flask==3.1.3->-r joshua/backend/requirements.txt (line 1))
+2026-10-25T04:41:53.4365265Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:53.5223234Z Collecting markupsafe>=2.1.1 (from Flask==3.1.3->-r joshua/backend/requirements.txt (line 1))
+2026-10-25T04:41:53.5425111Z   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:41:53.6775300Z Collecting charset_normalizer<4,>=2 (from requests==2.34.2->-r joshua/backend/requirements.txt (line 3))
+2026-10-25T04:41:53.6974182Z   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:41:53.7466141Z Collecting idna<4,>=2.5 (from requests==2.34.2->-r joshua/backend/requirements.txt (line 3))
+2026-10-25T04:41:53.7662721Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:41:53.8036233Z Collecting urllib3<3,>=1.26 (from requests==2.34.2->-r joshua/backend/requirements.txt (line 3))
+2026-10-25T04:41:53.8239355Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:53.8574824Z Collecting certifi>=2023.5.7 (from requests==2.34.2->-r joshua/backend/requirements.txt (line 3))
+2026-10-25T04:41:53.8768999Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:53.9095411Z Collecting packaging (from gunicorn==22.0.0->-r joshua/backend/requirements.txt (line 6))
+2026-10-25T04:41:53.9291706Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:53.9618468Z Collecting anyio>=4.5 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:53.9828223Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+2026-10-25T04:41:54.0107568Z Collecting httpx-sse>=0.4 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.0303321Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:54.0716789Z Collecting httpx<1.0.0,>=0.27.1 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.0919587Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-10-25T04:41:54.1272298Z Collecting jsonschema>=4.20.0 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.1466943Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:54.1785544Z Collecting pydantic-settings>=2.5.2 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.1983812Z   Downloading pydantic_settings-2.16.1-py3-none-any.whl.metadata (4.0 kB)
+2026-10-25T04:41:54.2972237Z Collecting pydantic<3.0.0,>=2.11.0 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.3180030Z   Downloading pydantic-2.14.1-py3-none-any.whl.metadata (133 kB)
+2026-10-25T04:41:54.3759733Z Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.3956289Z   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:54.4251926Z Collecting python-multipart>=0.0.9 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.4457002Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+2026-10-25T04:41:54.4777447Z Collecting sse-starlette>=1.6.1 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.4969863Z   Downloading sse_starlette-3.5.1-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:54.5395272Z Collecting starlette>=0.27 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.5591596Z   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:54.5909224Z Collecting typing-extensions>=4.9.0 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.6104204Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-10-25T04:41:54.6375898Z Collecting typing-inspection>=0.4.1 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.6567070Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:54.6950871Z Collecting uvicorn>=0.31.1 (from mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.7318018Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:54.7644681Z Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.7843422Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-10-25T04:41:54.8163086Z Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.8378863Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-10-25T04:41:54.8668276Z Collecting annotated-types>=0.6.0 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:54.8864643Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:55.4681057Z Collecting pydantic-core==2.50.1 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:55.4877358Z   Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+2026-10-25T04:41:55.5258940Z Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:55.5453217Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-10-25T04:41:55.5744176Z Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:55.5938330Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:55.6296450Z Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:55.6494731Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:41:55.8968962Z Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:55.9163233Z   Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-10-25T04:41:55.9544155Z Collecting python-dotenv>=1.2.2 (from pydantic-settings>=2.5.2->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:55.9746562Z   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+2026-10-25T04:41:56.1337576Z Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:56.1534751Z   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+2026-10-25T04:41:56.2518525Z Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:56.2717250Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+2026-10-25T04:41:56.3023001Z Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r joshua/backend/requirements.txt (line 8))
+2026-10-25T04:41:56.3222601Z   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:56.3701302Z Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+2026-10-25T04:41:56.3946554Z Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:41:56.4355478Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+2026-10-25T04:41:56.4583423Z Downloading gunicorn-22.0.0-py3-none-any.whl (84 kB)
+2026-10-25T04:41:56.4808238Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+2026-10-25T04:41:56.5070321Z Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:41:56.5339881Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-10-25T04:41:56.5571914Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-10-25T04:41:56.5855606Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:41:56.6099878Z Downloading pydantic-2.14.1-py3-none-any.whl (488 kB)
+2026-10-25T04:41:56.6401316Z Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+2026-10-25T04:41:56.6864737Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 44.1 MB/s  0:00:00
+2026-10-25T04:41:56.7083058Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:41:56.7337806Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-10-25T04:41:56.7561963Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+2026-10-25T04:41:56.7797591Z Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:41:56.8153138Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:41:56.8378140Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:41:56.8605216Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-10-25T04:41:56.9357535Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+2026-10-25T04:41:56.9577044Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:41:56.9797250Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:41:57.0021056Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+2026-10-25T04:41:57.0356181Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-10-25T04:41:57.0576749Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-10-25T04:41:57.0794454Z Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:41:57.1019695Z Downloading pydantic_settings-2.16.1-py3-none-any.whl (80 kB)
+2026-10-25T04:41:57.1247933Z Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+2026-10-25T04:41:57.1481987Z Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+2026-10-25T04:41:57.2067793Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 80.1 MB/s  0:00:00
+2026-10-25T04:41:57.2279371Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+2026-10-25T04:41:57.2663558Z Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+2026-10-25T04:41:57.2885649Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+2026-10-25T04:41:57.3109676Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-10-25T04:41:57.3329846Z Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (375 kB)
+2026-10-25T04:41:57.3561975Z Downloading sse_starlette-3.5.1-py3-none-any.whl (17 kB)
+2026-10-25T04:41:57.3793203Z Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+2026-10-25T04:41:57.4029215Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-25T04:41:57.4248712Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+2026-10-25T04:41:57.4463812Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+2026-10-25T04:41:57.4687806Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-25T04:41:57.4957006Z Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+2026-10-25T04:41:57.6258514Z Installing collected packages: urllib3, typing-extensions, rpds-py, python-multipart, python-dotenv, pyjwt, pycparser, packaging, markupsafe, itsdangerous, idna, httpx-sse, h11, click, charset_normalizer, certifi, blinker, attrs, annotated-types, Werkzeug, uvicorn, typing-inspection, requests, referencing, pydantic-core, jinja2, httpcore, gunicorn, cffi, anyio, starlette, pydantic, jsonschema-specifications, httpx, Flask, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+2026-10-25T04:41:59.3774295Z 
+2026-10-25T04:41:59.3807624Z Successfully installed Flask-3.1.3 Werkzeug-3.1.9 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 blinker-1.9.0 certifi-2026.10.23 cffi-2.1.1 charset_normalizer-3.5.2 click-8.5.0 cryptography-50.0.2 gunicorn-22.0.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 itsdangerous-2.2.0 jinja2-3.1.6 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 markupsafe-3.0.4 mcp-1.30.0 packaging-26.3 pycparser-3.12 pydantic-2.14.1 pydantic-core-2.50.1 pydantic-settings-2.16.1 pyjwt-2.15.1 python-dotenv-1.2.4 python-multipart-0.0.32 referencing-0.37.0 requests-2.34.2 rpds-py-2026.9.1 sse-starlette-3.5.1 starlette-1.10.0 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0
+2026-10-25T04:41:59.9055659Z Collecting pytest==9.1.1 (from -r joshua/tests/requirements.txt (line 1))
+2026-10-25T04:41:59.9993881Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:42:00.0299911Z Collecting iniconfig>=1.0.1 (from pytest==9.1.1->-r joshua/tests/requirements.txt (line 1))
+2026-10-25T04:42:00.0501536Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:42:00.0537746Z Requirement already satisfied: packaging>=22 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==9.1.1->-r joshua/tests/requirements.txt (line 1)) (26.3)
+2026-10-25T04:42:00.0786739Z Collecting pluggy<2,>=1.5 (from pytest==9.1.1->-r joshua/tests/requirements.txt (line 1))
+2026-10-25T04:42:00.0982526Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-10-25T04:42:00.1334997Z Collecting pygments>=2.7.2 (from pytest==9.1.1->-r joshua/tests/requirements.txt (line 1))
+2026-10-25T04:42:00.1532528Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:42:00.1774889Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:42:00.2696108Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-10-25T04:42:00.2915270Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-10-25T04:42:00.3133678Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-10-25T04:42:00.3730813Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 23.8 MB/s  0:00:00
+2026-10-25T04:42:00.4314554Z Installing collected packages: pygments, pluggy, iniconfig, pytest
+2026-10-25T04:42:01.2354835Z 
+2026-10-25T04:42:01.2371641Z Successfully installed iniconfig-2.3.1 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1
+2026-10-25T04:42:01.3043461Z ##[group]Run echo "AI_MODE_ENABLED='${AI_MODE_ENABLED-<unset>}'"
+2026-10-25T04:42:01.3044281Z [36;1mecho "AI_MODE_ENABLED='${AI_MODE_ENABLED-<unset>}'"[0m
+2026-10-25T04:42:01.3044747Z [36;1mecho "MCP_SERVER_URL='${MCP_SERVER_URL-<unset>}'"[0m
+2026-10-25T04:42:01.3045255Z [36;1mecho "RAG_SERVER_URL='${RAG_SERVER_URL-<unset>}'"[0m
+2026-10-25T04:42:01.3045680Z [36;1mecho "MULTI_AGENT_URL='${MULTI_AGENT_URL-<unset>}'"[0m
+2026-10-25T04:42:01.3046136Z [36;1mecho "OLLAMA_BASE_URL='${OLLAMA_BASE_URL}'"[0m
+2026-10-25T04:42:01.3046581Z [36;1mpython - <<'PY'[0m
+2026-10-25T04:42:01.3047301Z [36;1mimport ai_mode, mcp_client, multi_agent_client, rag_client[0m
+2026-10-25T04:42:01.3047887Z [36;1mai_on = ai_mode.is_enabled()[0m
+2026-10-25T04:42:01.3048351Z [36;1mmcp_url, rag_url = mcp_client.get_server_url(), rag_client.get_server_url()[0m
+2026-10-25T04:42:01.3048913Z [36;1magents_url = multi_agent_client.get_server_url()[0m
+2026-10-25T04:42:01.3049512Z [36;1mprint(f"ai_mode            -> {'enabled' if ai_on else 'disabled'}")[0m
+2026-10-25T04:42:01.3050076Z [36;1mprint(f"mcp_client         -> {'disabled' if mcp_url is None else mcp_url}")[0m
+2026-10-25T04:42:01.3050640Z [36;1mprint(f"rag_client         -> {'disabled' if rag_url is None else rag_url}")[0m
+2026-10-25T04:42:01.3051227Z [36;1mprint(f"multi_agent_client -> {'disabled' if agents_url is None else agents_url}")[0m
+2026-10-25T04:42:01.3051784Z [36;1massert not ai_on, "AI mode must be disabled in CI"[0m
+2026-10-25T04:42:01.3052260Z [36;1massert mcp_url is None, "MCP must be disabled in CI"[0m
+2026-10-25T04:42:01.3053406Z [36;1massert rag_url is None, "RAG must be disabled in CI"[0m
+2026-10-25T04:42:01.3054073Z [36;1massert agents_url is None, "the Multi-Agent Server must be disabled in CI"[0m
+2026-10-25T04:42:01.3054556Z [36;1mPY[0m
+2026-10-25T04:42:01.3098274Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:01.3098726Z env:
+2026-10-25T04:42:01.3099064Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.3099494Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:01.3099831Z   MCP_SERVER_URL: 
+2026-10-25T04:42:01.3100159Z   RAG_SERVER_URL: 
+2026-10-25T04:42:01.3100466Z   MULTI_AGENT_URL: 
+2026-10-25T04:42:01.3100869Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.3101376Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:01.3101889Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.3102374Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.3102840Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.3103302Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:01.3103685Z ##[endgroup]
+2026-10-25T04:42:01.3172483Z AI_MODE_ENABLED='false'
+2026-10-25T04:42:01.3172987Z MCP_SERVER_URL=''
+2026-10-25T04:42:01.3173398Z RAG_SERVER_URL=''
+2026-10-25T04:42:01.3173778Z MULTI_AGENT_URL=''
+2026-10-25T04:42:01.3174462Z OLLAMA_BASE_URL='http://127.0.0.1:1'
+2026-10-25T04:42:02.8695654Z ai_mode            -> disabled
+2026-10-25T04:42:02.8696389Z mcp_client         -> disabled
+2026-10-25T04:42:02.8697143Z rag_client         -> disabled
+2026-10-25T04:42:02.8697748Z multi_agent_client -> disabled
+2026-10-25T04:42:02.9475292Z ##[group]Run pytest joshua/tests/test_endpoints.py -v
+2026-10-25T04:42:02.9475784Z [36;1mpytest joshua/tests/test_endpoints.py -v[0m
+2026-10-25T04:42:02.9517165Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:02.9517644Z env:
+2026-10-25T04:42:02.9518005Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:02.9518392Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:02.9518734Z   MCP_SERVER_URL: 
+2026-10-25T04:42:02.9519031Z   RAG_SERVER_URL: 
+2026-10-25T04:42:02.9519349Z   MULTI_AGENT_URL: 
+2026-10-25T04:42:02.9519727Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:02.9520226Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:02.9520729Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:02.9521207Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:02.9521711Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:02.9522259Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:02.9522697Z ##[endgroup]
+2026-10-25T04:42:04.1520946Z ============================= test session starts ==============================
+2026-10-25T04:42:04.1522183Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:04.1522771Z cachedir: .pytest_cache
+2026-10-25T04:42:04.1523545Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:04.1524273Z plugins: anyio-4.15.1
+2026-10-25T04:42:04.2080808Z collecting ... collected 2 items
+2026-10-25T04:42:04.2081326Z 
+2026-10-25T04:42:04.7186942Z joshua/tests/test_endpoints.py::test_create_then_read_holding PASSED     [ 50%]
+2026-10-25T04:42:04.7882502Z joshua/tests/test_endpoints.py::test_drift_review_with_ai_disabled_is_predictable PASSED [100%]
+2026-10-25T04:42:04.7883440Z 
+2026-10-25T04:42:04.7883803Z ============================== 2 passed in 0.59s ===============================
+2026-10-25T04:42:04.9000000Z ##[group]Run pytest joshua/tests -v --ignore=joshua/tests/test_endpoints.py
+2026-10-25T04:42:04.9000603Z [36;1mpytest joshua/tests -v --ignore=joshua/tests/test_endpoints.py[0m
+2026-10-25T04:42:04.9041949Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:04.9042327Z env:
+2026-10-25T04:42:04.9042658Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:04.9043072Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:04.9043411Z   MCP_SERVER_URL: 
+2026-10-25T04:42:04.9043696Z   RAG_SERVER_URL: 
+2026-10-25T04:42:04.9044094Z   MULTI_AGENT_URL: 
+2026-10-25T04:42:04.9044464Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.9044964Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:04.9045529Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.9045971Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.9046457Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.9046998Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:04.9047454Z ##[endgroup]
+2026-10-25T04:42:05.1035899Z ============================= test session starts ==============================
+2026-10-25T04:42:05.1036937Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:05.1037638Z cachedir: .pytest_cache
+2026-10-25T04:42:05.1038218Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:05.1038776Z plugins: anyio-4.15.1
+2026-10-25T04:42:05.7205395Z collecting ... collected 141 items
+2026-10-25T04:42:05.7205758Z 
+2026-10-25T04:42:05.7216909Z joshua/tests/test_ai_mode.py::test_false_values_switch_ai_off[false] PASSED [  0%]
+2026-10-25T04:42:05.7226049Z joshua/tests/test_ai_mode.py::test_false_values_switch_ai_off[False] PASSED [  1%]
+2026-10-25T04:42:05.7234616Z joshua/tests/test_ai_mode.py::test_false_values_switch_ai_off[0] PASSED  [  2%]
+2026-10-25T04:42:05.7242640Z joshua/tests/test_ai_mode.py::test_false_values_switch_ai_off[no] PASSED [  2%]
+2026-10-25T04:42:05.7250743Z joshua/tests/test_ai_mode.py::test_false_values_switch_ai_off[OFF] PASSED [  3%]
+2026-10-25T04:42:05.7258659Z joshua/tests/test_ai_mode.py::test_false_values_switch_ai_off[ false ] PASSED [  4%]
+2026-10-25T04:42:05.7266336Z joshua/tests/test_ai_mode.py::test_other_values_leave_ai_on[true] PASSED [  4%]
+2026-10-25T04:42:05.7274293Z joshua/tests/test_ai_mode.py::test_other_values_leave_ai_on[1] PASSED    [  5%]
+2026-10-25T04:42:05.7282049Z joshua/tests/test_ai_mode.py::test_other_values_leave_ai_on[yes] PASSED  [  6%]
+2026-10-25T04:42:05.7289399Z joshua/tests/test_ai_mode.py::test_other_values_leave_ai_on[anything] PASSED [  7%]
+2026-10-25T04:42:05.7297305Z joshua/tests/test_ai_mode.py::test_other_values_leave_ai_on[] PASSED     [  7%]
+2026-10-25T04:42:05.7303765Z joshua/tests/test_ai_mode.py::test_unset_means_on PASSED                 [  8%]
+2026-10-25T04:42:05.7312197Z joshua/tests/test_ai_mode.py::test_every_client_refuses_without_a_connection PASSED [  9%]
+2026-10-25T04:42:05.7821881Z joshua/tests/test_ai_mode.py::test_crud_and_allocation_work_with_ai_off PASSED [  9%]
+2026-10-25T04:42:05.8011585Z joshua/tests/test_ai_mode.py::test_insights_says_ai_is_disabled PASSED   [ 10%]
+2026-10-25T04:42:05.8187627Z joshua/tests/test_ai_mode.py::test_insights_says_ai_is_unavailable_when_ollama_fails PASSED [ 11%]
+2026-10-25T04:42:05.8374669Z joshua/tests/test_ai_mode.py::test_drift_review_with_ai_off_returns_figures_and_fallback PASSED [ 12%]
+2026-10-25T04:42:05.8565849Z joshua/tests/test_ai_mode.py::test_drift_review_survives_ollama_failing PASSED [ 12%]
+2026-10-25T04:42:05.8769749Z joshua/tests/test_ai_mode.py::test_drift_review_reports_ai_used_when_the_model_answers PASSED [ 13%]
+2026-10-25T04:42:05.8779914Z joshua/tests/test_allocation.py::test_normal_portfolio_with_gains_and_losses PASSED [ 14%]
+2026-10-25T04:42:05.8787463Z joshua/tests/test_allocation.py::test_holding_priced_below_average_cost_is_a_loss PASSED [ 14%]
+2026-10-25T04:42:05.8794125Z joshua/tests/test_allocation.py::test_empty_portfolio_has_no_division_by_zero PASSED [ 15%]
+2026-10-25T04:42:05.8801590Z joshua/tests/test_allocation.py::test_zero_value_portfolio_with_holdings_present_has_no_division_by_zero PASSED [ 16%]
+2026-10-25T04:42:05.8809141Z joshua/tests/test_allocation.py::test_fractional_units_from_seed_data PASSED [ 17%]
+2026-10-25T04:42:05.8816432Z joshua/tests/test_allocation.py::test_fractional_units_that_are_not_binary_exact PASSED [ 17%]
+2026-10-25T04:42:05.8823577Z joshua/tests/test_allocation.py::test_single_holding_portfolio_is_100_percent_of_its_class PASSED [ 18%]
+2026-10-25T04:42:05.8832526Z joshua/tests/test_drift.py::test_plan_defaults_to_5_percent_when_env_unset PASSED [ 19%]
+2026-10-25T04:42:05.8841037Z joshua/tests/test_drift.py::test_plan_reads_threshold_from_environment PASSED [ 19%]
+2026-10-25T04:42:05.8865338Z joshua/tests/test_drift.py::test_plan_falls_back_to_default_on_unusable_env_value[] PASSED [ 20%]
+2026-10-25T04:42:05.8866555Z joshua/tests/test_drift.py::test_plan_falls_back_to_default_on_unusable_env_value[   ] PASSED [ 21%]
+2026-10-25T04:42:05.8867258Z joshua/tests/test_drift.py::test_plan_falls_back_to_default_on_unusable_env_value[abc] PASSED [ 21%]
+2026-10-25T04:42:05.8875940Z joshua/tests/test_drift.py::test_plan_falls_back_to_default_on_unusable_env_value[-3] PASSED [ 22%]
+2026-10-25T04:42:05.8883274Z joshua/tests/test_drift.py::test_plan_lists_target_classes_and_percentages PASSED [ 23%]
+2026-10-25T04:42:05.8892262Z joshua/tests/test_drift.py::test_act_computes_drift_in_percentage_points PASSED [ 24%]
+2026-10-25T04:42:05.8900682Z joshua/tests/test_drift.py::test_act_covers_a_class_held_with_no_target PASSED [ 24%]
+2026-10-25T04:42:05.8909880Z joshua/tests/test_drift.py::test_act_covers_a_targeted_class_that_is_not_held PASSED [ 25%]
+2026-10-25T04:42:05.8918486Z joshua/tests/test_drift.py::test_act_does_not_round_mid_calculation PASSED [ 26%]
+2026-10-25T04:42:05.8927389Z joshua/tests/test_drift.py::test_act_on_empty_portfolio_reports_full_underweight PASSED [ 26%]
+2026-10-25T04:42:05.8936122Z joshua/tests/test_drift.py::test_observe_classifies_overweight_and_underweight PASSED [ 27%]
+2026-10-25T04:42:05.8944328Z joshua/tests/test_drift.py::test_observe_reports_no_breaches_when_all_within_threshold PASSED [ 28%]
+2026-10-25T04:42:05.8953328Z joshua/tests/test_drift.py::test_observe_treats_drift_exactly_at_threshold_as_a_breach PASSED [ 29%]
+2026-10-25T04:42:05.8961366Z joshua/tests/test_drift.py::test_observe_sorts_breaches_by_magnitude_descending PASSED [ 29%]
+2026-10-25T04:42:05.8969709Z joshua/tests/test_drift.py::test_observe_respects_a_custom_threshold PASSED [ 30%]
+2026-10-25T04:42:05.8978225Z joshua/tests/test_drift.py::test_adapt_does_not_call_the_llm_when_nothing_breaches PASSED [ 31%]
+2026-10-25T04:42:05.8989500Z joshua/tests/test_drift.py::test_adapt_sends_only_breaches_to_the_llm PASSED [ 31%]
+2026-10-25T04:42:05.9000671Z joshua/tests/test_drift.py::test_adapt_prompt_forbids_advice_and_arithmetic PASSED [ 32%]
+2026-10-25T04:42:05.9010997Z joshua/tests/test_drift.py::test_adapt_defaults_to_the_real_llm_module PASSED [ 33%]
+2026-10-25T04:42:05.9018896Z joshua/tests/test_llm.py::test_connection_failure_reports_that_ollama_was_unreachable PASSED [ 34%]
+2026-10-25T04:42:05.9025660Z joshua/tests/test_llm.py::test_timeout_reports_that_ollama_was_unreachable PASSED [ 34%]
+2026-10-25T04:42:05.9032707Z joshua/tests/test_llm.py::test_404_reports_that_the_model_is_not_pulled PASSED [ 35%]
+2026-10-25T04:42:05.9137181Z joshua/tests/test_mcp_client.py::test_tool_call_succeeds_and_returns_the_payload PASSED [ 36%]
+2026-10-25T04:42:05.9526802Z joshua/tests/test_mcp_client.py::test_error_payload_is_unavailable_even_though_is_error_is_false PASSED [ 36%]
+2026-10-25T04:42:05.9901386Z joshua/tests/test_mcp_client.py::test_unreachable_server_degrades_instead_of_raising PASSED [ 37%]
+2026-10-25T04:42:05.9975553Z joshua/tests/test_mcp_client.py::test_tool_that_raises_is_unavailable PASSED [ 38%]
+2026-10-25T04:42:06.1999081Z joshua/tests/test_mcp_client.py::test_slow_server_is_cut_off_by_the_timeout PASSED [ 39%]
+2026-10-25T04:42:06.2078310Z joshua/tests/test_mcp_client.py::test_batch_keeps_order_and_isolates_a_failed_call PASSED [ 39%]
+2026-10-25T04:42:06.2086203Z joshua/tests/test_mcp_client.py::test_empty_server_url_disables_mcp_without_touching_the_network PASSED [ 40%]
+2026-10-25T04:42:06.2092798Z joshua/tests/test_mcp_client.py::test_unset_server_url_defaults_to_the_compose_address PASSED [ 41%]
+2026-10-25T04:42:06.2129281Z joshua/tests/test_mcp_client.py::test_portfolio_snapshot_is_refused_because_it_loops_back PASSED [ 41%]
+2026-10-25T04:42:06.2137963Z joshua/tests/test_mcp_client.py::test_context_skips_the_tool_when_nothing_breaches PASSED [ 42%]
+2026-10-25T04:42:06.2146640Z joshua/tests/test_mcp_client.py::test_context_looks_up_each_term_once_and_skips_unmapped_classes PASSED [ 43%]
+2026-10-25T04:42:06.2154691Z joshua/tests/test_mcp_client.py::test_context_with_mcp_down_reports_unavailable_and_does_not_raise PASSED [ 43%]
+2026-10-25T04:42:06.2163033Z joshua/tests/test_mcp_client.py::test_context_survives_a_call_tools_function_that_raises PASSED [ 44%]
+2026-10-25T04:42:06.2757095Z joshua/tests/test_mcp_client.py::test_drift_review_still_succeeds_with_the_mcp_server_unreachable PASSED [ 45%]
+2026-10-25T04:42:06.3044275Z joshua/tests/test_mcp_client.py::test_a_number_from_a_glossary_definition_never_becomes_a_portfolio_figure PASSED [ 46%]
+2026-10-25T04:42:06.3249399Z joshua/tests/test_multi_agent.py::test_start_returns_202_with_the_run_at_planning PASSED [ 46%]
+2026-10-25T04:42:06.3438514Z joshua/tests/test_multi_agent.py::test_start_asks_for_an_async_run_with_a_short_timeout PASSED [ 47%]
+2026-10-25T04:42:06.3637915Z joshua/tests/test_multi_agent.py::test_evidence_figures_come_from_python PASSED [ 48%]
+2026-10-25T04:42:06.3843855Z joshua/tests/test_multi_agent.py::test_start_with_ai_off_never_calls_the_server PASSED [ 48%]
+2026-10-25T04:42:06.4022754Z joshua/tests/test_multi_agent.py::test_start_when_the_server_is_not_running PASSED [ 49%]
+2026-10-25T04:42:06.4202248Z joshua/tests/test_multi_agent.py::test_start_when_the_server_times_out PASSED [ 50%]
+2026-10-25T04:42:06.4384831Z joshua/tests/test_multi_agent.py::test_start_rejected_by_the_server_is_a_502 PASSED [ 51%]
+2026-10-25T04:42:06.4562455Z joshua/tests/test_multi_agent.py::test_start_with_a_non_json_reply PASSED [ 51%]
+2026-10-25T04:42:06.4826715Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run0] PASSED [ 52%]
+2026-10-25T04:42:06.5001850Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run1] PASSED [ 53%]
+2026-10-25T04:42:06.5177372Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run2] PASSED [ 53%]
+2026-10-25T04:42:06.5366900Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run3] PASSED [ 54%]
+2026-10-25T04:42:06.5541407Z joshua/tests/test_multi_agent.py::test_a_failed_run_is_reported_not_raised PASSED [ 55%]
+2026-10-25T04:42:06.5722587Z joshua/tests/test_multi_agent.py::test_status_of_an_unknown_run PASSED   [ 56%]
+2026-10-25T04:42:06.5942926Z joshua/tests/test_multi_agent.py::test_status_when_the_server_stops_mid_run PASSED [ 56%]
+2026-10-25T04:42:06.6113804Z joshua/tests/test_multi_agent.py::test_status_rejects_a_malformed_run_id_without_calling_the_server PASSED [ 57%]
+2026-10-25T04:42:06.6286531Z joshua/tests/test_multi_agent.py::test_status_with_ai_off_never_calls_the_server PASSED [ 58%]
+2026-10-25T04:42:06.6461616Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body0] PASSED [ 58%]
+2026-10-25T04:42:06.6638632Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body1] PASSED [ 59%]
+2026-10-25T04:42:06.7026569Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body2] PASSED [ 60%]
+2026-10-25T04:42:06.7209797Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body3] PASSED [ 60%]
+2026-10-25T04:42:06.7389670Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body4] PASSED [ 61%]
+2026-10-25T04:42:06.7571393Z joshua/tests/test_multi_agent.py::test_review_validation_errors_reach_the_user PASSED [ 62%]
+2026-10-25T04:42:06.7766636Z joshua/tests/test_multi_agent.py::test_review_of_an_unknown_run PASSED   [ 63%]
+2026-10-25T04:42:06.7945536Z joshua/tests/test_multi_agent.py::test_second_review_is_a_conflict PASSED [ 63%]
+2026-10-25T04:42:06.8172745Z joshua/tests/test_multi_agent.py::test_review_when_the_agents_could_not_run PASSED [ 64%]
+2026-10-25T04:42:06.8344409Z joshua/tests/test_multi_agent.py::test_review_rejects_a_malformed_run_id_without_calling_the_server PASSED [ 65%]
+2026-10-25T04:42:06.8519246Z joshua/tests/test_multi_agent.py::test_review_needs_a_json_object PASSED [ 65%]
+2026-10-25T04:42:06.8691732Z joshua/tests/test_multi_agent.py::test_review_with_ai_off_never_calls_the_server PASSED [ 66%]
+2026-10-25T04:42:06.8699141Z joshua/tests/test_multi_agent.py::test_empty_url_disables_the_client PASSED [ 67%]
+2026-10-25T04:42:06.8705522Z joshua/tests/test_multi_agent.py::test_default_url_is_the_host_address PASSED [ 68%]
+2026-10-25T04:42:06.8712114Z joshua/tests/test_multi_agent.py::test_app_module_imports_the_client PASSED [ 68%]
+2026-10-25T04:42:06.8912745Z joshua/tests/test_no_invented_figures.py::test_insights_reports_no_figure_the_python_layer_did_not_calculate PASSED [ 69%]
+2026-10-25T04:42:06.9284669Z joshua/tests/test_no_invented_figures.py::test_drift_review_reports_no_figure_the_python_layer_did_not_calculate PASSED [ 70%]
+2026-10-25T04:42:06.9468525Z joshua/tests/test_no_invented_figures.py::test_the_check_itself_catches_an_invented_figure PASSED [ 70%]
+2026-10-25T04:42:06.9475817Z joshua/tests/test_output_check.py::test_the_live_qwen_summary_passes_the_supplied_figures_check PASSED [ 71%]
+2026-10-25T04:42:06.9486107Z joshua/tests/test_output_check.py::test_the_live_qwen_summary_is_caught_by_the_binding_check PASSED [ 72%]
+2026-10-25T04:42:06.9498569Z joshua/tests/test_output_check.py::test_adapt_replaces_the_live_qwen_summary_with_the_python_fallback PASSED [ 73%]
+2026-10-25T04:42:06.9508603Z joshua/tests/test_output_check.py::test_a_correct_summary_passes_both_checks PASSED [ 73%]
+2026-10-25T04:42:06.9517547Z joshua/tests/test_output_check.py::test_the_python_fallback_passes_its_own_check PASSED [ 74%]
+2026-10-25T04:42:06.9524958Z joshua/tests/test_output_check.py::test_numbers_in_a_clause_naming_several_classes_are_not_judged PASSED [ 75%]
+2026-10-25T04:42:06.9533871Z joshua/tests/test_output_check.py::test_a_shared_direction_must_hold_for_every_class_named PASSED [ 75%]
+2026-10-25T04:42:06.9541387Z joshua/tests/test_output_check.py::test_the_live_qwen_comma_list_is_caught PASSED [ 76%]
+2026-10-25T04:42:06.9548874Z joshua/tests/test_output_check.py::test_the_threshold_may_appear_beside_any_class PASSED [ 77%]
+2026-10-25T04:42:06.9556057Z joshua/tests/test_output_check.py::test_a_correct_summary_with_bracketed_figures_is_accepted PASSED [ 78%]
+2026-10-25T04:42:06.9562828Z joshua/tests/test_output_check.py::test_another_class_drift_after_overweight_in_is_caught PASSED [ 78%]
+2026-10-25T04:42:06.9570149Z joshua/tests/test_output_check.py::test_a_list_line_stating_its_own_direction_ignores_the_heading PASSED [ 79%]
+2026-10-25T04:42:06.9577183Z joshua/tests/test_output_check.py::test_direction_first_phrasing_binds_forward PASSED [ 80%]
+2026-10-25T04:42:06.9585016Z joshua/tests/test_output_check.py::test_a_second_direction_in_direction_first_phrasing_starts_a_new_run PASSED [ 80%]
+2026-10-25T04:42:07.4635235Z joshua/tests/test_rag_client.py::test_answer_returns_answer_citations_and_confidence PASSED [ 81%]
+2026-10-25T04:42:07.9675356Z joshua/tests/test_rag_client.py::test_empty_results_are_ok_and_empty PASSED [ 82%]
+2026-10-25T04:42:08.4713453Z joshua/tests/test_rag_client.py::test_http_500_is_reported_as_unavailable PASSED [ 82%]
+2026-10-25T04:42:08.9753874Z joshua/tests/test_rag_client.py::test_slow_server_times_out_instead_of_hanging PASSED [ 83%]
+2026-10-25T04:42:09.4794641Z joshua/tests/test_rag_client.py::test_retrieve_sends_k_and_top_k_and_keeps_server_order PASSED [ 84%]
+2026-10-25T04:42:09.9831033Z joshua/tests/test_rag_client.py::test_retrieve_drops_entries_without_text_but_does_not_reorder PASSED [ 85%]
+2026-10-25T04:42:10.4869261Z joshua/tests/test_rag_client.py::test_200_with_error_status_is_unavailable PASSED [ 85%]
+2026-10-25T04:42:10.9910620Z joshua/tests/test_rag_client.py::test_response_without_results_list_is_unavailable PASSED [ 86%]
+2026-10-25T04:42:11.4948085Z joshua/tests/test_rag_client.py::test_health PASSED                      [ 87%]
+2026-10-25T04:42:11.9969649Z joshua/tests/test_rag_client.py::test_empty_query_is_rejected_without_a_request PASSED [ 87%]
+2026-10-25T04:42:11.9993456Z joshua/tests/test_rag_client.py::test_unreachable_server_degrades PASSED [ 88%]
+2026-10-25T04:42:12.0000693Z joshua/tests/test_rag_client.py::test_empty_server_url_disables_rag PASSED [ 89%]
+2026-10-25T04:42:12.0008288Z joshua/tests/test_rag_client.py::test_unset_server_url_defaults_to_the_host_address PASSED [ 90%]
+2026-10-25T04:42:12.5326555Z joshua/tests/test_rag_client.py::test_retrieved_passages_ground_the_prompt_and_are_cited_in_order PASSED [ 90%]
+2026-10-25T04:42:13.0571054Z joshua/tests/test_rag_client.py::test_a_number_from_retrieved_text_never_becomes_a_portfolio_figure PASSED [ 91%]
+2026-10-25T04:42:13.5789003Z joshua/tests/test_rag_client.py::test_empty_retrieval_is_insufficient_context PASSED [ 92%]
+2026-10-25T04:42:14.0995411Z joshua/tests/test_rag_client.py::test_drift_review_succeeds_with_the_rag_server_returning_500 PASSED [ 92%]
+2026-10-25T04:42:14.6377607Z joshua/tests/test_rag_client.py::test_drift_review_succeeds_with_the_rag_server_timing_out PASSED [ 93%]
+2026-10-25T04:42:15.1605090Z joshua/tests/test_rag_client.py::test_off_topic_passages_are_dropped_and_reported_as_insufficient_context PASSED [ 94%]
+2026-10-25T04:42:15.1830606Z joshua/tests/test_rag_client.py::test_unreachable_rag_is_distinguished_from_no_relevant_context PASSED [ 95%]
+2026-10-25T04:42:15.2034852Z joshua/tests/test_rag_client.py::test_disabled_rag_is_reported_as_disabled PASSED [ 95%]
+2026-10-25T04:42:15.7235507Z joshua/tests/test_rag_client.py::test_relevant_passages_are_kept_in_server_order_among_off_topic_ones PASSED [ 96%]
+2026-10-25T04:42:16.2612087Z joshua/tests/test_rag_client.py::test_a_glossary_definition_alone_is_sufficient_context PASSED [ 97%]
+2026-10-25T04:42:16.2624483Z joshua/tests/test_rag_client.py::test_direct_adapt_call_without_context_claims_nothing PASSED [ 97%]
+2026-10-25T04:42:16.2632235Z joshua/tests/test_targets_validation.py::test_targets_summing_to_100_are_accepted PASSED [ 98%]
+2026-10-25T04:42:16.2639955Z joshua/tests/test_targets_validation.py::test_targets_not_summing_to_100_are_rejected PASSED [ 99%]
+2026-10-25T04:42:16.3217659Z joshua/tests/test_targets_validation.py::test_seed_data_allocation_targets_sum_to_100 PASSED [100%]
+2026-10-25T04:42:16.3218174Z 
+2026-10-25T04:42:16.3218479Z ============================= 141 passed in 11.17s =============================
+2026-10-25T04:42:16.4467649Z Post job cleanup.
+2026-10-25T04:42:16.5579589Z (node:2464) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:16.5581054Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:16.5800927Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Advanced-Software-Development/Advanced-Software-Development --files-from manifest.txt --use-compress-program zstdmt
+2026-10-25T04:42:16.7774343Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0qIjdagAAAAAHUrvb5L4eSrDJ+HekuLMDU0xDMzFFREdFMDIyMgBFZGdl
+2026-10-25T04:42:16.7934888Z Post job cleanup.
+2026-10-25T04:42:16.8765892Z [command]/usr/bin/git version
+2026-10-25T04:42:16.8808584Z git version 2.55.0
+2026-10-25T04:42:16.8842964Z Temporarily overriding HOME='/home/runner/work/_temp/d3f18003-3152-4b33-90e2-52eeea134242' before making global git config changes
+2026-10-25T04:42:16.8844607Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:42:16.8849528Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:16.8888954Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:42:16.8921815Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:42:16.9131898Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:42:16.9158018Z http.https://github.com/.extraheader
+2026-10-25T04:42:16.9168277Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:42:16.9201439Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:42:16.9595248Z Cleaning up orphan processes
+2026-10-25T04:42:16.9919443Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

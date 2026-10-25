@@ -54,7 +54,9 @@ def build_mode_config() -> dict[str, ModeConfig]:
             key="devops",
             label="DevOps",
             prompt_family="lab5",
-            implementation_prompts=("implementation/devops_pipeline_review_prompt.txt",),
+            implementation_prompts=(
+                "implementation/devops_pipeline_review_prompt.txt",
+            ),
             review_prompts=("review/devops_evidence_review_prompt.txt",),
         ),
         "mcp": ModeConfig(
@@ -80,32 +82,23 @@ def build_mode_config() -> dict[str, ModeConfig]:
         ),
         "multi_agent": ModeConfig(
             key="multi_agent",
-            label="Multi-Agent Workflow",
-            prompt_family="lab9",
-            implementation_prompts=(
-                "implementation/multi_agent_system_prompt.txt",
-                "implementation/multi_agent_task_prompt.txt",
-            ),
-            review_prompts=("review/multi_agent_review_prompt.txt",),
+            label="Multi-Agent Review",
+            prompt_family="release2",
+            implementation_prompts=("implementation/multi_agent.txt",),
+            review_prompts=("review/multi_agent.txt",),
         ),
-        "testing_report": ModeConfig(
-            key="testing_report",
-            label="Testing Report",
-            prompt_family="lab10",
-            implementation_prompts=(
-                "implementation/testing_report_system_prompt.txt",
-                "implementation/testing_report_task_prompt.txt",
-            ),
-            review_prompts=("review/testing_report_review_prompt.txt",),
+        "testing": ModeConfig(
+            key="testing",
+            label="Testing Review",
+            prompt_family="release2",
+            implementation_prompts=("implementation/testing.txt",),
+            review_prompts=("review/testing.txt",),
         ),
         "cloud_deployment": ModeConfig(
             key="cloud_deployment",
-            label="Cloud Deployment Report",
-            prompt_family="lab11",
-            implementation_prompts=(
-                "implementation/cloud_deployment_system_prompt.txt",
-                "implementation/cloud_deployment_task_prompt.txt",
-            ),
-            review_prompts=("review/cloud_deployment_review_prompt.txt",),
+            label="Cloud Deployment Review",
+            prompt_family="release2",
+            implementation_prompts=("implementation/cloud_deployment.txt",),
+            review_prompts=("review/cloud_deployment.txt",),
         ),
     }

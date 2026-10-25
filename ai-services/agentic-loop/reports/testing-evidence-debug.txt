@@ -1,0 +1,1935 @@
+=== TEST IMPLEMENTATION ===
+
+FILE: LeHoaLong\ruff.toml
+```
+# Ruff configuration for Le Hoa Long's Python (LeHoaLong/backend, /database
+# and /tests).
+#
+# Scoped to this directory on purpose: ruff walks up from each file it is
+# given and uses the nearest config, so this lints my code without imposing a
+# style on the other five students' directories. CI runs:
+#
+#   ruff check LeHoaLong
+#
+# `ruff format` is deliberately NOT a CI gate. The rules below catch real
+# mistakes -- unused imports, undefined names, shadowed builtins, mutable
+# default arguments, insecure patterns -- and formatting is left to the author.
+#
+# The same config runs from the root .pre-commit-config.yaml, so a finding
+# stops the commit locally before CI ever sees it.
+
+# Matches python:3.11-slim in the backend and database Dockerfiles, so ruff
+# judges the code against the interpreter the containers actually ship.
+target-version = "py311"
+
+# Wider than the 88 ruff defaults to. The SQL strings and the assertion
+# messages in this feature read worse broken across lines than run long.
+line-length = 120
+
+exclude = [
+    "frontend",       # JavaScript -- eslint's job, not ruff's.
+    ".pytest_cache",
+]
+
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes -- unused imports, undefined names
+    "I",    # isort -- import ordering
+    "UP",   # pyupgrade -- syntax that is outdated for target-version
+    "B",    # flake8-bugbear -- likely bugs, e.g. mutable default arguments
+    "C4",   # flake8-comprehensions
+    "S",    # flake8-bandit -- security: SQL built from strings, bind-all, assert, ...
+]
+
+[lint.per-file-ignores]
+# The tests import `app` only after editing sys.path, so those imports
+# cannot come first. conftest.py already carries an inline noqa; this keeps
+# a future test file from tripping over the same unavoidable ordering.
+#
+# S101 (assert): pytest is built on bare asserts, so in tests the rule is
+# all noise (813 hits). Outside tests it stays on, because asserts are
+# stripped under `python -O` -- a check that must hold is an explicit raise.
+"tests/*" = ["E402", "S101"]
+
+# The post-commit endpoint tests are pytest too: bare asserts are the point.
+"endpoint_tests/*" = ["S101"]
+
+# tools/build_corpus.py holds the corpus prose itself, as string literals.
+# A fact wrapped across two source lines is harder to read and easy to break
+# with a stray space or a missing one, and the point of that file is that the
+# sentences in it are exactly the sentences that ship to the shared corpus.
+"tools/build_corpus.py" = ["E501"]
+
+```
+
+FILE: ruff.toml
+```
+[lint.per-file-ignores]
+"Thomas/tests/**/*.py" = ["S101"]
+```
+
+=== CI/CD CONFIGURATION ===
+
+FILE: .github\workflows\cloud-deployment.yml
+```
+# Cloud deployment to Azure Container Apps.
+#
+# Runs every student's CI workflow first (each one is called through its
+# workflow_call trigger, so it runs in full regardless of which paths
+# changed). Only if all six pass does the deploy job run: it logs in to Azure
+# with OIDC as a user-assigned managed identity, builds and pushes every image
+# to ACR, and updates the container apps -- using the same scripts as a manual
+# deploy (scripts/deploy/02-build-images.sh and 03-deploy-apps.sh).
+#
+# No passwords or client secrets: azure/login exchanges GitHub's OIDC token
+# for an Azure token. The three IDs it needs are repository variables, not
+# secrets. Infrastructure (scripts/deploy/01-infra.sh) is created once by
+# hand; this workflow's identity can only push images and update apps in the
+# project's resource group.
+
+name: cloud-deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Default for every job; the deploy job adds id-token: write for OIDC.
+permissions:
+  contents: read
+
+# Never run two deploys at once; queue instead of cancelling a deploy halfway.
+concurrency:
+  group: cloud-deployment
+  cancel-in-progress: false
+
+jobs:
+  # --- Gate: every student's CI must pass ------------------------------------
+  joshua-ci:
+    uses: ./.github/workflows/joshua-ci.yml
+  maxwell-ci:
+    uses: ./.github/workflows/maxwell-ci.yml
+  thomas-ci:
+    uses: ./.github/workflows/thomas-ci.yml
+  enerel-ci:
+    uses: ./.github/workflows/enerel-ci.yml
+  hyunwoo-ci:
+    uses: ./.github/workflows/hyunwoo-ci.yml
+  lehoalong-ci:
+    uses: ./.github/workflows/lehoalong-ci.yml
+
+  # --- Deploy ------------------------------------------------------------------
+  deploy:
+    needs: [joshua-ci, maxwell-ci, thomas-ci, enerel-ci, hyunwoo-ci, lehoalong-ci]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # lets azure/login request GitHub's OIDC token
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+      BUILD_MODE: docker   # ACR Tasks are not available on Azure for Students
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC, user-assigned managed identity)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push images
+        run: bash scripts/deploy/02-build-images.sh
+
+      - name: Update container apps
+        run: bash scripts/deploy/03-deploy-apps.sh
+
+      - name: Smoke test
+        run: |
+          source scripts/deploy/config.sh
+          set +e   # report every check, then fail at the end if any failed
+          domain="$(env_domain)"
+          check() {  # url expected-text; retries while a replica wakes up
+            local body
+            for i in $(seq 1 12); do
+              body="$(curl -fsS --max-time 30 "$1")" && [[ "$body" == *"$2"* ]] && { echo "OK   $1"; return 0; }
+              sleep 10
+            done
+            echo "FAIL $1"; return 1
+          }
+          status=0
+          check "https://shared-frontend.$domain/" "joshua-frontend.$domain" || status=1
+          for s in joshua maxwell thomas enerel hyunwoo lehoalong; do
+            check "https://$s-frontend.$domain/" "<" || status=1
+          done
+          check "https://joshua-frontend.$domain/api/holdings" "ticker" || status=1
+          # Goals and Budgeting: a CRUD read through the frontend's nginx proxy
+          # to the internal backend and its database.
+          check "https://lehoalong-frontend.$domain/api/goals" "goal_id" || status=1
+          # Research Library: a CRUD read through the frontend's nginx proxy.
+          check "https://enerel-frontend.$domain/api/documents" "doc_type" || status=1
+          {
+            echo "### Deployed \`${IMAGE_TAG::7}\`"
+            echo
+            echo "- Home page: https://shared-frontend.$domain"
+            for s in joshua maxwell thomas enerel hyunwoo lehoalong; do
+              echo "- $s: https://$s-frontend.$domain"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+```
+
+FILE: .github\workflows\enerel-ci.yml
+```
+# CI for Enerel's microservices (Enerel/frontend, Enerel/backend, Enerel/database).
+#
+# Scope: this workflow builds and tests ONLY Enerel/**. The path filters below
+# keep it from running on another student's work, and nothing here reads or
+# writes outside Enerel/ and this file.
+#
+# No Ollama runs in CI, and none is needed: every LLM path in Enerel/tests is
+# either monkeypatched (llm.requests.post, llm.generate, llm.embed) or
+# injected via summarize.adapt's / retrieval.act's generate_fn/embed_fn. The
+# whole suite has been verified to pass with all outbound sockets blocked.
+#
+# Release 1: the MCP and RAG integration code ships and is tested here, but
+# both modes are DISABLED for the run (MCP_ENABLED / RAG_ENABLED = false) --
+# the shared MCP and RAG servers run on a developer's host, never in CI. The
+# tests stub the MCP/RAG network legs, and a final step proves the running
+# app reports both modes off and refuses MCP/RAG requests with a 503.
+#
+# Release 2: post-commit CI/CD endpoint testing. The two endpoint functions
+# under test are the Research Library's Multi-Agent workflow endpoints:
+#   1. start_multi_agent_workflow  POST /api/documents/<id>/multi-agent
+#   2. review_multi_agent_run      POST /api/multi-agent/runs/<run_id>/review
+# They run as their own step with a JUnit report uploaded as evidence, then
+# again against the real shared Multi-Agent Server started in stub mode
+# (STUB_AGENTS=true: canned agents, no model, no Ollama). Multi-agent mode is
+# otherwise DISABLED in CI, matching the cloud baseline.
+
+name: enerel-ci
+
+on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
+  push:
+    branches:
+      - main
+      - Enerel-Research-Library
+      - enerel-release1
+      - enerel-release2
+    paths:
+      - 'Enerel/**'
+      - '.github/workflows/enerel-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Enerel/**'
+      - '.github/workflows/enerel-ci.yml'
+
+# Least privilege: nothing here needs to write to the repo.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: enerel-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests (pytest, no Ollama)
+    runs-on: ubuntu-24.04
+    env:
+      # Deliberately unreachable. Nothing in the suite should ever open a
+      # socket to Ollama; if a future test regresses and tries, it fails fast
+      # here instead of silently passing on a machine that happens to have one.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+      # MCP and RAG disabled for CI/CD, with unreachable URLs as a second
+      # line of defence -- same reasoning as OLLAMA_BASE_URL above.
+      MCP_ENABLED: "false"
+      MCP_SERVER_URL: http://127.0.0.1:1/mcp
+      RAG_ENABLED: "false"
+      RAG_SERVER_URL: http://127.0.0.1:1
+      MULTI_AGENT_ENABLED: "false"
+      MULTI_AGENT_URL: http://127.0.0.1:1
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          # Matches python:3.11-slim in Enerel/backend/Dockerfile, so CI tests
+          # the interpreter the container actually ships.
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            Enerel/backend/requirements.txt
+            Enerel/tests/requirements.txt
+
+      - name: Install backend and test dependencies
+        # Both files are needed: the backend requirements provide Flask and
+        # requests that the modules under test import, and the tests
+        # requirements provide pytest itself.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r Enerel/backend/requirements.txt
+          pip install -r Enerel/tests/requirements.txt
+
+      - name: Run pytest
+        run: pytest Enerel/tests -v
+
+      - name: Post-commit endpoint tests (2 endpoint functions)
+        # The two endpoint functions this student is assessed on, run on
+        # their own so the JUnit report and job summary are evidence of
+        # exactly those. The Multi-Agent Server is stubbed at its one network
+        # leg (multi_agent_client.requests.request).
+        run: |
+          mkdir -p test-reports
+          pytest Enerel/tests/test_release2_multi_agent.py -v \
+            -k "start_workflow or human_decision or invalid_review or second_review" \
+            --junitxml=test-reports/enerel-endpoint-tests.xml
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          suite = ET.parse("test-reports/enerel-endpoint-tests.xml").getroot().find("testsuite")
+          print("## Enerel -- post-commit endpoint tests\n")
+          print("| Endpoint function | Route |\n| --- | --- |")
+          print("| `start_multi_agent_workflow` | `POST /api/documents/<id>/multi-agent` |")
+          print("| `review_multi_agent_run` | `POST /api/multi-agent/runs/<run_id>/review` |\n")
+          print(f"**{suite.get('tests')} tests, {suite.get('failures')} failures, {suite.get('errors')} errors**\n")
+          for case in suite.iter("testcase"):
+              ok = case.find("failure") is None and case.find("error") is None
+              print(f"- {'PASS' if ok else 'FAIL'} `{case.get('name')}`")
+          PY
+
+      - name: Upload endpoint test report
+        if: always()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: enerel-endpoint-tests
+          path: test-reports/
+
+      - name: Endpoint tests against the shared Multi-Agent Server (stub agents)
+        # Starts the real multi-agent-server/server.py with STUB_AGENTS=true
+        # (no model is called) and drives the two endpoints through the full
+        # Planner -> Worker -> Reviewer -> human review state machine.
+        working-directory: Enerel/backend
+        env:
+          MULTI_AGENT_ENABLED: "true"
+          MULTI_AGENT_URL: http://127.0.0.1:5004
+        run: |
+          pip install -r ../../multi-agent-server/requirements.txt
+          (cd ../../multi-agent-server && STUB_AGENTS=true \
+            WORKFLOW_HISTORY_PATH="$RUNNER_TEMP/workflow_history.jsonl" \
+            nohup python server.py < /dev/null > "$RUNNER_TEMP/multi-agent.log" 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:5004/health && break; sleep 1; done
+          python - <<'PY'
+          import json, os, sqlite3, tempfile, time
+          import db, embeddings
+          embeddings.index_document = lambda *a: {"indexed": False}
+          path = os.path.join(tempfile.mkdtemp(), "library.db")
+          conn = sqlite3.connect(path)
+          conn.executescript(open("../database/init.sql").read())
+          conn.commit(); conn.close()
+          db.DB_PATH = path
+          from app import create_app
+          client = create_app().test_client()
+
+          doc = client.post("/api/documents", json={
+              "title": "CI brief", "doc_type": "report",
+              "body_text": "ETF fees fell to 0.15% in 2025. Compare them before buying.",
+          }).get_json()
+
+          started = client.post(f"/api/documents/{doc['id']}/multi-agent")
+          print("start_multi_agent_workflow ->", started.status_code, started.get_json()["status"])
+          assert started.status_code == 202
+          run_id = started.get_json()["run_id"]
+
+          for _ in range(50):
+              run = client.get(f"/api/multi-agent/runs/{run_id}").get_json()
+              if run["status"] in ("awaiting_human", "failed"):
+                  break
+              time.sleep(0.2)
+          print("agents finished       ->", run["status"], f"{len(run['plan'])} plan steps")
+          assert run["status"] == "awaiting_human"
+
+          review = client.post(f"/api/multi-agent/runs/{run_id}/review",
+                               json={"decision": "approve", "note": "CI"})
+          print("review_multi_agent_run ->", review.status_code, review.get_json())
+          assert review.status_code == 200 and review.get_json()["status"] == "complete"
+
+          again = client.post(f"/api/multi-agent/runs/{run_id}/review", json={"decision": "reject"})
+          print("second review          ->", again.status_code)
+          assert again.status_code == 409
+          PY
+          echo "--- workflow history ---"
+          cat "$RUNNER_TEMP/workflow_history.jsonl" | cut -c1-200
+
+      - name: Confirm MCP, RAG and Multi-Agent modes are disabled
+        # Exercises the real app (Flask test client against a schema-only
+        # database) with the job's env: the integrations endpoint must report
+        # both modes off, and both MCP and RAG endpoints must refuse with 503
+        # without opening a connection.
+        working-directory: Enerel/backend
+        run: |
+          python - <<'PY'
+          import json, os, sqlite3, tempfile
+          import db
+          path = os.path.join(tempfile.mkdtemp(), "library.db")
+          conn = sqlite3.connect(path)
+          conn.executescript(open("../database/init.sql").read())
+          conn.execute(
+              "INSERT INTO documents (user_id, title, doc_type, body_text, created_at, updated_at) "
+              "VALUES (1, 'CI', 'other', 'ETF volatility', 'now', 'now')"
+          )
+          conn.commit(); conn.close()
+          db.DB_PATH = path
+          from app import create_app
+          client = create_app().test_client()
+
+          status = client.get("/api/library/integrations").get_json()
+          print(json.dumps(status, indent=2))
+          assert status["mcp"]["enabled"] is False, "MCP must be disabled in CI"
+          assert status["rag"]["enabled"] is False, "RAG must be disabled in CI"
+          assert status["multi_agent"]["enabled"] is False, "Multi-Agent must be disabled in CI"
+
+          mcp = client.post("/api/documents/1/glossary", json={"term": "ETF"})
+          rag = client.post("/api/library/ask", json={"question": "what is an ETF"})
+          print("MCP glossary lookup ->", mcp.status_code, mcp.get_json())
+          print("RAG ask             ->", rag.status_code, rag.get_json())
+          assert mcp.status_code == 503 and mcp.get_json()["mcp_enabled"] is False
+          assert rag.status_code == 503 and rag.get_json()["rag_enabled"] is False
+          agents = client.post("/api/documents/1/multi-agent")
+          print("Multi-Agent workflow ->", agents.status_code, agents.get_json())
+          assert agents.status_code == 503 and agents.get_json()["multi_agent_enabled"] is False
+          print("MCP, RAG and Multi-Agent integration present and disabled for CI/CD.")
+          PY
+
+  images:
+    name: Docker images build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build the database image
+        run: docker build -t enerel-database:ci Enerel/database
+
+      - name: Build the backend image
+        run: docker build -t enerel-backend:ci Enerel/backend
+
+      - name: Build the frontend image
+        run: docker build -t enerel-frontend:ci Enerel/frontend
+
+```
+
+FILE: .github\workflows\hyunwoo-ci.yml
+```
+# Builds and tests HyunWoo's three services.
+name: hyunwoo-ci
+
+on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
+  push:
+    branches:
+      - HyunWoo-Bills-Subscriptions
+    paths:
+      - 'hyunwoo/**'
+      - '.github/workflows/hyunwoo-ci.yml'
+      - 'rag-server/corpus/HyunWoo_bills_knowledge.txt'
+      - 'rag-server/corpus/HyunWoo_provider_*.txt'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'hyunwoo/**'
+      - '.github/workflows/hyunwoo-ci.yml'
+      - 'rag-server/corpus/HyunWoo_bills_knowledge.txt'
+      - 'rag-server/corpus/HyunWoo_provider_*.txt'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hyunwoo-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Local AI services are not started in CI.
+env:
+  AI_MODE_ENABLED: "false"
+  MCP_ENABLED: "false"
+  RAG_ENABLED: "false"
+  OLLAMA_BASE_URL: http://127.0.0.1:1
+  MCP_SERVER_URL: http://127.0.0.1:1/mcp
+  RAG_SERVER_URL: http://127.0.0.1:1
+
+jobs:
+  backend-tests:
+    name: Backend tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            hyunwoo/backend/requirements.txt
+            hyunwoo/tests/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r hyunwoo/backend/requirements.txt
+          pip install -r hyunwoo/tests/requirements.txt
+
+      - name: Run tests
+        run: pytest hyunwoo/tests -v
+
+  frontend-checks:
+    name: Frontend checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: '22'
+
+      - name: Check JavaScript
+        run: node --check hyunwoo/frontend/app.js
+
+  docker-images:
+    name: Docker image builds
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build database image
+        run: docker build -t hyunwoo-database:ci hyunwoo/database
+
+      - name: Build backend image
+        run: docker build -t hyunwoo-backend:ci hyunwoo/backend
+
+      - name: Build frontend image
+        run: docker build -t hyunwoo-frontend:ci hyunwoo/frontend
+
+```
+
+FILE: .github\workflows\joshua-ci.yml
+```
+# CI for Joshua's microservices (joshua/frontend, joshua/backend, joshua/database).
+#
+# Scope: this workflow builds and tests ONLY joshua/**. The path filters below
+# keep it from running on another student's work, and nothing here reads or
+# writes outside joshua/ and this file.
+#
+# No Ollama runs in CI, and none is needed: every LLM path in joshua/tests is
+# either monkeypatched (llm.requests.post, llm.generate) or injected via
+# drift.adapt's generate_fn. The whole suite has been verified to pass with all
+# outbound sockets blocked.
+#
+# No MCP, RAG or Multi-Agent Server runs in CI either: all are host-run
+# services, not part of this build. The backend job sets AI_MODE_ENABLED=false
+# (the backend's master AI switch) and blanks MCP_SERVER_URL / RAG_SERVER_URL /
+# MULTI_AGENT_URL, then prints and checks that config before the tests run.
+#
+# The two endpoint tests (joshua/tests/test_endpoints.py: holdings
+# create + read, and /api/drift-review with AI off) run as their own step so
+# their result is visible on its own. The rest of the suite exercises the AI
+# code paths against stand-in models: conftest.py turns the switch back on per
+# test for those, and every model call is monkeypatched or injected.
+
+name: joshua-ci
+
+# Every push, on any branch, that changes joshua/ or this file.
+on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
+  push:
+    paths:
+      - 'joshua/**'
+      - '.github/workflows/joshua-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'joshua/**'
+      - '.github/workflows/joshua-ci.yml'
+
+# Least privilege: nothing here needs to write to the repo.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: joshua-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests (pytest, no Ollama)
+    runs-on: ubuntu-24.04
+    env:
+      # Deliberately unreachable. Nothing in the suite should ever open a
+      # socket to Ollama; if a future test regresses and tries, it fails fast
+      # here instead of silently passing on a machine that happens to have one.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+      # The backend's master switch: no Ollama, MCP, RAG or Multi-Agent call.
+      AI_MODE_ENABLED: 'false'
+      # Empty -- not unset -- is each client's own off switch as well. Unset
+      # would fall back to their default host addresses.
+      MCP_SERVER_URL: ''
+      RAG_SERVER_URL: ''
+      MULTI_AGENT_URL: ''
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          # Matches python:3.11-slim in joshua/backend/Dockerfile, so CI tests
+          # the interpreter the container actually ships.
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            joshua/backend/requirements.txt
+            joshua/tests/requirements.txt
+
+      - name: Install backend and test dependencies
+        # Both files are needed: the backend requirements provide Flask and
+        # requests that the modules under test import, and the tests
+        # requirements provide pytest itself.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r joshua/backend/requirements.txt
+          pip install -r joshua/tests/requirements.txt
+
+      - name: Show AI service config (AI mode, MCP, RAG and Multi-Agent disabled)
+        # Prints the raw values, then asks the backend itself how it reads
+        # them: every one must report "disabled", or the step fails.
+        working-directory: joshua/backend
+        run: |
+          echo "AI_MODE_ENABLED='${AI_MODE_ENABLED-<unset>}'"
+          echo "MCP_SERVER_URL='${MCP_SERVER_URL-<unset>}'"
+          echo "RAG_SERVER_URL='${RAG_SERVER_URL-<unset>}'"
+          echo "MULTI_AGENT_URL='${MULTI_AGENT_URL-<unset>}'"
+          echo "OLLAMA_BASE_URL='${OLLAMA_BASE_URL}'"
+          python - <<'PY'
+          import ai_mode, mcp_client, multi_agent_client, rag_client
+          ai_on = ai_mode.is_enabled()
+          mcp_url, rag_url = mcp_client.get_server_url(), rag_client.get_server_url()
+          agents_url = multi_agent_client.get_server_url()
+          print(f"ai_mode            -> {'enabled' if ai_on else 'disabled'}")
+          print(f"mcp_client         -> {'disabled' if mcp_url is None else mcp_url}")
+          print(f"rag_client         -> {'disabled' if rag_url is None else rag_url}")
+          print(f"multi_agent_client -> {'disabled' if agents_url is None else agents_url}")
+          assert not ai_on, "AI mode must be disabled in CI"
+          assert mcp_url is None, "MCP must be disabled in CI"
+          assert rag_url is None, "RAG must be disabled in CI"
+          assert agents_url is None, "the Multi-Agent Server must be disabled in CI"
+          PY
+
+      - name: Endpoint tests (AI disabled)
+        # Holdings create + read, and /api/drift-review with
+        # AI_MODE_ENABLED=false: deterministic, no model involved.
+        run: pytest joshua/tests/test_endpoints.py -v
+
+      - name: Remaining backend tests
+        run: pytest joshua/tests -v --ignore=joshua/tests/test_endpoints.py
+
+  frontend:
+    name: Frontend build (npm ci + vite build)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: joshua/frontend
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: joshua/frontend/package-lock.json
+
+      - name: Install from the committed lockfile
+        # `npm ci`, never `npm install`: it installs exactly what
+        # package-lock.json pins and fails if the lockfile and package.json
+        # have drifted apart, which is the property CI is here to protect.
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  images:
+    name: Docker images build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build the frontend image
+        # Same two-stage build compose uses; proves npm ci and vite build
+        # succeed inside the image, not just on the runner.
+        run: docker build -t joshua-frontend:ci joshua/frontend
+
+      - name: Build the backend image
+        run: docker build -t joshua-backend:ci joshua/backend
+
+      - name: Build the database image
+        # The third microservice. It owns portfolio.db and runs init.sql and
+        # seed.sql on first start, so a break here breaks the whole stack.
+        run: docker build -t joshua-database:ci joshua/database
+
+```
+
+FILE: .github\workflows\lehoalong-ci.yml
+```
+# CI for Le Hoa Long's microservices -- Goals and Budgeting.
+#
+# Scope: this workflow builds, lints and tests ONLY LeHoaLong/**. The path
+# filters below keep it off the other five students' work, and nothing here
+# reads or writes outside LeHoaLong/ and this file.
+#
+# AI-Mode, MCP, RAG and the multi-agent server are all DISABLED in CI, and
+# none of the four is needed to run the suite. The Release 1 brief requires this; the `backend`
+# job below states it explicitly in its own step so it is visible in the
+# Actions log rather than only in this comment.
+#
+# Three independent layers enforce it, in order of authority:
+#
+#   1. tests/conftest.py's autouse `no_network` fixture monkeypatches
+#      socket.connect and socket.create_connection, so any test that tries to
+#      open a socket fails loudly naming itself instead of hanging. This is
+#      the authoritative one -- every Ollama, MCP and RAG call in the suite
+#      goes through a stub fixture (`fake_model`, `stub_ollama`, `stub_mcp`,
+#      `stub_rag`).
+#   2. The test app is built with MCP_ENABLED and RAG_ENABLED false, matching
+#      the environment below, so a test that does not ask for an integration
+#      cannot reach for one.
+#   3. The three service URLs in the job environment point at dead ports, so
+#      if layers 1 and 2 were ever both defeated the attempt still fails fast
+#      here rather than silently passing on a machine that happens to be
+#      running one of them.
+#
+# The MCP client SDK is deliberately NOT installed: tests/requirements.txt
+# omits it, and app/mcp/client.py imports it lazily inside the one transport
+# function the tests replace. The `backend` job asserts that `import mcp`
+# fails, which is what makes "the suite never speaks the MCP protocol" a
+# checked property rather than a claim.
+
+name: lehoalong-ci
+
+on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
+  push:
+    branches:
+      - main
+      - 'LeHoaLong-**'
+    paths:
+      - 'LeHoaLong/**'
+      - '.github/workflows/lehoalong-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'LeHoaLong/**'
+      - '.github/workflows/lehoalong-ci.yml'
+  # So the whole pipeline can be re-run by hand from the Actions tab without
+  # pushing an empty commit.
+  workflow_dispatch:
+  # Weekly, on main. pip-audit's answer changes when an advisory is
+  # published, not only when a requirements file does, and the push
+  # triggers above would never notice that.
+  schedule:
+    - cron: '0 3 * * 1'
+
+# Least privilege: nothing here needs to write to the repository.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: lehoalong-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Python: lint, seed the database, run the suite.
+  # ---------------------------------------------------------------------
+  backend:
+    name: Backend (ruff + pytest, no Ollama)
+    runs-on: ubuntu-24.04
+    env:
+      # Every URL here is deliberately unreachable: port 1 is reserved and
+      # nothing listens on it. Nothing in the suite should open a socket at
+      # all, so if a future test regresses and tries, it fails fast here
+      # instead of silently passing on a machine that happens to be running
+      # Ollama, the MCP server or the RAG server.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+      OLLAMA_MODEL: qwen2.5:0.5b
+
+      # Release 1. Both integrations are optional at runtime and are switched
+      # off here, which is also the configuration the test app is built with.
+      MCP_ENABLED: 'false'
+      MCP_SERVER_URL: http://127.0.0.1:1/mcp
+      RAG_ENABLED: 'false'
+      RAG_SERVER_URL: http://127.0.0.1:1
+
+      # Release 2. The test app pins AI_MODE_ENABLED on and drives a fake
+      # model in-process (see tests/conftest.py); this is the outer layer,
+      # matching what the endpoint job and the cloud deployment run. The
+      # multi-agent tests use the real server in stub mode through the
+      # client's transport seam, so it is off here too.
+      AI_MODE_ENABLED: 'false'
+      MULTI_AGENT_ENABLED: 'false'
+      MULTI_AGENT_URL: http://127.0.0.1:1
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          # Matches python:3.11-slim in the backend and database Dockerfiles,
+          # so CI tests the interpreter the containers actually ship.
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            LeHoaLong/backend/requirements.txt
+            LeHoaLong/tests/requirements.txt
+
+      - name: Install test dependencies
+        # tests/requirements.txt, not backend/requirements.txt: it pins the
+        # same Flask and requests the backend imports, plus pytest, and
+        # leaves out gunicorn (which only the container needs).
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r LeHoaLong/tests/requirements.txt
+          pip install ruff==0.16.6 pip-audit==2.10.1
+
+      - name: Confirm AI-Mode, MCP, RAG and the multi-agent server are disabled
+        # The Release 1 brief requires all three to be off in CI. Printed as
+        # a step rather than left in a comment so it is visible in the Actions
+        # log, and asserted rather than only printed so that deleting an env
+        # entry fails the build instead of quietly re-enabling an integration.
+        run: |
+          echo "OLLAMA_BASE_URL = ${OLLAMA_BASE_URL}  (dead port, AI-Mode disabled)"
+          echo "MCP_ENABLED     = ${MCP_ENABLED}"
+          echo "MCP_SERVER_URL  = ${MCP_SERVER_URL}  (dead port)"
+          echo "RAG_ENABLED     = ${RAG_ENABLED}"
+          echo "RAG_SERVER_URL  = ${RAG_SERVER_URL}  (dead port)"
+          echo "AI_MODE_ENABLED     = ${AI_MODE_ENABLED}"
+          echo "MULTI_AGENT_ENABLED = ${MULTI_AGENT_ENABLED}"
+          echo "MULTI_AGENT_URL     = ${MULTI_AGENT_URL}  (dead port)"
+          test "${MCP_ENABLED}" = "false"
+          test "${RAG_ENABLED}" = "false"
+          test "${AI_MODE_ENABLED}" = "false"
+          test "${MULTI_AGENT_ENABLED}" = "false"
+          # Each URL on its own: the old single `case` over the concatenation
+          # passed if any one of them was dead.
+          for url in "${OLLAMA_BASE_URL}" "${MCP_SERVER_URL}" "${RAG_SERVER_URL}" "${MULTI_AGENT_URL}"; do
+            case "${url}" in
+              *127.0.0.1:1*) ;;
+              *) echo "${url} is not pointed at a dead port"; exit 1 ;;
+            esac
+          done
+          # The suite must never speak the MCP protocol, so the SDK is not
+          # installed. app/mcp/client.py imports it lazily inside the one
+          # transport function every test replaces, which is why 400+ tests
+          # pass without it. If this import ever starts succeeding, something
+          # has added a real dependency on it to the test path.
+          if python -c "import mcp" 2>/dev/null; then
+            echo "the mcp SDK is installed in the test environment -- it should not be"
+            exit 1
+          fi
+          echo "the mcp SDK is absent, as intended"
+
+      - name: Lint Python (ruff)
+        # Config is LeHoaLong/ruff.toml -- scoped to this directory so it
+        # imposes no style on anyone else's code. Includes the "S" security
+        # rules; the root pre-commit hook runs the same check before commit.
+        run: ruff check LeHoaLong
+
+      - name: Audit dependencies (pip-audit)
+        # Fails on any pinned version with a known vulnerability. One run per
+        # file, as in .pre-commit-config.yaml. The backend file includes
+        # gunicorn and the mcp SDK, which pip-audit resolves in its own
+        # temporary environment, so nothing is installed into this one --
+        # the "mcp SDK is absent" check above still holds.
+        run: |
+          pip-audit -r LeHoaLong/backend/requirements.txt
+          pip-audit -r LeHoaLong/tests/requirements.txt
+
+      - name: Build and seed the database
+        # init_db.py asserts every table carries at least MIN_ROWS_PER_TABLE
+        # rows and exits non-zero otherwise, so this step is the marking
+        # requirement ("every table has >=10 seeded rows") enforced in CI --
+        # and it proves schema.sql and seed.sql still load cleanly.
+        run: python LeHoaLong/database/init_db.py --db "${RUNNER_TEMP}/goals.db" --force
+
+      - name: Run pytest
+        run: pytest LeHoaLong/tests -v
+
+      - name: Check the corpus file still matches its generator
+        # LeHoaLong/tools/build_corpus.py generates this feature's
+        # contribution to the shared RAG corpus, padding each topic block to a
+        # multiple of the chunker's 80-word window. --check writes nothing and
+        # reports whether the committed file still matches.
+        #
+        # Advisory, not a gate: the file lives in rag-server/corpus/, a shared
+        # directory. If a teammate edits it the drift should be reported here,
+        # but it should not fail a pull request that only touches LeHoaLong/.
+        continue-on-error: true
+        run: python LeHoaLong/tools/build_corpus.py --check
+
+  # ---------------------------------------------------------------------
+  # JavaScript: lint and build the React app on the runner.
+  # ---------------------------------------------------------------------
+  frontend:
+    name: Frontend (eslint + vite build)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: LeHoaLong/frontend/package-lock.json
+
+      - name: Install from the committed lockfile
+        # `npm ci`, never `npm install`: it installs exactly what
+        # package-lock.json pins and fails if the lockfile and package.json
+        # have drifted apart, which is the property CI is here to protect.
+        working-directory: LeHoaLong/frontend
+        run: npm ci
+
+      - name: Lint JavaScript (eslint)
+        working-directory: LeHoaLong/frontend
+        run: npm run lint
+
+      - name: Build
+        # src/styles/app.css imports the team's shared stylesheet by a path
+        # relative to the repository root, so this also catches the theme
+        # going missing or moving -- the integration-drift risk in the risk
+        # management plan.
+        working-directory: LeHoaLong/frontend
+        run: npm run build
+
+  # ---------------------------------------------------------------------
+  # Docker: prove all three Dockerfiles still build.
+  # ---------------------------------------------------------------------
+  images:
+    name: Docker images build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build the database image
+        run: docker build -t lehoalong-db:ci LeHoaLong/database
+
+      - name: Build the backend image
+        run: docker build -t lehoalong-backend:ci LeHoaLong/backend
+
+      - name: Build the frontend image
+        # Build context is the repository root, not LeHoaLong/frontend: the
+        # app imports shared/styles.css, which sits outside the frontend
+        # directory and so cannot be reached from a narrower context. This is
+        # the same invocation the compose snippet in docs/compose-snippet.md
+        # uses.
+        run: docker build -f LeHoaLong/frontend/Dockerfile -t lehoalong-frontend:ci .
+
+      - name: Smoke test the database image
+        # Runs the image's own initialiser against a throwaway volume: it
+        # fails if the schema or seed is broken, or if the >=10-rows check
+        # does not pass. Same guarantee as the backend job's seed step, but
+        # exercised inside the container the stack actually runs.
+        #
+        
+```
+
+FILE: .github\workflows\maxwell-ci.yml
+```
+name: maxwell-ci
+
+on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
+  push:
+    paths:
+      - "Maxwell/**"
+      - ".github/workflows/maxwell-ci.yml"
+    branches: [ main, '**' ]
+
+  pull_request:
+    paths:
+      - "Maxwell/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Deliberately unreachable. The unit tests mock every LLM call, so
+      # nothing here should ever open a socket to Ollama; if a test regresses
+      # and tries, it fails fast instead of silently passing on a machine that
+      # happens to have one.
+      OLLAMA_BASE_URL: http://127.0.0.1:1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: ./Maxwell/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Build Docker images
+        run: |
+          docker compose build maxwell-database maxwell-backend maxwell-frontend
+
+      - name: Start Maxwell services (database, backend, frontend)
+        # Scope to Maxwell's own services. The root compose file defines every
+        # team's stack, so a bare `docker compose up -d` would build and start
+        # all of them. The non-containerised merge also moved ollama, mcp-server
+        # and rag-server out of compose entirely, so these three are all this
+        # job owns.
+        run: |
+          docker compose up -d maxwell-database maxwell-backend maxwell-frontend
+
+
+      - name: Wait for backend to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8021/api/glossary > /dev/null; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 2
+          done
+
+      - name: Run backend tests
+        working-directory: ./Maxwell
+        run: |
+          pytest tests/test_glossary.py -v
+
+      - name: Validate MCP and RAG proxies are disabled in CI
+        # The shared MCP and RAG servers run on the host, outside this stack,
+        # so CI must prove the disabled path rather than reach them. These two
+        # flags are the backend's explicit off switch (see app.py): with them
+        # set, every proxy route returns 503 instead of dialling a host it
+        # cannot see. The step fails if either proxy is reachable.
+        working-directory: ./Maxwell/backend
+        env:
+          DISABLE_MCP_PROXY: "true"
+          DISABLE_RAG_PROXY: "true"
+        run: |
+          python - <<'PY'
+          import app
+
+          client = app.app.test_client()
+          mcp = client.post("/api/mcp/glossary-lookup", data={"term": "ETF"})
+          rag = client.post("/api/rag/answer", json={"query": "What is an ETF?"})
+
+          print(f"/api/mcp/...   -> HTTP {mcp.status_code}")
+          print(f"/api/rag/answer -> HTTP {rag.status_code}")
+
+          assert mcp.status_code == 503, f"MCP proxy must be disabled in CI, got {mcp.status_code}"
+          assert rag.status_code == 503, f"RAG proxy must be disabled in CI, got {rag.status_code}"
+          print("MCP and RAG proxies correctly disabled.")
+          PY
+
+      - name: Validate Multi-Agent proxy is disabled in CI
+        working-directory: ./Maxwell/backend
+        env:
+          DISABLE_MULTI_AGENT_PROXY: "true"
+        run: |
+          python - <<'PY'
+          import app
+
+          client = app.app.test_client()
+          ma = client.post("/api/multi-agent/workflow", json={"task": "test", "evidence": {}})
+
+          print(f"/api/multi-agent/workflow -> HTTP {ma.status_code}")
+
+          assert ma.status_code == 503, f"Multi-Agent proxy must be disabled in CI, got {ma.status_code}"
+          print("Multi-Agent proxy correctly disabled.")
+          PY
+
+      - name: Lint Python files (optional)
+        working-directory: ./Maxwell/backend
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run simple integration test (check frontend serves)
+        run: |
+          # Wait a bit more for frontend
+          sleep 5
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8020/)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "Frontend is serving correctly"
+          else
+            echo "Frontend returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          # Check backend API again
+          API_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8021/api/glossary)
+          if [ "$API_CODE" -eq 200 ]; then
+            echo "Backend API is responding"
+          else
+            echo "Backend API returned HTTP $API_CODE"
+            exit 1
+          fi
+
+      - name: Post-commit endpoint integration tests
+        # Test two endpoint functions against the running containerized backend
+        run: |
+          echo "Testing GET /api/glossary endpoint..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8021/api/glossary)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "GET /api/glossary - PASS (200)"
+            echo "$BODY" | python -m json.tool > /dev/null && echo "  Response is valid JSON"
+          else
+            echo "GET /api/glossary - FAIL (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          echo "Testing GET /health endpoint..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8021/health)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "GET /health - PASS (200)"
+            echo "$BODY" | python -m json.tool > /dev/null && echo "  Response is valid JSON"
+          else
+            echo "GET /health - FAIL (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          echo "All post-commit endpoint tests passed!"
+
+      - name: Tear down containers
+        if: always()
+        run: |
+          docker compose down
+
+```
+
+FILE: .github\workflows\thomas-ci.yml
+```
+
+name: Thomas Transactions CI
+
+on:
+  # Lets cloud-deployment.yml run this workflow as a gate before deploying.
+  workflow_call:
+  push:
+    paths:
+      - "Thomas/**"
+      - ".github/workflows/thomas-ci.yml"
+
+  pull_request:
+    paths:
+      - "Thomas/**"
+      - ".github/workflows/thomas-ci.yml"
+
+jobs:
+  validate-thomas-services:
+    runs-on: ubuntu-latest
+
+    env:
+      MCP_SERVER_URL: ""
+      RAG_SERVER_URL: ""
+      MULTI_AGENT_URL: "http://localhost:5004"
+      PYTHONPATH: "Thomas/backend"
+      DATABASE_PATH: "/tmp/thomas-ci-transactions.db"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: Thomas/backend
+        run: |
+          python -m pip install -r requirements.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install pytest
+
+      - name: Check backend Python syntax
+        working-directory: Thomas/backend
+        run: |
+          python -m py_compile app.py
+
+      - name: Test two Transactions API endpoints
+        run: |
+          python -m pytest -v Thomas/tests/test_transactions_api.py
+
+      - name: Install frontend dependencies
+        working-directory: Thomas/frontend
+        run: |
+          python -m pip install -r requirements.txt
+
+      - name: Check frontend Python syntax
+        working-directory: Thomas/frontend
+        run: |
+          python -m py_compile app.py
+
+      - name: Confirm MCP and RAG are disabled in CI
+        run: |
+          test -z "$MCP_SERVER_URL"
+          test -z "$RAG_SERVER_URL"
+          echo "Local MCP and RAG services are disabled in CI"
+
+      - name: Build backend Docker image
+        run: |
+          docker build -t thomas-backend ./Thomas/backend
+
+      - name: Build frontend Docker image
+        run: |
+          docker build -t thomas-frontend ./Thomas/frontend
+
+```
+
+FILE: .pre-commit-config.yaml
+```
+# Pre-commit hooks for security scanning and code quality
+# Install with: pip install pre-commit && pre-commit install
+# Run manually with: pre-commit run --all-files
+
+repos:
+  # General code quality and formatting
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-json
+
+  # Python formatting and linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Security scanning - Bandit for Python security issues
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        args: [-r, --skip, B101,B601, --format, json, --output, bandit-report.json]
+        additional_dependencies: ["bandit[toml]"]
+
+  # Security scanning - detect-secrets for secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: package-lock.json|yarn.lock|poetry.lock
+
+  # Security scanning - safety for dependency vulnerabilities
+  - repo: https://github.com/pyupio/safety
+    rev: 3.2.5
+    hooks:
+      - id: safety
+        args: [--json, --output, safety-report.json]
+        additional_dependencies: ["safety"]
+
+  # Dockerfile security scanning - hadolint
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        args: [--failure-threshold, error]
+        types: [dockerfile]
+
+  # Check for TODO/FIXME comments
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+# CI-specific hooks that run in CI but not locally (optional)
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+    For more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ""
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
+```
+
+=== PRE-COMMIT TEST RESULTS ===
+
+No testing results identified in evidence.log
+
+No testing results identified in pre_commit.log
+
+=== POST-COMMIT CI/CD RESULTS ===
+
+LOG: 0_deploy.txt
+Matched lines: 12
+Selected evidence:
+2026-10-25T04:43:33.2722381Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:44:32.1528473Z #9 8.958 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:44:49.0882964Z #12 2.348 2 high severity vulnerabilities
+2026-10-25T04:45:13.0989976Z #8 3.414 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:45:49.1158172Z #8 9.044 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:46:05.4755628Z #8 3.412 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:46:32.3539257Z #8 9.095 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:47:09.9932669Z #8 9.158 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:47:48.9003149Z #8 9.012 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:48:05.2487649Z #11 3.990 3 high severity vulnerabilities
+2026-10-25T04:51:30.3993064Z [36;1mset +e   # report every check, then fail at the end if any failed[0m
+2026-10-25T04:52:04.8200819Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, azure/login@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 10_enerel-ci _ Backend tests (pytest, no Ollama).txt
+Matched lines: 253
+Selected evidence:
+2026-10-25T04:42:07.1134162Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review2] PASSED [ 71%]
+2026-10-25T04:42:07.1382180Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review3] PASSED [ 71%]
+2026-10-25T04:42:07.1654013Z Enerel/tests/test_release2_multi_agent.py::test_brief_is_404_until_one_is_accepted PASSED [ 72%]
+2026-10-25T04:42:07.3762299Z Enerel/tests/test_release2_multi_agent.py::test_approved_brief_is_shown_with_its_takeaways PASSED [ 72%]
+2026-10-25T04:42:07.5208373Z Enerel/tests/test_release2_multi_agent.py::test_latest_accepted_brief_wins_and_a_later_reject_keeps_it PASSED [ 73%]
+2026-10-25T04:42:07.5215513Z Enerel/tests/test_release2_multi_agent.py::test_takeaways_are_list_items_only PASSED [ 73%]
+2026-10-25T04:42:07.5451693Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review0-decision must be one of] PASSED [ 74%]
+2026-10-25T04:42:07.5960559Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review1-corrected is required] PASSED [ 74%]
+2026-10-25T04:42:07.6265033Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review2-note is required] PASSED [ 75%]
+2026-10-25T04:42:07.6764821Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review3-corrected is only allowed] PASSED [ 75%]
+2026-10-25T04:42:07.7085512Z Enerel/tests/test_release2_multi_agent.py::test_second_review_is_409_from_the_server PASSED [ 76%]
+2026-10-25T04:42:07.7530381Z Enerel/tests/test_release2_multi_agent.py::test_integrations_reports_multi_agent_mode PASSED [ 76%]
+2026-10-25T04:42:07.7538092Z Enerel/tests/test_retrieval.py::test_cosine_similarity_of_identical_vectors_is_one PASSED [ 77%]
+2026-10-25T04:42:07.7543641Z Enerel/tests/test_retrieval.py::test_cosine_similarity_of_orthogonal_vectors_is_zero PASSED [ 77%]
+2026-10-25T04:42:07.7549447Z Enerel/tests/test_retrieval.py::test_cosine_similarity_of_opposite_vectors_is_negative_one PASSED [ 78%]
+2026-10-25T04:42:07.7554204Z Enerel/tests/test_retrieval.py::test_cosine_similarity_handles_zero_vector_without_dividing_by_zero PASSED [ 78%]
+2026-10-25T04:42:07.7559092Z Enerel/tests/test_retrieval.py::test_cosine_similarity_mismatched_length_returns_zero PASSED [ 79%]
+2026-10-25T04:42:07.7563709Z Enerel/tests/test_retrieval.py::test_plan_defaults_top_k_to_5 PASSED     [ 80%]
+2026-10-25T04:42:07.7568450Z Enerel/tests/test_retrieval.py::test_plan_honours_explicit_top_k PASSED  [ 80%]
+2026-10-25T04:42:07.7573531Z Enerel/tests/test_retrieval.py::test_act_scores_every_candidate_against_the_query_vector PASSED [ 81%]
+2026-10-25T04:42:07.7578767Z Enerel/tests/test_retrieval.py::test_observe_ranks_by_score_and_respects_top_k PASSED [ 81%]
+2026-10-25T04:42:07.7583346Z Enerel/tests/test_retrieval.py::test_observe_drops_non_positive_scores PASSED [ 82%]
+2026-10-25T04:42:07.7588603Z Enerel/tests/test_retrieval.py::test_search_runs_the_full_plan_act_observe_loop PASSED [ 82%]
+2026-10-25T04:42:07.7593105Z Enerel/tests/test_summarize.py::test_parses_well_formed_response PASSED  [ 83%]
+2026-10-25T04:42:07.7597815Z Enerel/tests/test_summarize.py::test_parses_response_with_numbered_key_points PASSED [ 83%]
+2026-10-25T04:42:07.7602332Z Enerel/tests/test_summarize.py::test_falls_back_gracefully_when_format_is_ignored PASSED [ 84%]
+2026-10-25T04:42:07.7606818Z Enerel/tests/test_summarize.py::test_empty_response_yields_empty_summary_and_no_key_points PASSED [ 84%]
+2026-10-25T04:42:07.7611341Z Enerel/tests/test_summarize.py::test_plan_chooses_direct_strategy_for_short_documents PASSED [ 85%]
+2026-10-25T04:42:07.7615883Z Enerel/tests/test_summarize.py::test_plan_chooses_map_reduce_strategy_for_long_documents PASSED [ 85%]
+2026-10-25T04:42:07.7621569Z Enerel/tests/test_summarize.py::test_plan_reads_thresholds_from_environment PASSED [ 86%]
+2026-10-25T04:42:07.7626184Z Enerel/tests/test_summarize.py::test_act_direct_strategy_produces_one_segment PASSED [ 86%]
+2026-10-25T04:42:07.7630549Z Enerel/tests/test_summarize.py::test_act_map_reduce_strategy_produces_multiple_segments PASSED [ 87%]
+2026-10-25T04:42:07.7634890Z Enerel/tests/test_summarize.py::test_act_truncates_when_more_chunks_than_max_chunks PASSED [ 87%]
+2026-10-25T04:42:07.7640138Z Enerel/tests/test_summarize.py::test_observe_flags_needs_reduce_only_for_multi_segment_map_reduce PASSED [ 88%]
+2026-10-25T04:42:07.7644740Z Enerel/tests/test_summarize.py::test_adapt_direct_strategy_makes_exactly_one_llm_call PASSED [ 88%]
+2026-10-25T04:42:07.7650131Z Enerel/tests/test_summarize.py::test_adapt_map_reduce_calls_once_per_segment_plus_one_reduce_call PASSED [ 89%]
+2026-10-25T04:42:07.7654790Z Enerel/tests/test_summarize.py::test_adapt_never_calls_the_model_for_empty_segments PASSED [ 90%]
+2026-10-25T04:42:07.7660919Z Enerel/tests/test_summarize.py::test_summarize_document_runs_the_full_loop PASSED [ 90%]
+2026-10-25T04:42:07.7666295Z Enerel/tests/test_validation.py::test_valid_payload_is_accepted_and_trimmed PASSED [ 91%]
+2026-10-25T04:42:07.7671458Z Enerel/tests/test_validation.py::test_missing_title_is_rejected PASSED   [ 91%]
+2026-10-25T04:42:07.7676395Z Enerel/tests/test_validation.py::test_invalid_doc_type_is_rejected PASSED [ 92%]
+2026-10-25T04:42:07.7681215Z Enerel/tests/test_validation.py::test_empty_body_text_is_rejected PASSED [ 92%]
+2026-10-25T04:42:07.7686743Z Enerel/tests/test_validation.py::test_malformed_published_on_is_rejected PASSED [ 93%]
+2026-10-25T04:42:07.7690688Z Enerel/tests/test_validation.py::test_published_on_is_optional PASSED    [ 93%]
+2026-10-25T04:42:07.7694762Z Enerel/tests/test_validation.py::test_source_is_optional PASSED          [ 94%]
+2026-10-25T04:42:07.7699460Z Enerel/tests/test_validation.py::test_non_dict_payload_is_rejected PASSED [ 94%]
+2026-10-25T04:42:07.7704074Z Enerel/tests/test_validation.py::test_all_doc_types_are_individually_valid PASSED [ 95%]
+2026-10-25T04:42:07.7708856Z Enerel/tests/test_validation.py::test_search_payload_defaults_top_k_to_5 PASSED [ 95%]
+2026-10-25T04:42:07.7713032Z Enerel/tests/test_validation.py::test_search_payload_accepts_custom_top_k PASSED [ 96%]
+2026-10-25T04:42:07.7719271Z Enerel/tests/test_validation.py::test_search_payload_rejects_empty_query PASSED [ 96%]
+2026-10-25T04:42:07.7725354Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[0] PASSED [ 97%]
+2026-10-25T04:42:07.7731185Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[21] PASSED [ 97%]
+2026-10-25T04:42:07.7736603Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[-1] PASSED [ 98%]
+2026-10-25T04:42:07.7742426Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[5] PASSED [ 98%]
+2026-10-25T04:42:07.7747306Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[3.5] PASSED [ 99%]
+2026-10-25T04:42:07.8275724Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[True] PASSED [100%]
+2026-10-25T04:42:07.8277245Z ============================= 190 passed in 3.42s ==============================
+2026-10-25T04:42:07.9322852Z [36;1mpytest Enerel/tests/test_release2_multi_agent.py -v \[0m
+2026-10-25T04:42:07.9327817Z [36;1mprint(f"**{suite.get('tests')} tests, {suite.get('failures')} failures, {suite.get('errors')} errors**\n")[0m
+2026-10-25T04:42:07.9328707Z [36;1m    ok = case.find("failure") is None and case.find("error") is None[0m
+2026-10-25T04:42:08.1129375Z ============================= test session starts ==============================
+2026-10-25T04:42:08.1130081Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:08.1131060Z cachedir: .pytest_cache
+2026-10-25T04:42:08.2574368Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_sends_python_evidence_and_logs_the_run PASSED [  7%]
+2026-10-25T04:42:08.2977412Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_unknown_document_is_404_without_a_call PASSED [ 14%]
+2026-10-25T04:42:08.3188903Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_disabled_is_503_without_a_call PASSED [ 21%]
+2026-10-25T04:42:08.3397489Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_server_down_is_503 PASSED [ 28%]
+2026-10-25T04:42:08.3633260Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_timeout_is_504 PASSED [ 35%]
+2026-10-25T04:42:08.3920586Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review0] PASSED [ 42%]
+2026-10-25T04:42:08.4170533Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review1] PASSED [ 50%]
+2026-10-25T04:42:08.4417472Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review2] PASSED [ 57%]
+2026-10-25T04:42:08.4676569Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review3] PASSED [ 64%]
+2026-10-25T04:42:08.4917726Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review0-decision must be one of] PASSED [ 71%]
+2026-10-25T04:42:08.5313947Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review1-corrected is required] PASSED [ 78%]
+2026-10-25T04:42:08.5623639Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review2-note is required] PASSED [ 85%]
+2026-10-25T04:42:08.5856366Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review3-corrected is only allowed] PASSED [ 92%]
+2026-10-25T04:42:08.6458526Z Enerel/tests/test_release2_multi_agent.py::test_second_review_is_409_from_the_server PASSED [100%]
+2026-10-25T04:42:08.6460508Z ====================== 14 passed, 13 deselected in 0.51s =======================
+2026-10-25T04:42:08.8635007Z (node:2147) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:08.8635800Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:09.1466839Z (node:2147) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-25T04:42:10.8170720Z [36;1m    if run["status"] in ("awaiting_human", "failed"):[0m
+2026-10-25T04:42:11.6321488Z Collecting pytest==8.3.3 (from -r ../../multi-agent-server/requirements.txt (line 6))
+2026-10-25T04:42:11.6454935Z   Downloading pytest-8.3.3-py3-none-any.whl.metadata (7.5 kB)
+2026-10-25T04:42:11.7436336Z Requirement already satisfied: iniconfig in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==8.3.3->-r ../../multi-agent-server/requirements.txt (line 6)) (2.3.1)
+2026-10-25T04:42:11.7445866Z Requirement already satisfied: pluggy<2,>=1.5 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==8.3.3->-r ../../multi-agent-server/requirements.txt (line 6)) (1.7.0)
+2026-10-25T04:42:12.4157662Z Downloading pytest-8.3.3-py3-none-any.whl (342 kB)
+2026-10-25T04:42:12.6816513Z Installing collected packages: requests, pytest, flask
+2026-10-25T04:42:12.9814372Z   Attempting uninstall: pytest
+2026-10-25T04:42:12.9828360Z     Found existing installation: pytest 9.1.1
+2026-10-25T04:42:12.9872035Z     Uninstalling pytest-9.1.1:
+2026-10-25T04:42:13.0530357Z       Successfully uninstalled pytest-9.1.1
+2026-10-25T04:42:13.5549803Z Successfully installed flask-3.0.3 pytest-8.3.3 requests-2.32.3
+2026-10-25T04:42:20.1527693Z MCP glossary lookup -> 503 {'error': 'MCP mode is disabled (MCP_ENABLED=false)', 'mcp_enabled': False}
+2026-10-25T04:42:20.1528280Z RAG ask             -> 503 {'error': 'RAG mode is disabled (RAG_ENABLED=false)', 'rag_enabled': False}
+2026-10-25T04:42:20.1529223Z Multi-Agent workflow -> 503 {'code': 'disabled', 'detail': 'multi-agent mode is disabled (MULTI_AGENT_ENABLED=false)', 'error': 'Multi-agent mode is switched off on this server, so the research brief cannot run. The rest of the library still works.', 'multi_agent_enabled': False}
+2026-10-25T04:42:20.2898239Z (node:2207) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:20.2898882Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:20.4483546Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0rIjdagAAAAA3a1YJHSv6TbDaiTN/Nd2oQ0gxQUEyMDMwODEzMDM0AEVkZ2U=
+2026-10-25T04:42:20.6484377Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0, actions/upload-artifact@v4.4.3. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 11_joshua-ci _ Frontend build (npm ci + vite build).txt
+Matched lines: 9
+Selected evidence:
+2026-10-25T04:41:48.7692115Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:49.8059599Z (node:2041) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.8062613Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:50.3311949Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:41:52.3156156Z 2 high severity vulnerabilities
+2026-10-25T04:41:53.7878750Z (node:2149) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:53.7879896Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:53.8909060Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0kYjdagAAAAD6C+tpeXABR4+dPtH5qtxBUEhYMzFFREdFMDIxNgBFZGdl
+2026-10-25T04:41:54.0785328Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-node@v4.1.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 12_enerel-ci _ Docker images build.txt
+Matched lines: 3
+Selected evidence:
+2026-10-25T04:41:48.0056631Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:42:00.6596102Z #9 6.349 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:05.1943835Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 13_maxwell-ci _ test.txt
+Matched lines: 40
+Selected evidence:
+2026-10-25T04:41:48.6326659Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:50.0261513Z (node:2054) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:50.0262175Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:50.0957524Z [36;1mpip install pytest[0m
+2026-10-25T04:41:55.3696297Z Collecting pytest
+2026-10-25T04:41:55.4379005Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:55.4599149Z Collecting iniconfig>=1.0.1 (from pytest)
+2026-10-25T04:41:55.4970285Z Collecting packaging>=22 (from pytest)
+2026-10-25T04:41:55.5328117Z Collecting pluggy<2,>=1.5 (from pytest)
+2026-10-25T04:41:55.5738076Z Collecting pygments>=2.7.2 (from pytest)
+2026-10-25T04:41:55.6036870Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:41:55.7910854Z Installing collected packages: pygments, pluggy, packaging, iniconfig, pytest
+2026-10-25T04:41:56.4146250Z Successfully installed iniconfig-2.3.1 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1
+2026-10-25T04:42:14.6413959Z #29 2.591 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:48.3059938Z ##[group]Run pytest tests/test_glossary.py -v
+2026-10-25T04:42:48.3060157Z [36;1mpytest tests/test_glossary.py -v[0m
+2026-10-25T04:42:48.8570433Z ============================= test session starts ==============================
+2026-10-25T04:42:48.8570931Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:48.8571212Z cachedir: .pytest_cache
+2026-10-25T04:42:49.2064486Z tests/test_glossary.py::GlossaryTestCase::test_ai_mode_disabled_returns_503 PASSED [  6%]
+2026-10-25T04:42:49.2102513Z tests/test_glossary.py::GlossaryTestCase::test_create_term_endpoint PASSED [ 13%]
+2026-10-25T04:42:49.2114993Z tests/test_glossary.py::GlossaryTestCase::test_delete_nonexistent_term PASSED [ 20%]
+2026-10-25T04:42:49.2154995Z tests/test_glossary.py::GlossaryTestCase::test_delete_term_endpoint PASSED [ 26%]
+2026-10-25T04:42:49.2180647Z tests/test_glossary.py::GlossaryTestCase::test_get_term_endpoint PASSED  [ 33%]
+2026-10-25T04:42:49.2190113Z tests/test_glossary.py::GlossaryTestCase::test_glossary_endpoint PASSED  [ 40%]
+2026-10-25T04:42:49.2198341Z tests/test_glossary.py::GlossaryTestCase::test_health_endpoint PASSED    [ 46%]
+2026-10-25T04:42:49.2207719Z tests/test_glossary.py::GlossaryTestCase::test_mcp_proxy_disabled_in_ci PASSED [ 53%]
+2026-10-25T04:42:49.2216131Z tests/test_glossary.py::GlossaryTestCase::test_multi_agent_proxy_disabled_in_ci PASSED [ 60%]
+2026-10-25T04:42:49.2225927Z tests/test_glossary.py::GlossaryTestCase::test_non_financial_term_rejected PASSED [ 66%]
+2026-10-25T04:42:49.2239275Z tests/test_glossary.py::GlossaryTestCase::test_ollama_unreachable_returns_500 PASSED [ 73%]
+2026-10-25T04:42:49.2258877Z tests/test_glossary.py::GlossaryTestCase::test_rag_proxy_disabled_in_ci PASSED [ 80%]
+2026-10-25T04:42:49.2268770Z tests/test_glossary.py::GlossaryTestCase::test_update_nonexistent_term PASSED [ 86%]
+2026-10-25T04:42:49.2406756Z tests/test_glossary.py::GlossaryTestCase::test_update_term_empty_definition PASSED [ 93%]
+2026-10-25T04:42:49.2655710Z tests/test_glossary.py::GlossaryTestCase::test_update_term_endpoint PASSED [100%]
+2026-10-25T04:42:49.2656016Z ============================== 15 passed in 0.39s ==============================
+2026-10-25T04:42:55.8313489Z [36;1mecho "All post-commit endpoint tests passed!"[0m
+2026-10-25T04:42:55.9300224Z All post-commit endpoint tests passed!
+2026-10-25T04:43:26.5981101Z (node:3310) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:43:26.5981566Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:43:26.7952141Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 14_thomas-ci _ validate-thomas-services.txt
+Matched lines: 27
+Selected evidence:
+2026-10-25T04:41:48.8182991Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:49.8643090Z (node:2059) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.8646352Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:56.5582711Z ##[group]Run python -m pip install pytest
+2026-10-25T04:41:56.5583038Z [36;1mpython -m pip install pytest[0m
+2026-10-25T04:41:56.8781481Z Collecting pytest
+2026-10-25T04:41:56.9348303Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:56.9877529Z Collecting iniconfig>=1.0.1 (from pytest)
+2026-10-25T04:41:57.0634057Z Collecting packaging>=22 (from pytest)
+2026-10-25T04:41:57.0843799Z Collecting pluggy<2,>=1.5 (from pytest)
+2026-10-25T04:41:57.1087378Z Collecting pygments>=2.7.2 (from pytest)
+2026-10-25T04:41:57.1320194Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:41:57.3443136Z Installing collected packages: pygments, pluggy, packaging, iniconfig, pytest
+2026-10-25T04:41:58.3979233Z Successfully installed iniconfig-2.3.1 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1
+2026-10-25T04:41:58.4967517Z ##[group]Run python -m pytest -v Thomas/tests/test_transactions_api.py
+2026-10-25T04:41:58.4968117Z [36;1mpython -m pytest -v Thomas/tests/test_transactions_api.py[0m
+2026-10-25T04:41:59.0555958Z ============================= test session starts ==============================
+2026-10-25T04:41:59.0556922Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:41:59.0557569Z cachedir: .pytest_cache
+2026-10-25T04:41:59.9559266Z Thomas/tests/test_transactions_api.py::test_get_transactions_filters_by_merchant PASSED [ 50%]
+2026-10-25T04:42:00.0365653Z Thomas/tests/test_transactions_api.py::test_start_multi_agent_sends_verified_sql_evidence PASSED [100%]
+2026-10-25T04:42:00.0366441Z ============================== 2 passed in 0.91s ===============================
+2026-10-25T04:42:18.1144046Z #9 7.003 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:22.7617139Z #8 2.272 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:23.3454101Z (node:2533) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:23.3454683Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:23.5635629Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 1_lehoalong-ci _ Post-commit endpoint tests (2 endpoints, real HTTP).txt
+Matched lines: 39
+Selected evidence:
+2026-10-25T04:42:34.3793677Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:42:35.1604857Z (node:2412) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:35.1606093Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:37.1059710Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:42:39.0147305Z Collecting pytest==9.1.1 (from -r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:42:39.0227073Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:42:39.4756292Z Collecting iniconfig>=1.0.1 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:42:39.5017329Z Collecting packaging>=22 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:42:39.5240576Z Collecting pluggy<2,>=1.5 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:42:39.5540553Z Collecting pygments>=2.7.2 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:42:39.6247009Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:42:40.0362978Z Installing collected packages: urllib3, pygments, pluggy, packaging, markupsafe, itsdangerous, iniconfig, idna, click, charset_normalizer, certifi, blinker, werkzeug, requests, pytest, jinja2, Flask
+2026-10-25T04:42:41.3362475Z Successfully installed Flask-3.1.3 blinker-1.9.0 certifi-2026.10.23 charset_normalizer-3.5.2 click-8.5.0 idna-3.20 iniconfig-2.3.1 itsdangerous-2.2.0 jinja2-3.1.6 markupsafe-3.0.4 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1 requests-2.34.2 urllib3-2.8.0 werkzeug-3.1.9
+2026-10-25T04:42:58.8081804Z #8 7.063 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:43:03.2307913Z ##[group]Run pytest LeHoaLong/endpoint_tests -v --junitxml="${REPORT_DIR}/junit.xml"
+2026-10-25T04:43:03.2308549Z [36;1mpytest LeHoaLong/endpoint_tests -v --junitxml="${REPORT_DIR}/junit.xml"[0m
+2026-10-25T04:43:04.0682930Z ============================= test session starts ==============================
+2026-10-25T04:43:04.0683996Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:43:04.0685110Z cachedir: .pytest_cache
+2026-10-25T04:43:04.1247035Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_default_user_summary_matches_the_database PASSED [  8%]
+2026-10-25T04:43:04.1468215Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_every_seeded_user_summary_matches_the_database PASSED [ 16%]
+2026-10-25T04:43:04.1507784Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_a_user_with_no_goals_and_no_budget_is_200_not_an_error PASSED [ 25%]
+2026-10-25T04:43:04.1545734Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_an_invalid_user_id_is_a_json_400_naming_the_field[abc] PASSED [ 33%]
+2026-10-25T04:43:04.1566089Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_an_invalid_user_id_is_a_json_400_naming_the_field[0] PASSED [ 41%]
+2026-10-25T04:43:04.1593736Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_an_invalid_user_id_is_a_json_400_naming_the_field[-3] PASSED [ 50%]
+2026-10-25T04:43:04.1621599Z LeHoaLong/endpoint_tests/test_budget_summary_endpoint.py::test_an_invalid_user_id_is_a_json_400_naming_the_field[1.5] PASSED [ 58%]
+2026-10-25T04:43:04.2456618Z LeHoaLong/endpoint_tests/test_progress_endpoint.py::test_every_seeded_goal_reports_figures_matching_the_database PASSED [ 66%]
+2026-10-25T04:43:04.2681335Z LeHoaLong/endpoint_tests/test_progress_endpoint.py::test_step_counts_match_the_database PASSED [ 75%]
+2026-10-25T04:43:04.2910794Z LeHoaLong/endpoint_tests/test_progress_endpoint.py::test_status_is_one_of_the_documented_values PASSED [ 83%]
+2026-10-25T04:43:04.2941413Z LeHoaLong/endpoint_tests/test_progress_endpoint.py::test_unknown_goal_is_a_json_404 PASSED [ 91%]
+2026-10-25T04:43:04.3137760Z LeHoaLong/endpoint_tests/test_progress_endpoint.py::test_non_numeric_goal_id_is_a_json_404_not_a_500 PASSED [100%]
+2026-10-25T04:43:04.3141782Z ============================== 12 passed in 0.23s ==============================
+2026-10-25T04:43:04.5590710Z (node:3058) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:43:04.5592110Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:43:04.9560258Z (node:3058) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-25T04:43:05.8987284Z (node:3070) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:43:05.8988479Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:43:06.0107635Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>02ojdagAAAAAcmQ2moRvySIUILEM8oUBfQ08xRURHRTE0MTAARWRnZQ==
+2026-10-25T04:43:06.2216361Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0, actions/upload-artifact@v4.6.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 2_lehoalong-ci _ Backend (ruff + pytest, no Ollama).txt
+Matched lines: 538
+Selected evidence:
+2026-10-25T04:42:25.6219493Z LeHoaLong/tests/test_rag_client.py::test_explain_attributes_its_audit_row_to_the_goal PASSED [ 80%]
+2026-10-25T04:42:25.6357156Z LeHoaLong/tests/test_rag_client.py::test_explain_does_not_write_a_second_observe_row PASSED [ 80%]
+2026-10-25T04:42:25.6474282Z LeHoaLong/tests/test_rag_client.py::test_explain_404s_for_a_goal_that_does_not_exist PASSED [ 80%]
+2026-10-25T04:42:25.6628319Z LeHoaLong/tests/test_rag_client.py::test_explain_accepts_top_k_from_a_body_or_a_query_string PASSED [ 80%]
+2026-10-25T04:42:25.6764801Z LeHoaLong/tests/test_rag_client.py::test_explain_rejects_a_bad_top_k PASSED [ 80%]
+2026-10-25T04:42:25.6900480Z LeHoaLong/tests/test_rag_client.py::test_the_audit_row_stores_the_question_the_chunks_the_answer_and_the_confidence PASSED [ 81%]
+2026-10-25T04:42:25.7046825Z LeHoaLong/tests/test_review_plan.py::test_disabled_returns_the_python_proposal_and_says_so PASSED [ 81%]
+2026-10-25T04:42:25.7323507Z LeHoaLong/tests/test_review_plan.py::test_unreachable_server_degrades_with_its_reason PASSED [ 81%]
+2026-10-25T04:42:25.7479317Z LeHoaLong/tests/test_review_plan.py::test_a_server_answer_outside_the_contract_degrades_too PASSED [ 81%]
+2026-10-25T04:42:25.7680160Z LeHoaLong/tests/test_review_plan.py::test_start_returns_202_with_a_run_id_and_sends_an_async_run PASSED [ 82%]
+2026-10-25T04:42:25.7872147Z LeHoaLong/tests/test_review_plan.py::test_starting_a_review_writes_nothing_to_the_goal PASSED [ 82%]
+2026-10-25T04:42:25.8062252Z LeHoaLong/tests/test_review_plan.py::test_the_proposal_is_pythons_schedule_and_closes_the_gap PASSED [ 82%]
+2026-10-25T04:42:25.8247831Z LeHoaLong/tests/test_review_plan.py::test_every_figure_in_the_evidence_is_one_python_computed PASSED [ 82%]
+2026-10-25T04:42:25.8389777Z LeHoaLong/tests/test_review_plan.py::test_goals_that_cannot_be_planned_are_refused_before_the_server[99999-404] PASSED [ 82%]
+2026-10-25T04:42:25.8546197Z LeHoaLong/tests/test_review_plan.py::test_goals_that_cannot_be_planned_are_refused_before_the_server[8-400] PASSED [ 83%]
+2026-10-25T04:42:25.8752275Z LeHoaLong/tests/test_review_plan.py::test_poll_shows_the_agents_output_and_whether_it_can_be_applied PASSED [ 83%]
+2026-10-25T04:42:25.8941264Z LeHoaLong/tests/test_review_plan.py::test_poll_shows_progress_while_the_agents_run PASSED [ 83%]
+2026-10-25T04:42:25.9109369Z LeHoaLong/tests/test_review_plan.py::test_a_run_this_backend_did_not_start_is_404 PASSED [ 83%]
+2026-10-25T04:42:25.9301871Z LeHoaLong/tests/test_review_plan.py::test_a_server_that_lost_its_history_is_404_saying_so PASSED [ 83%]
+2026-10-25T04:42:25.9506615Z LeHoaLong/tests/test_review_plan.py::test_polling_an_unreachable_server_is_503 PASSED [ 84%]
+2026-10-25T04:42:25.9727043Z LeHoaLong/tests/test_review_plan.py::test_approve_applies_exactly_the_frozen_proposal PASSED [ 84%]
+2026-10-25T04:42:25.9946405Z LeHoaLong/tests/test_review_plan.py::test_correct_applies_and_records_the_corrected_rationale PASSED [ 84%]
+2026-10-25T04:42:26.0267582Z LeHoaLong/tests/test_review_plan.py::test_partial_and_reject_apply_nothing[partial-extra0] PASSED [ 84%]
+2026-10-25T04:42:26.0502507Z LeHoaLong/tests/test_review_plan.py::test_partial_and_reject_apply_nothing[reject-extra1] PASSED [ 85%]
+2026-10-25T04:42:26.0687627Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body0-decision is required] PASSED [ 85%]
+2026-10-25T04:42:26.0873254Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body1-decision must be one of] PASSED [ 85%]
+2026-10-25T04:42:26.1061128Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body2-corrected is required] PASSED [ 85%]
+2026-10-25T04:42:26.1248258Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body3-note is required] PASSED [ 85%]
+2026-10-25T04:42:26.1457712Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body4-only accepted with decision 'correct'] PASSED [ 86%]
+2026-10-25T04:42:26.1645927Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body5-note must be a string] PASSED [ 86%]
+2026-10-25T04:42:26.1868440Z LeHoaLong/tests/test_review_plan.py::test_a_second_decision_is_409 PASSED [ 86%]
+2026-10-25T04:42:26.2102561Z LeHoaLong/tests/test_review_plan.py::test_a_decided_review_is_served_from_the_log_even_if_the_server_is_gone PASSED [ 86%]
+2026-10-25T04:42:26.2326372Z LeHoaLong/tests/test_review_plan.py::test_a_decided_review_reads_as_complete_matching_the_server PASSED [ 86%]
+2026-10-25T04:42:26.2700832Z LeHoaLong/tests/test_review_plan.py::test_a_contribution_after_the_review_started_makes_approve_409 PASSED [ 87%]
+2026-10-25T04:42:26.2898940Z LeHoaLong/tests/test_review_plan.py::test_a_first_instalment_now_in_the_past_makes_approve_409 PASSED [ 87%]
+2026-10-25T04:42:26.3239986Z LeHoaLong/tests/test_review_plan.py::test_a_deleted_goal_can_still_be_rejected PASSED [ 87%]
+2026-10-25T04:42:26.3429924Z LeHoaLong/tests/test_review_plan.py::test_deciding_while_the_agents_are_still_running_is_409 PASSED [ 87%]
+2026-10-25T04:42:26.3630605Z LeHoaLong/tests/test_review_plan.py::test_a_failed_run_cannot_be_decided_and_says_why PASSED [ 88%]
+2026-10-25T04:42:26.4103983Z LeHoaLong/tests/test_review_plan.py::test_a_server_refusal_rolls_the_plan_back PASSED [ 88%]
+2026-10-25T04:42:26.4308263Z LeHoaLong/tests/test_review_plan.py::test_an_unreachable_server_at_decision_time_is_503_and_changes_nothing PASSED [ 88%]
+2026-10-25T04:42:26.4497557Z LeHoaLong/tests/test_review_plan.py::test_deciding_while_switched_off_is_503 PASSED [ 88%]
+2026-10-25T04:42:26.4611280Z LeHoaLong/tests/test_review_plan.py::test_health_when_disabled PASSED    [ 88%]
+2026-10-25T04:42:26.4760554Z LeHoaLong/tests/test_review_plan.py::test_health_when_reachable PASSED   [ 89%]
+2026-10-25T04:42:26.4891605Z LeHoaLong/tests/test_review_plan.py::test_health_when_unreachable_is_still_200 PASSED [ 89%]
+2026-10-25T04:42:26.5038709Z LeHoaLong/tests/test_review_plan.py::test_ai_mode_off_plans_without_calling_the_model PASSED [ 89%]
+2026-10-25T04:42:26.5163171Z LeHoaLong/tests/test_review_plan.py::test_ai_mode_off_health_does_not_probe_ollama PASSED [ 89%]
+2026-10-25T04:42:26.5285573Z LeHoaLong/tests/test_steps_and_contributions.py::test_steps_are_returned_in_plan_order PASSED [ 89%]
+2026-10-25T04:42:26.5404363Z LeHoaLong/tests/test_steps_and_contributions.py::test_steps_of_a_goal_with_no_plan_are_an_empty_list PASSED [ 90%]
+2026-10-25T04:42:26.5542432Z LeHoaLong/tests/test_steps_and_contributions.py::test_steps_404_when_the_goal_does_not_exist PASSED [ 90%]
+2026-10-25T04:42:26.5681800Z LeHoaLong/tests/test_steps_and_contributions.py::test_marking_a_step_complete PASSED [ 90%]
+2026-10-25T04:42:26.5824626Z LeHoaLong/tests/test_steps_and_contributions.py::test_marking_complete_leaves_provenance_alone PASSED [ 90%]
+2026-10-25T04:42:26.5968226Z LeHoaLong/tests/test_steps_and_contributions.py::test_editing_the_substance_of_an_ai_step_makes_it_the_users PASSED [ 91%]
+2026-10-25T04:42:26.6096680Z LeHoaLong/tests/test_steps_and_contributions.py::test_rewriting_a_step_to_its_existing_value_does_not_change_provenance PASSED [ 91%]
+2026-10-25T04:42:26.6236200Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_step_can_be_edited_in_several_ways_at_once PASSED [ 91%]
+2026-10-25T04:42:26.6392111Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_step_amount_of_zero_is_allowed PASSED [ 91%]
+2026-10-25T04:42:26.6516639Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload0-step_amount must not be negative] PASSED [ 91%]
+2026-10-25T04:42:26.6639933Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload1-step_amount must be a number] PASSED [ 92%]
+2026-10-25T04:42:26.6765244Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload2-due_date must be an ISO-8601 date] PASSED [ 92%]
+2026-10-25T04:42:26.6891958Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload3-status must be one of] PASSED [ 92%]
+2026-10-25T04:42:26.7017339Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload4-description must not be empty] PASSED [ 92%]
+2026-10-25T04:42:26.7158881Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload5-step_order cannot be changed] PASSED [ 92%]
+2026-10-25T04:42:26.7283950Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload6-source cannot be changed] PASSED [ 93%]
+2026-10-25T04:42:26.7408616Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload7-goal_id cannot be changed] PASSED [ 93%]
+2026-10-25T04:42:26.7532527Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload8-no updatable fields supplied] PASSED [ 93%]
+2026-10-25T04:42:26.7662395Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_step_cannot_be_reached_through_the_wrong_goal PASSED [ 93%]
+2026-10-25T04:42:26.7782613Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_404s_for_an_unknown_step PASSED [ 94%]
+2026-10-25T04:42:26.7949547Z LeHoaLong/tests/test_steps_and_contributions.py::test_deleting_a_step_leaves_the_rest_of_the_plan_intact PASSED [ 94%]
+2026-10-25T04:42:26.8094223Z LeHoaLong/tests/test_steps_and_contributions.py::test_deleting_a_step_does_not_renumber_the_others PASSED [ 94%]
+2026-10-25T04:42:26.8239183Z LeHoaLong/tests/test_steps_and_contributions.py::test_deleting_a_step_does_not_touch_contributions PASSED [ 94%]
+2026-10-25T04:42:26.8384899Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_delete_404s_twice PASSED [ 94%]
+2026-10-25T04:42:26.8505705Z LeHoaLong/tests/test_steps_and_contributions.py::test_contributions_are_listed_newest_first_with_a_total PASSED [ 95%]
+2026-10-25T04:42:26.8624769Z LeHoaLong/tests/test_steps_and_contributions.py::test_contributions_of_an_unfunded_goal_total_zero PASSED [ 95%]
+2026-10-25T04:42:26.8760496Z LeHoaLong/tests/test_steps_and_contributions.py::test_contributions_404_when_the_goal_does_not_exist PASSED [ 95%]
+2026-10-25T04:42:26.8897020Z LeHoaLong/tests/test_steps_and_contributions.py::test_recording_a_contribution_returns_201_and_the_recalculated_goal PASSED [ 95%]
+2026-10-25T04:42:26.9080746Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_defaults_to_today PASSED [ 95%]
+2026-10-25T04:42:26.9261079Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_that_completes_a_goal_is_flagged_not_auto_applied PASSED [ 96%]
+2026-10-25T04:42:26.9419472Z LeHoaLong/tests/test_steps_and_contributions.py::test_recording_a_contribution_does_not_mark_any_step_complete PASSED [ 96%]
+2026-10-25T04:42:26.9571168Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_shows_up_in_the_goal_detail_and_the_list PASSED [ 96%]
+2026-10-25T04:42:26.9706375Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload0-amount is required] PASSED [ 96%]
+2026-10-25T04:42:26.9824149Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload1-amount must be greater than 0] PASSED [ 97%]
+2026-10-25T04:42:26.9943116Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload2-amount must be greater than 0] PASSED [ 97%]
+2026-10-25T04:42:27.0061100Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload3-amount must be a number] PASSED [ 97%]
+2026-10-25T04:42:27.0178996Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload4-amount must be a number] PASSED [ 97%]
+2026-10-25T04:42:27.0297380Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload5-contribution_date must be an ISO-8601 date] PASSED [ 97%]
+2026-10-25T04:42:27.0433586Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload6-notes must be 500 characters or fewer] PASSED [ 98%]
+2026-10-25T04:42:27.0548042Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_future_dated_contribution_is_rejected PASSED [ 98%]
+2026-10-25T04:42:27.0689933Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_back_dated_contribution_is_allowed PASSED [ 98%]
+2026-10-25T04:42:27.0810796Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_404s_for_a_goal_that_does_not_exist PASSED [ 98%]
+2026-10-25T04:42:27.0933911Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_is_not_written_when_the_goal_is_missing PASSED [ 98%]
+2026-10-25T04:42:27.0944953Z LeHoaLong/tests/test_write_deployment_report.py::test_only_this_feature_s_env_is_read_including_the_shared_no_ai_list PASSED [ 99%]
+2026-10-25T04:42:27.0956237Z LeHoaLong/tests/test_write_deployment_report.py::test_switches_left_unset_fall_back_to_the_dockerfile_default PASSED [ 99%]
+2026-10-25T04:42:27.0963553Z LeHoaLong/tests/test_write_deployment_report.py::test_a_switch_the_deployed_code_does_not_have_is_recorded_as_null PASSED [ 99%]
+2026-10-25T04:42:27.0970604Z LeHoaLong/tests/test_write_deployment_report.py::test_the_deploy_script_wins_once_it_sets_the_switches PASSED [ 99%]
+2026-10-25T04:42:27.1523099Z LeHoaLong/tests/test_write_deployment_report.py::test_the_report_names_an_internal_backend_and_a_future_dated_smoke_goal PASSED [100%]
+2026-10-25T04:42:27.1523844Z ============================= 467 passed in 6.21s ==============================
+2026-10-25T04:42:27.2602712Z ##[error]Process completed with exit code 1.
+2026-10-25T04:42:27.3864240Z (node:2643) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:27.3864996Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:27.5934208Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0s4jdagAAAAAyT5cMlxzKRKJ7bn4J7tmnU0xDMzFFREdFMDcxNQBFZGdl
+2026-10-25T04:42:27.8303206Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 3_hyunwoo-ci _ Docker image builds.txt
+Matched lines: 3
+Selected evidence:
+2026-10-25T04:41:48.0434260Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:42:05.4144067Z #9 8.517 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:09.2686460Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 4_lehoalong-ci _ Frontend (eslint + vite build).txt
+Matched lines: 9
+Selected evidence:
+2026-10-25T04:41:49.2642614Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:50.4124953Z (node:2264) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:50.4128530Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:59.6460179Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:42:09.8184671Z 3 high severity vulnerabilities
+2026-10-25T04:42:13.8875353Z (node:2394) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:13.8876194Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:14.0284439Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0pojdagAAAADugdLOoJOTQpU8tqs9aMPzUEhYMzFFREdFMDIxNQBFZGdl
+2026-10-25T04:42:14.2457435Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-node@v4.1.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 5_hyunwoo-ci _ Backend tests.txt
+Matched lines: 113
+Selected evidence:
+2026-10-25T04:41:57.5762819Z [36;1mpytest hyunwoo/tests -v[0m
+2026-10-25T04:41:58.6871845Z ============================= test session starts ==============================
+2026-10-25T04:41:58.6872716Z platform linux -- Python 3.11.17, pytest-8.3.2, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:41:58.6873274Z cachedir: .pytest_cache
+2026-10-25T04:41:58.8575312Z hyunwoo/tests/test_api.py::test_health_and_seeded_records PASSED         [  1%]
+2026-10-25T04:41:58.8647183Z hyunwoo/tests/test_api.py::test_endpoints_only_return_the_default_users_bills PASSED [  2%]
+2026-10-25T04:41:58.8734741Z hyunwoo/tests/test_api.py::test_create_read_update_and_delete_bill PASSED [  3%]
+2026-10-25T04:41:58.8783384Z hyunwoo/tests/test_api.py::test_create_rejects_invalid_and_duplicate_bills PASSED [  4%]
+2026-10-25T04:41:58.8831764Z hyunwoo/tests/test_api.py::test_summary_matches_seeded_records PASSED    [  5%]
+2026-10-25T04:41:58.8888922Z hyunwoo/tests/test_api.py::test_review_endpoint_returns_all_four_real_phases PASSED [  6%]
+2026-10-25T04:41:58.8932723Z hyunwoo/tests/test_api.py::test_review_rejects_invalid_period PASSED     [  7%]
+2026-10-25T04:41:58.8981164Z hyunwoo/tests/test_api.py::test_review_reports_when_ollama_is_unavailable PASSED [  8%]
+2026-10-25T04:41:58.8990160Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[weekly-52.0] PASSED [  9%]
+2026-10-25T04:41:58.8996970Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[fortnightly-26.0] PASSED [ 10%]
+2026-10-25T04:41:58.9003234Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[monthly-12.0] PASSED [ 12%]
+2026-10-25T04:41:58.9009865Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[quarterly-4.0] PASSED [ 13%]
+2026-10-25T04:41:58.9016203Z hyunwoo/tests/test_calculations.py::test_monthly_cost_converts_each_frequency[yearly-1.0] PASSED [ 14%]
+2026-10-25T04:41:58.9022155Z hyunwoo/tests/test_calculations.py::test_summary_uses_active_bills_only PASSED [ 15%]
+2026-10-25T04:41:58.9068988Z hyunwoo/tests/test_integrations.py::test_mcp_returns_shared_tool_result PASSED [ 16%]
+2026-10-25T04:41:58.9079479Z hyunwoo/tests/test_integrations.py::test_mcp_reads_json_text_content PASSED [ 17%]
+2026-10-25T04:41:58.9127430Z hyunwoo/tests/test_integrations.py::test_mcp_rejects_tool_failures[tool_error] PASSED [ 18%]
+2026-10-25T04:41:58.9172063Z hyunwoo/tests/test_integrations.py::test_mcp_rejects_tool_failures[backend_error] PASSED [ 19%]
+2026-10-25T04:41:58.9218797Z hyunwoo/tests/test_integrations.py::test_mcp_rejects_tool_failures[invalid] PASSED [ 20%]
+2026-10-25T04:41:58.9264538Z hyunwoo/tests/test_integrations.py::test_mcp_connection_failure_is_503 PASSED [ 21%]
+2026-10-25T04:41:58.9315912Z hyunwoo/tests/test_integrations.py::test_disabled_modes_never_contact_services PASSED [ 23%]
+2026-10-25T04:41:58.9360120Z hyunwoo/tests/test_integrations.py::test_rag_returns_answer_with_verified_source_and_confidence PASSED [ 24%]
+2026-10-25T04:41:58.9402422Z hyunwoo/tests/test_integrations.py::test_bills_query_ignores_other_features_even_if_words_match PASSED [ 25%]
+2026-10-25T04:41:58.9443890Z hyunwoo/tests/test_integrations.py::test_expanded_corpus_cannot_replace_the_bills_reference PASSED [ 26%]
+2026-10-25T04:41:58.9491978Z hyunwoo/tests/test_integrations.py::test_unrelated_query_skips_answer_generation PASSED [ 27%]
+2026-10-25T04:41:58.9531261Z hyunwoo/tests/test_integrations.py::test_unverified_numerical_answer_uses_original_source PASSED [ 28%]
+2026-10-25T04:41:58.9577300Z hyunwoo/tests/test_integrations.py::test_exact_source_quote_is_preserved PASSED [ 29%]
+2026-10-25T04:41:58.9620342Z hyunwoo/tests/test_integrations.py::test_empty_retrieval_returns_insufficient_context PASSED [ 30%]
+2026-10-25T04:41:58.9664981Z hyunwoo/tests/test_integrations.py::test_model_insufficient_evidence_is_displayed_as_insufficient_context PASSED [ 31%]
+2026-10-25T04:41:58.9710172Z hyunwoo/tests/test_integrations.py::test_declined_bills_answer_can_show_strong_verified_source PASSED [ 32%]
+2026-10-25T04:41:58.9755438Z hyunwoo/tests/test_integrations.py::test_declined_answer_cannot_bypass_citation_validation[citation0] PASSED [ 34%]
+2026-10-25T04:41:58.9798609Z hyunwoo/tests/test_integrations.py::test_declined_answer_cannot_bypass_citation_validation[citation1] PASSED [ 35%]
+2026-10-25T04:41:58.9840251Z hyunwoo/tests/test_integrations.py::test_uncited_or_invented_sources_are_rejected[citations0] PASSED [ 36%]
+2026-10-25T04:41:58.9882840Z hyunwoo/tests/test_integrations.py::test_uncited_or_invented_sources_are_rejected[citations1] PASSED [ 37%]
+2026-10-25T04:41:58.9925012Z hyunwoo/tests/test_integrations.py::test_uncited_or_invented_sources_are_rejected[citations2] PASSED [ 38%]
+2026-10-25T04:41:58.9966847Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload0] PASSED [ 39%]
+2026-10-25T04:41:59.0012486Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload1] PASSED [ 40%]
+2026-10-25T04:41:59.0055507Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload2] PASSED [ 41%]
+2026-10-25T04:41:59.0097600Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload3] PASSED [ 42%]
+2026-10-25T04:41:59.0137229Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload4] PASSED [ 43%]
+2026-10-25T04:41:59.0176740Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload5] PASSED [ 45%]
+2026-10-25T04:41:59.0215606Z hyunwoo/tests/test_integrations.py::test_rag_invalid_input_is_rejected[payload6] PASSED [ 46%]
+2026-10-25T04:41:59.0265815Z hyunwoo/tests/test_integrations.py::test_rag_unavailable_keeps_existing_api_working PASSED [ 47%]
+2026-10-25T04:41:59.0273753Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Netflix_cancel.txt] PASSED [ 48%]
+2026-10-25T04:41:59.0281282Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Netflix_partner.txt] PASSED [ 49%]
+2026-10-25T04:41:59.0288657Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Netflix_billing.txt] PASSED [ 50%]
+2026-10-25T04:41:59.0295701Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Spotify_cancel.txt] PASSED [ 51%]
+2026-10-25T04:41:59.0302875Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Spotify_trial.txt] PASSED [ 52%]
+2026-10-25T04:41:59.0310354Z hyunwoo/tests/test_integrations.py::test_provider_documents_keep_facts_and_metadata_in_one_chunk[HyunWoo_provider_Spotify_billing.txt] PASSED [ 53%]
+2026-10-25T04:41:59.0362932Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[How do I cancel Netflix?-HyunWoo_provider_Netflix_cancel.txt] PASSED [ 54%]
+2026-10-25T04:41:59.0410420Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[Where can I find my Netflix billing date?-HyunWoo_provider_Netflix_billing.txt] PASSED [ 56%]
+2026-10-25T04:41:59.0460843Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[Why is the Netflix cancel option missing?-HyunWoo_provider_Netflix_partner.txt] PASSED [ 57%]
+2026-10-25T04:41:59.0506140Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[Will I keep my Spotify playlists after cancelling?-HyunWoo_provider_Spotify_cancel.txt] PASSED [ 58%]
+2026-10-25T04:41:59.0554990Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[What happens if I cancel a Spotify free trial?-HyunWoo_provider_Spotify_trial.txt] PASSED [ 59%]
+2026-10-25T04:41:59.0599719Z hyunwoo/tests/test_integrations.py::test_provider_answers_include_checked_official_source[How can I change my Spotify billing date?-HyunWoo_provider_Spotify_billing.txt] PASSED [ 60%]
+2026-10-25T04:41:59.0643937Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[How do I cancel Netflix?-HyunWoo_provider_Netflix_cancel.txt] PASSED [ 61%]
+2026-10-25T04:41:59.0695484Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[Where can I find my Netflix billing date?-HyunWoo_provider_Netflix_billing.txt] PASSED [ 62%]
+2026-10-25T04:41:59.0742165Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[Why is the Netflix cancel option missing?-HyunWoo_provider_Netflix_partner.txt] PASSED [ 63%]
+2026-10-25T04:41:59.0798314Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[Will I keep my Spotify playlists after cancelling?-HyunWoo_provider_Spotify_cancel.txt] PASSED [ 64%]
+2026-10-25T04:41:59.0847848Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[What happens if I cancel a Spotify free trial?-HyunWoo_provider_Spotify_trial.txt] PASSED [ 65%]
+2026-10-25T04:41:59.0893427Z hyunwoo/tests/test_integrations.py::test_supported_provider_refusals_show_labelled_reference[How can I change my Spotify billing date?-HyunWoo_provider_Spotify_billing.txt] PASSED [ 67%]
+2026-10-25T04:41:59.0937726Z hyunwoo/tests/test_integrations.py::test_weak_source_match_does_not_override_model_refusal[answer0] PASSED [ 68%]
+2026-10-25T04:41:59.0983311Z hyunwoo/tests/test_integrations.py::test_weak_source_match_does_not_override_model_refusal[answer1] PASSED [ 69%]
+2026-10-25T04:41:59.1032072Z hyunwoo/tests/test_integrations.py::test_model_refusal_cannot_use_a_retrieved_but_wrong_provider_citation PASSED [ 70%]
+2026-10-25T04:41:59.1078346Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is Netflix's current price in Australia?] PASSED [ 71%]
+2026-10-25T04:41:59.1131531Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is Netflix's cancellation fee?] PASSED [ 72%]
+2026-10-25T04:41:59.1180414Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[Can I get a refund after cancelling Netflix?] PASSED [ 73%]
+2026-10-25T04:41:59.1227119Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is Spotify's student discount?] PASSED [ 74%]
+2026-10-25T04:41:59.1273666Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What promotions does Spotify offer?] PASSED [ 75%]
+2026-10-25T04:41:59.1322423Z hyunwoo/tests/test_integrations.py::test_missing_provider_topics_never_generate_an_answer[What is my Netflix password?] PASSED [ 76%]
+2026-10-25T04:41:59.1365497Z hyunwoo/tests/test_integrations.py::test_provider_question_does_not_use_other_provider_or_app_facts PASSED [ 78%]
+2026-10-25T04:41:59.1406603Z hyunwoo/tests/test_integrations.py::test_free_trial_question_requires_trial_context PASSED [ 79%]
+2026-10-25T04:41:59.1450126Z hyunwoo/tests/test_integrations.py::test_provider_policy_hallucination_uses_reference_instead PASSED [ 80%]
+2026-10-25T04:41:59.1493084Z hyunwoo/tests/test_integrations.py::test_model_cannot_choose_a_provider_source_link PASSED [ 81%]
+2026-10-25T04:41:59.1515175Z hyunwoo/tests/test_rag_launcher.py::test_unfiltered_requests_keep_shared_retrieval PASSED [ 82%]
+2026-10-25T04:41:59.1538169Z hyunwoo/tests/test_rag_launcher.py::test_provider_filter_is_applied_before_retrieval PASSED [ 83%]
+2026-10-25T04:41:59.1551143Z hyunwoo/tests/test_rag_launcher.py::test_empty_filter_does_not_search_other_sources PASSED [ 84%]
+2026-10-25T04:41:59.1564332Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[netflix.txt] PASSED [ 85%]
+2026-10-25T04:41:59.1577416Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[sources1] PASSED [ 86%]
+2026-10-25T04:41:59.1590611Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[sources2] PASSED [ 87%]
+2026-10-25T04:41:59.1603719Z hyunwoo/tests/test_rag_launcher.py::test_invalid_source_filters_are_rejected[sources3] PASSED [ 89%]
+2026-10-25T04:41:59.1616949Z hyunwoo/tests/test_rag_launcher.py::test_answer_errors_do_not_leak_filter_to_next_request PASSED [ 90%]
+2026-10-25T04:41:59.1629741Z hyunwoo/tests/test_rag_launcher.py::test_other_paths_keep_shared_handler PASSED [ 91%]
+2026-10-25T04:41:59.1635418Z hyunwoo/tests/test_review.py::test_plan_sets_scope_and_priority_order PASSED [ 92%]
+2026-10-25T04:41:59.1641810Z hyunwoo/tests/test_review.py::test_plan_rejects_invalid_window[0] PASSED [ 93%]
+2026-10-25T04:41:59.1647855Z hyunwoo/tests/test_review.py::test_plan_rejects_invalid_window[91] PASSED [ 94%]
+2026-10-25T04:41:59.1653878Z hyunwoo/tests/test_review.py::test_plan_rejects_invalid_window[not-a-number] PASSED [ 95%]
+2026-10-25T04:41:59.1659354Z hyunwoo/tests/test_review.py::test_act_and_observe_return_calculated_findings PASSED [ 96%]
+2026-10-25T04:41:59.1664933Z hyunwoo/tests/test_review.py::test_adapt_prioritises_overdue_bill_and_uses_model_tone PASSED [ 97%]
+2026-10-25T04:41:59.1670117Z hyunwoo/tests/test_review.py::test_adapt_uses_safe_summary_for_unexpected_model_output PASSED [ 98%]
+2026-10-25T04:41:59.1706756Z hyunwoo/tests/test_review.py::test_adapt_skips_model_when_nothing_needs_attention PASSED [100%]
+2026-10-25T04:41:59.1707581Z ============================== 91 passed in 0.48s ==============================
+2026-10-25T04:41:59.4267178Z (node:2279) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:59.4267806Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:59.5854194Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0l4jdagAAAADqThOYU8xrQI8gmMLnBxrMUEhYMzFFREdFMDIxOQBFZGdl
+2026-10-25T04:41:59.8109965Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 6_lehoalong-ci _ Docker images build.txt
+Matched lines: 4
+Selected evidence:
+2026-10-25T04:41:49.2071717Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:42:07.8003596Z #8 6.859 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:17.1346445Z #13 3.078 3 high severity vulnerabilities
+2026-10-25T04:42:21.9658449Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 7_joshua-ci _ Backend tests (pytest, no Ollama).txt
+Matched lines: 173
+Selected evidence:
+2026-10-25T04:42:05.9010997Z joshua/tests/test_drift.py::test_adapt_defaults_to_the_real_llm_module PASSED [ 33%]
+2026-10-25T04:42:05.9018896Z joshua/tests/test_llm.py::test_connection_failure_reports_that_ollama_was_unreachable PASSED [ 34%]
+2026-10-25T04:42:05.9025660Z joshua/tests/test_llm.py::test_timeout_reports_that_ollama_was_unreachable PASSED [ 34%]
+2026-10-25T04:42:05.9032707Z joshua/tests/test_llm.py::test_404_reports_that_the_model_is_not_pulled PASSED [ 35%]
+2026-10-25T04:42:05.9137181Z joshua/tests/test_mcp_client.py::test_tool_call_succeeds_and_returns_the_payload PASSED [ 36%]
+2026-10-25T04:42:05.9526802Z joshua/tests/test_mcp_client.py::test_error_payload_is_unavailable_even_though_is_error_is_false PASSED [ 36%]
+2026-10-25T04:42:05.9901386Z joshua/tests/test_mcp_client.py::test_unreachable_server_degrades_instead_of_raising PASSED [ 37%]
+2026-10-25T04:42:05.9975553Z joshua/tests/test_mcp_client.py::test_tool_that_raises_is_unavailable PASSED [ 38%]
+2026-10-25T04:42:06.1999081Z joshua/tests/test_mcp_client.py::test_slow_server_is_cut_off_by_the_timeout PASSED [ 39%]
+2026-10-25T04:42:06.2078310Z joshua/tests/test_mcp_client.py::test_batch_keeps_order_and_isolates_a_failed_call PASSED [ 39%]
+2026-10-25T04:42:06.2086203Z joshua/tests/test_mcp_client.py::test_empty_server_url_disables_mcp_without_touching_the_network PASSED [ 40%]
+2026-10-25T04:42:06.2092798Z joshua/tests/test_mcp_client.py::test_unset_server_url_defaults_to_the_compose_address PASSED [ 41%]
+2026-10-25T04:42:06.2129281Z joshua/tests/test_mcp_client.py::test_portfolio_snapshot_is_refused_because_it_loops_back PASSED [ 41%]
+2026-10-25T04:42:06.2137963Z joshua/tests/test_mcp_client.py::test_context_skips_the_tool_when_nothing_breaches PASSED [ 42%]
+2026-10-25T04:42:06.2146640Z joshua/tests/test_mcp_client.py::test_context_looks_up_each_term_once_and_skips_unmapped_classes PASSED [ 43%]
+2026-10-25T04:42:06.2154691Z joshua/tests/test_mcp_client.py::test_context_with_mcp_down_reports_unavailable_and_does_not_raise PASSED [ 43%]
+2026-10-25T04:42:06.2163033Z joshua/tests/test_mcp_client.py::test_context_survives_a_call_tools_function_that_raises PASSED [ 44%]
+2026-10-25T04:42:06.2757095Z joshua/tests/test_mcp_client.py::test_drift_review_still_succeeds_with_the_mcp_server_unreachable PASSED [ 45%]
+2026-10-25T04:42:06.3044275Z joshua/tests/test_mcp_client.py::test_a_number_from_a_glossary_definition_never_becomes_a_portfolio_figure PASSED [ 46%]
+2026-10-25T04:42:06.3249399Z joshua/tests/test_multi_agent.py::test_start_returns_202_with_the_run_at_planning PASSED [ 46%]
+2026-10-25T04:42:06.3438514Z joshua/tests/test_multi_agent.py::test_start_asks_for_an_async_run_with_a_short_timeout PASSED [ 47%]
+2026-10-25T04:42:06.3637915Z joshua/tests/test_multi_agent.py::test_evidence_figures_come_from_python PASSED [ 48%]
+2026-10-25T04:42:06.3843855Z joshua/tests/test_multi_agent.py::test_start_with_ai_off_never_calls_the_server PASSED [ 48%]
+2026-10-25T04:42:06.4022754Z joshua/tests/test_multi_agent.py::test_start_when_the_server_is_not_running PASSED [ 49%]
+2026-10-25T04:42:06.4202248Z joshua/tests/test_multi_agent.py::test_start_when_the_server_times_out PASSED [ 50%]
+2026-10-25T04:42:06.4384831Z joshua/tests/test_multi_agent.py::test_start_rejected_by_the_server_is_a_502 PASSED [ 51%]
+2026-10-25T04:42:06.4562455Z joshua/tests/test_multi_agent.py::test_start_with_a_non_json_reply PASSED [ 51%]
+2026-10-25T04:42:06.4826715Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run0] PASSED [ 52%]
+2026-10-25T04:42:06.5001850Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run1] PASSED [ 53%]
+2026-10-25T04:42:06.5177372Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run2] PASSED [ 53%]
+2026-10-25T04:42:06.5366900Z joshua/tests/test_multi_agent.py::test_status_passes_each_stage_through[run3] PASSED [ 54%]
+2026-10-25T04:42:06.5541407Z joshua/tests/test_multi_agent.py::test_a_failed_run_is_reported_not_raised PASSED [ 55%]
+2026-10-25T04:42:06.5722587Z joshua/tests/test_multi_agent.py::test_status_of_an_unknown_run PASSED   [ 56%]
+2026-10-25T04:42:06.5942926Z joshua/tests/test_multi_agent.py::test_status_when_the_server_stops_mid_run PASSED [ 56%]
+2026-10-25T04:42:06.6113804Z joshua/tests/test_multi_agent.py::test_status_rejects_a_malformed_run_id_without_calling_the_server PASSED [ 57%]
+2026-10-25T04:42:06.6286531Z joshua/tests/test_multi_agent.py::test_status_with_ai_off_never_calls_the_server PASSED [ 58%]
+2026-10-25T04:42:06.6461616Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body0] PASSED [ 58%]
+2026-10-25T04:42:06.6638632Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body1] PASSED [ 59%]
+2026-10-25T04:42:06.7026569Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body2] PASSED [ 60%]
+2026-10-25T04:42:06.7209797Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body3] PASSED [ 60%]
+2026-10-25T04:42:06.7389670Z joshua/tests/test_multi_agent.py::test_review_passes_each_decision_through[decision_body4] PASSED [ 61%]
+2026-10-25T04:42:06.7571393Z joshua/tests/test_multi_agent.py::test_review_validation_errors_reach_the_user PASSED [ 62%]
+2026-10-25T04:42:06.7766636Z joshua/tests/test_multi_agent.py::test_review_of_an_unknown_run PASSED   [ 63%]
+2026-10-25T04:42:06.7945536Z joshua/tests/test_multi_agent.py::test_second_review_is_a_conflict PASSED [ 63%]
+2026-10-25T04:42:06.8172745Z joshua/tests/test_multi_agent.py::test_review_when_the_agents_could_not_run PASSED [ 64%]
+2026-10-25T04:42:06.8344409Z joshua/tests/test_multi_agent.py::test_review_rejects_a_malformed_run_id_without_calling_the_server PASSED [ 65%]
+2026-10-25T04:42:06.8519246Z joshua/tests/test_multi_agent.py::test_review_needs_a_json_object PASSED [ 65%]
+2026-10-25T04:42:06.8691732Z joshua/tests/test_multi_agent.py::test_review_with_ai_off_never_calls_the_server PASSED [ 66%]
+2026-10-25T04:42:06.8699141Z joshua/tests/test_multi_agent.py::test_empty_url_disables_the_client PASSED [ 67%]
+2026-10-25T04:42:06.8705522Z joshua/tests/test_multi_agent.py::test_default_url_is_the_host_address PASSED [ 68%]
+2026-10-25T04:42:06.8712114Z joshua/tests/test_multi_agent.py::test_app_module_imports_the_client PASSED [ 68%]
+2026-10-25T04:42:06.8912745Z joshua/tests/test_no_invented_figures.py::test_insights_reports_no_figure_the_python_layer_did_not_calculate PASSED [ 69%]
+2026-10-25T04:42:06.9284669Z joshua/tests/test_no_invented_figures.py::test_drift_review_reports_no_figure_the_python_layer_did_not_calculate PASSED [ 70%]
+2026-10-25T04:42:06.9468525Z joshua/tests/test_no_invented_figures.py::test_the_check_itself_catches_an_invented_figure PASSED [ 70%]
+2026-10-25T04:42:06.9475817Z joshua/tests/test_output_check.py::test_the_live_qwen_summary_passes_the_supplied_figures_check PASSED [ 71%]
+2026-10-25T04:42:06.9486107Z joshua/tests/test_output_check.py::test_the_live_qwen_summary_is_caught_by_the_binding_check PASSED [ 72%]
+2026-10-25T04:42:06.9498569Z joshua/tests/test_output_check.py::test_adapt_replaces_the_live_qwen_summary_with_the_python_fallback PASSED [ 73%]
+2026-10-25T04:42:06.9508603Z joshua/tests/test_output_check.py::test_a_correct_summary_passes_both_checks PASSED [ 73%]
+2026-10-25T04:42:06.9517547Z joshua/tests/test_output_check.py::test_the_python_fallback_passes_its_own_check PASSED [ 74%]
+2026-10-25T04:42:06.9524958Z joshua/tests/test_output_check.py::test_numbers_in_a_clause_naming_several_classes_are_not_judged PASSED [ 75%]
+2026-10-25T04:42:06.9533871Z joshua/tests/test_output_check.py::test_a_shared_direction_must_hold_for_every_class_named PASSED [ 75%]
+2026-10-25T04:42:06.9541387Z joshua/tests/test_output_check.py::test_the_live_qwen_comma_list_is_caught PASSED [ 76%]
+2026-10-25T04:42:06.9548874Z joshua/tests/test_output_check.py::test_the_threshold_may_appear_beside_any_class PASSED [ 77%]
+2026-10-25T04:42:06.9556057Z joshua/tests/test_output_check.py::test_a_correct_summary_with_bracketed_figures_is_accepted PASSED [ 78%]
+2026-10-25T04:42:06.9562828Z joshua/tests/test_output_check.py::test_another_class_drift_after_overweight_in_is_caught PASSED [ 78%]
+2026-10-25T04:42:06.9570149Z joshua/tests/test_output_check.py::test_a_list_line_stating_its_own_direction_ignores_the_heading PASSED [ 79%]
+2026-10-25T04:42:06.9577183Z joshua/tests/test_output_check.py::test_direction_first_phrasing_binds_forward PASSED [ 80%]
+2026-10-25T04:42:06.9585016Z joshua/tests/test_output_check.py::test_a_second_direction_in_direction_first_phrasing_starts_a_new_run PASSED [ 80%]
+2026-10-25T04:42:07.4635235Z joshua/tests/test_rag_client.py::test_answer_returns_answer_citations_and_confidence PASSED [ 81%]
+2026-10-25T04:42:07.9675356Z joshua/tests/test_rag_client.py::test_empty_results_are_ok_and_empty PASSED [ 82%]
+2026-10-25T04:42:08.4713453Z joshua/tests/test_rag_client.py::test_http_500_is_reported_as_unavailable PASSED [ 82%]
+2026-10-25T04:42:08.9753874Z joshua/tests/test_rag_client.py::test_slow_server_times_out_instead_of_hanging PASSED [ 83%]
+2026-10-25T04:42:09.4794641Z joshua/tests/test_rag_client.py::test_retrieve_sends_k_and_top_k_and_keeps_server_order PASSED [ 84%]
+2026-10-25T04:42:09.9831033Z joshua/tests/test_rag_client.py::test_retrieve_drops_entries_without_text_but_does_not_reorder PASSED [ 85%]
+2026-10-25T04:42:10.4869261Z joshua/tests/test_rag_client.py::test_200_with_error_status_is_unavailable PASSED [ 85%]
+2026-10-25T04:42:10.9910620Z joshua/tests/test_rag_client.py::test_response_without_results_list_is_unavailable PASSED [ 86%]
+2026-10-25T04:42:11.4948085Z joshua/tests/test_rag_client.py::test_health PASSED                      [ 87%]
+2026-10-25T04:42:11.9969649Z joshua/tests/test_rag_client.py::test_empty_query_is_rejected_without_a_request PASSED [ 87%]
+2026-10-25T04:42:11.9993456Z joshua/tests/test_rag_client.py::test_unreachable_server_degrades PASSED [ 88%]
+2026-10-25T04:42:12.0000693Z joshua/tests/test_rag_client.py::test_empty_server_url_disables_rag PASSED [ 89%]
+2026-10-25T04:42:12.0008288Z joshua/tests/test_rag_client.py::test_unset_server_url_defaults_to_the_host_address PASSED [ 90%]
+2026-10-25T04:42:12.5326555Z joshua/tests/test_rag_client.py::test_retrieved_passages_ground_the_prompt_and_are_cited_in_order PASSED [ 90%]
+2026-10-25T04:42:13.0571054Z joshua/tests/test_rag_client.py::test_a_number_from_retrieved_text_never_becomes_a_portfolio_figure PASSED [ 91%]
+2026-10-25T04:42:13.5789003Z joshua/tests/test_rag_client.py::test_empty_retrieval_is_insufficient_context PASSED [ 92%]
+2026-10-25T04:42:14.0995411Z joshua/tests/test_rag_client.py::test_drift_review_succeeds_with_the_rag_server_returning_500 PASSED [ 92%]
+2026-10-25T04:42:14.6377607Z joshua/tests/test_rag_client.py::test_drift_review_succeeds_with_the_rag_server_timing_out PASSED [ 93%]
+2026-10-25T04:42:15.1605090Z joshua/tests/test_rag_client.py::test_off_topic_passages_are_dropped_and_reported_as_insufficient_context PASSED [ 94%]
+2026-10-25T04:42:15.1830606Z joshua/tests/test_rag_client.py::test_unreachable_rag_is_distinguished_from_no_relevant_context PASSED [ 95%]
+2026-10-25T04:42:15.2034852Z joshua/tests/test_rag_client.py::test_disabled_rag_is_reported_as_disabled PASSED [ 95%]
+2026-10-25T04:42:15.7235507Z joshua/tests/test_rag_client.py::test_relevant_passages_are_kept_in_server_order_among_off_topic_ones PASSED [ 96%]
+2026-10-25T04:42:16.2612087Z joshua/tests/test_rag_client.py::test_a_glossary_definition_alone_is_sufficient_context PASSED [ 97%]
+2026-10-25T04:42:16.2624483Z joshua/tests/test_rag_client.py::test_direct_adapt_call_without_context_claims_nothing PASSED [ 97%]
+2026-10-25T04:42:16.2632235Z joshua/tests/test_targets_validation.py::test_targets_summing_to_100_are_accepted PASSED [ 98%]
+2026-10-25T04:42:16.2639955Z joshua/tests/test_targets_validation.py::test_targets_not_summing_to_100_are_rejected PASSED [ 99%]
+2026-10-25T04:42:16.3217659Z joshua/tests/test_targets_validation.py::test_seed_data_allocation_targets_sum_to_100 PASSED [100%]
+2026-10-25T04:42:16.3218479Z ============================= 141 passed in 11.17s =============================
+2026-10-25T04:42:16.5579589Z (node:2464) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:16.5581054Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:16.7774343Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0qIjdagAAAAAHUrvb5L4eSrDJ+HekuLMDU0xDMzFFREdFMDIyMgBFZGdl
+2026-10-25T04:42:16.9919443Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 8_joshua-ci _ Docker images build.txt
+Matched lines: 4
+Selected evidence:
+2026-10-25T04:41:48.3613142Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:54.5861725Z #13 2.442 2 high severity vulnerabilities
+2026-10-25T04:42:09.5125244Z #9 8.662 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:13.2735221Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+LOG: 9_hyunwoo-ci _ Frontend checks.txt
+Matched lines: 6
+Selected evidence:
+2026-10-25T04:41:48.4335228Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:49.3177615Z (node:2055) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.3179524Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.7629190Z (node:2095) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.7632471Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.9627525Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-node@v4.1.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

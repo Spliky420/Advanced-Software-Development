@@ -1,0 +1,936 @@
+Security scans -- Enerel/ (Research Library)
+Tools: ruff 0.17.2 | detect-secrets 1.5.0 | pip-audit 2.10.1 | Python 3.15.0, macOS 26.6.2
+BEFORE = commit bc70286 (before fixes). AFTER = working tree on enerel-release2-cloud-fixes, based on 98afb6a, 2026-10-22T18:49:56Z.
+Fixes: Flask 3.0.3->3.1.3, Werkzeug 3.0.3->3.1.9, requests 2.32.3->2.34.2, pytest 8.3.2->9.1.1;
+       app.py dev server binds 127.0.0.1 by default (HOST overrides; the container runs gunicorn).
+       S101 (assert) is ignored in Enerel/tests only, where pytest relies on it.
+Raw tool output below; lines starting with '#' are section headers, not tool output.
+
+################################################################
+# BEFORE FIXES
+################################################################
+
+# $ ruff check --select S --no-cache --output-format concise Enerel/
+Enerel/backend/app.py:493:18: S104 Possible binding to all interfaces
+Enerel/tests/test_app.py:87:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:88:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:98:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:99:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:107:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:109:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:110:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:111:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:112:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:118:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:133:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:142:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:143:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:149:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:161:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:163:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:166:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:172:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:183:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:189:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:200:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:201:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:212:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:213:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:227:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:229:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:230:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:231:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:237:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:251:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:260:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:262:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:263:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:264:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:276:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:277:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:278:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:296:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:298:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:299:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:310:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:311:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:317:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:328:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:11:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:15:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:16:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:22:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:23:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:30:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:31:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:40:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:61:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:62:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:63:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:64:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:65:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:67:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:68:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:84:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:85:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:86:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:87:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:98:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:99:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:100:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:102:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:46:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:69:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:75:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:91:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:92:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:93:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:94:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:100:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:106:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:116:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:117:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:125:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:126:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:134:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:135:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:141:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:142:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:143:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:144:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:148:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:156:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:163:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:177:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:178:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:179:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:190:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:191:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:192:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:193:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:203:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:204:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:205:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:238:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:239:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:36:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:37:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:38:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:50:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:65:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:66:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:67:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:79:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:80:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:105:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:118:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:131:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:148:5: S101 Use of `assert` detected
+Enerel/tests/test_mcp_client.py:34:5: S101 Use of `assert` detected
+Enerel/tests/test_mcp_client.py:35:5: S101 Use of `assert` detected
+Enerel/tests/test_mcp_client.py:76:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:41:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:75:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:76:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:77:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:91:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:92:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:93:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:94:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:95:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:96:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:105:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:107:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:108:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:109:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:110:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:129:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:131:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:141:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:142:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:150:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:151:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:158:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:165:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:170:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:179:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:193:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:194:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:228:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:229:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:230:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:231:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:232:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:238:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:241:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:242:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:250:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:251:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:252:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:253:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:254:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:255:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:263:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:264:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:265:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:271:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:283:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:284:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:295:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:296:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:115:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:144:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:150:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:151:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:156:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:158:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:169:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:171:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:172:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:175:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:176:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:177:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:178:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:179:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:182:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:183:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:184:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:188:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:189:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:197:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:198:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:199:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:210:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:211:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:222:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:224:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:225:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:232:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:233:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:234:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:251:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:252:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:253:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:256:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:257:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:260:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:261:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:262:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:276:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:277:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:278:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:283:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:286:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:287:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:293:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:37:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:41:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:45:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:49:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:53:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:63:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:64:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:65:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:71:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:84:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:85:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:86:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:88:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:89:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:103:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:104:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:118:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:131:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:133:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:134:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:33:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:34:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:42:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:43:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:51:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:52:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:56:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:57:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:67:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:68:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:74:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:83:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:84:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:96:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:97:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:98:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:106:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:107:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:115:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:116:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:125:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:145:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:146:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:147:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:148:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:149:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:160:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:161:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:162:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:171:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:172:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:173:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:183:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:184:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:185:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:186:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:187:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:21:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:22:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:23:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:30:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:38:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:40:9: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:47:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:54:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:60:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:69:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:80:9: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:90:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:96:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:103:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:111:5: S101 Use of `assert` detected
+Found 300 errors.
+
+# $ detect-secrets scan Enerel/
+{
+  "version": "1.5.0",
+  "plugins_used": [
+    {
+      "name": "ArtifactoryDetector"
+    },
+    {
+      "name": "AWSKeyDetector"
+    },
+    {
+      "name": "AzureStorageKeyDetector"
+    },
+    {
+      "name": "Base64HighEntropyString",
+      "limit": 4.5
+    },
+    {
+      "name": "BasicAuthDetector"
+    },
+    {
+      "name": "CloudantDetector"
+    },
+    {
+      "name": "DiscordBotTokenDetector"
+    },
+    {
+      "name": "GitHubTokenDetector"
+    },
+    {
+      "name": "GitLabTokenDetector"
+    },
+    {
+      "name": "HexHighEntropyString",
+      "limit": 3.0
+    },
+    {
+      "name": "IbmCloudIamDetector"
+    },
+    {
+      "name": "IbmCosHmacDetector"
+    },
+    {
+      "name": "IPPublicDetector"
+    },
+    {
+      "name": "JwtTokenDetector"
+    },
+    {
+      "name": "KeywordDetector",
+      "keyword_exclude": ""
+    },
+    {
+      "name": "MailchimpDetector"
+    },
+    {
+      "name": "NpmDetector"
+    },
+    {
+      "name": "OpenAIDetector"
+    },
+    {
+      "name": "PrivateKeyDetector"
+    },
+    {
+      "name": "PypiTokenDetector"
+    },
+    {
+      "name": "SendGridDetector"
+    },
+    {
+      "name": "SlackDetector"
+    },
+    {
+      "name": "SoftlayerDetector"
+    },
+    {
+      "name": "SquareOAuthDetector"
+    },
+    {
+      "name": "StripeDetector"
+    },
+    {
+      "name": "TelegramBotTokenDetector"
+    },
+    {
+      "name": "TwilioKeyDetector"
+    }
+  ],
+  "filters_used": [
+    {
+      "path": "detect_secrets.filters.allowlist.is_line_allowlisted"
+    },
+    {
+      "path": "detect_secrets.filters.common.is_ignored_due_to_verification_policies",
+      "min_level": 2
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_indirect_reference"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_likely_id_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_lock_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_not_alphanumeric_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_potential_uuid"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_sequential_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_swagger_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_templated_secret"
+    }
+  ],
+  "results": {}
+}
+
+# $ pip-audit -r Enerel/backend/requirements.txt -r Enerel/tests/requirements.txt
+Found 19 known vulnerabilities in 4 packages
+Name     Version ID              Fix Versions
+-------- ------- --------------- ------------
+flask    3.0.3   PYSEC-2026-2151 3.1.3
+flask    3.0.3   PYSEC-2026-2151 3.1.3
+werkzeug 3.0.3   PYSEC-2026-2045 3.0.6
+werkzeug 3.0.3   PYSEC-2026-1860 3.0.6
+werkzeug 3.0.3   PYSEC-2026-2046 3.1.4
+werkzeug 3.0.3   PYSEC-2026-2044 3.1.5
+werkzeug 3.0.3   PYSEC-2026-2320 3.1.6
+werkzeug 3.0.3   PYSEC-2026-2045 3.0.6
+werkzeug 3.0.3   PYSEC-2026-2046 3.1.4
+werkzeug 3.0.3   PYSEC-2026-2044 3.1.5
+werkzeug 3.0.3   PYSEC-2026-2320 3.1.6
+werkzeug 3.0.3   PYSEC-2026-3417 3.0.6
+werkzeug 3.0.3   PYSEC-2026-4312 3.1.9
+requests 2.32.3  PYSEC-2026-1872 2.32.4
+requests 2.32.3  PYSEC-2026-2275 2.33.0
+requests 2.32.3  PYSEC-2026-1872 2.32.4
+requests 2.32.3  PYSEC-2026-2275 2.33.0
+pytest   8.3.2   PYSEC-2026-1845 9.0.3
+pytest   8.3.2   PYSEC-2026-1845 9.0.3
+
+################################################################
+# AFTER FIXES
+################################################################
+
+# $ ruff check --select S --no-cache --output-format concise Enerel/
+Enerel/tests/test_app.py:87:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:88:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:98:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:99:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:107:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:109:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:110:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:111:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:112:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:118:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:133:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:142:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:143:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:149:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:161:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:163:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:166:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:172:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:183:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:189:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:200:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:201:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:212:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:213:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:227:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:229:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:230:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:231:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:237:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:251:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:260:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:262:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:263:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:264:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:276:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:277:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:278:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:296:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:298:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:299:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:310:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:311:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:317:5: S101 Use of `assert` detected
+Enerel/tests/test_app.py:328:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:11:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:15:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:16:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:22:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:23:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:30:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:31:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:40:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:61:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:62:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:63:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:64:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:65:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:67:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:68:9: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:84:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:85:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:86:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:87:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:98:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:99:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:100:5: S101 Use of `assert` detected
+Enerel/tests/test_embeddings.py:102:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:46:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:69:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:75:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:91:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:92:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:93:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:94:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:100:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:106:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:116:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:117:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:125:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:126:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:134:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:135:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:141:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:142:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:143:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:144:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:148:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:156:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:163:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:177:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:178:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:179:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:190:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:191:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:192:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:193:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:203:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:204:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:205:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:238:5: S101 Use of `assert` detected
+Enerel/tests/test_library_qa.py:239:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:36:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:37:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:38:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:50:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:65:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:66:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:67:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:79:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:80:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:105:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:118:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:131:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_llm.py:148:5: S101 Use of `assert` detected
+Enerel/tests/test_mcp_client.py:34:5: S101 Use of `assert` detected
+Enerel/tests/test_mcp_client.py:35:5: S101 Use of `assert` detected
+Enerel/tests/test_mcp_client.py:76:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:41:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:75:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:76:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:77:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:91:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:92:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:93:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:94:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:95:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:96:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:105:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:107:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:108:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:109:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:110:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:129:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:131:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:141:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:142:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:150:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:151:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:158:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:165:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:170:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:179:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:193:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:194:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:228:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:229:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:230:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:231:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:232:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:238:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:241:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:242:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:250:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:251:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:252:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:253:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:254:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:255:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:263:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:264:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:265:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:271:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:283:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:284:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:295:5: S101 Use of `assert` detected
+Enerel/tests/test_release1_api.py:296:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:115:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:144:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:150:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:151:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:152:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:157:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:159:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:170:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:172:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:173:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:176:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:177:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:178:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:179:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:180:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:181:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:184:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:185:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:186:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:190:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:191:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:199:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:200:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:201:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:212:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:214:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:215:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:216:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:227:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:228:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:238:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:240:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:241:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:242:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:253:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:254:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:265:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:267:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:268:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:276:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:277:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:284:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:285:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:286:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:303:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:304:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:305:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:308:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:309:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:312:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:313:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:314:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:322:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:323:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:332:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:336:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:337:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:346:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:347:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:348:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:362:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:363:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:367:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:368:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:369:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:370:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:384:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:385:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:386:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:391:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:394:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:395:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:396:5: S101 Use of `assert` detected
+Enerel/tests/test_release2_multi_agent.py:402:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:37:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:41:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:45:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:49:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:53:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:63:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:64:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:65:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:71:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:84:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:85:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:86:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:88:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:89:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:103:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:104:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:118:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:119:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:131:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:132:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:133:5: S101 Use of `assert` detected
+Enerel/tests/test_retrieval.py:134:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:33:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:34:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:42:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:43:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:51:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:52:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:56:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:57:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:67:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:68:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:74:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:83:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:84:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:96:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:97:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:98:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:106:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:107:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:115:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:116:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:125:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:130:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:145:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:146:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:147:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:148:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:149:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:160:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:161:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:162:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:171:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:172:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:173:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:183:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:184:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:185:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:186:5: S101 Use of `assert` detected
+Enerel/tests/test_summarize.py:187:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:21:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:22:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:23:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:30:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:38:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:40:9: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:47:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:54:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:60:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:69:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:80:9: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:90:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:96:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:103:5: S101 Use of `assert` detected
+Enerel/tests/test_validation.py:111:5: S101 Use of `assert` detected
+Found 328 errors.
+
+# $ ruff check --select S --no-cache --output-format concise --per-file-ignores 'Enerel/tests/*:S101' Enerel/
+All checks passed!
+
+# $ detect-secrets scan Enerel/
+{
+  "version": "1.5.0",
+  "plugins_used": [
+    {
+      "name": "ArtifactoryDetector"
+    },
+    {
+      "name": "AWSKeyDetector"
+    },
+    {
+      "name": "AzureStorageKeyDetector"
+    },
+    {
+      "name": "Base64HighEntropyString",
+      "limit": 4.5
+    },
+    {
+      "name": "BasicAuthDetector"
+    },
+    {
+      "name": "CloudantDetector"
+    },
+    {
+      "name": "DiscordBotTokenDetector"
+    },
+    {
+      "name": "GitHubTokenDetector"
+    },
+    {
+      "name": "GitLabTokenDetector"
+    },
+    {
+      "name": "HexHighEntropyString",
+      "limit": 3.0
+    },
+    {
+      "name": "IbmCloudIamDetector"
+    },
+    {
+      "name": "IbmCosHmacDetector"
+    },
+    {
+      "name": "IPPublicDetector"
+    },
+    {
+      "name": "JwtTokenDetector"
+    },
+    {
+      "name": "KeywordDetector",
+      "keyword_exclude": ""
+    },
+    {
+      "name": "MailchimpDetector"
+    },
+    {
+      "name": "NpmDetector"
+    },
+    {
+      "name": "OpenAIDetector"
+    },
+    {
+      "name": "PrivateKeyDetector"
+    },
+    {
+      "name": "PypiTokenDetector"
+    },
+    {
+      "name": "SendGridDetector"
+    },
+    {
+      "name": "SlackDetector"
+    },
+    {
+      "name": "SoftlayerDetector"
+    },
+    {
+      "name": "SquareOAuthDetector"
+    },
+    {
+      "name": "StripeDetector"
+    },
+    {
+      "name": "TelegramBotTokenDetector"
+    },
+    {
+      "name": "TwilioKeyDetector"
+    }
+  ],
+  "filters_used": [
+    {
+      "path": "detect_secrets.filters.allowlist.is_line_allowlisted"
+    },
+    {
+      "path": "detect_secrets.filters.common.is_ignored_due_to_verification_policies",
+      "min_level": 2
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_indirect_reference"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_likely_id_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_lock_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_not_alphanumeric_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_potential_uuid"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_sequential_string"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_swagger_file"
+    },
+    {
+      "path": "detect_secrets.filters.heuristic.is_templated_secret"
+    }
+  ],
+  "results": {},
+  "generated_at": "2026-10-22T18:49:57Z"
+}
+
+# $ pip-audit -r Enerel/backend/requirements.txt -r Enerel/tests/requirements.txt
+No known vulnerabilities found

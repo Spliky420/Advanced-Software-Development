@@ -1,0 +1,486 @@
+﻿2026-10-25T04:41:47.3699176Z Current runner version: '2.338.0'
+2026-10-25T04:41:47.3735803Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:47.3737242Z Hosted Compute Agent
+2026-10-25T04:41:47.3738451Z Version: 20261021.618
+2026-10-25T04:41:47.3739590Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:47.3741059Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:47.3742457Z Worker ID: {5ab1ef8f-e52e-4dc2-98f0-8a0d4ef032c8}
+2026-10-25T04:41:47.3743774Z Region: eastus2
+2026-10-25T04:41:47.3745147Z Cloud: Azure
+2026-10-25T04:41:47.3746172Z ##[endgroup]
+2026-10-25T04:41:47.3749426Z ##[group]Operating System
+2026-10-25T04:41:47.3750518Z Ubuntu
+2026-10-25T04:41:47.3751440Z 24.04.5
+2026-10-25T04:41:47.3752412Z LTS
+2026-10-25T04:41:47.3753319Z ##[endgroup]
+2026-10-25T04:41:47.3755191Z ##[group]Runner Image
+2026-10-25T04:41:47.3756359Z Image: ubuntu-24.04
+2026-10-25T04:41:47.3757373Z Version: 20261012.334.1
+2026-10-25T04:41:47.3759834Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:47.3762814Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:47.3764527Z ##[endgroup]
+2026-10-25T04:41:47.3766938Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:47.3769832Z Contents: read
+2026-10-25T04:41:47.3770844Z Metadata: read
+2026-10-25T04:41:47.3771855Z ##[endgroup]
+2026-10-25T04:41:47.3775567Z Secret source: Actions
+2026-10-25T04:41:47.3777202Z Cache mode: write
+2026-10-25T04:41:47.3778730Z Prepare workflow directory
+2026-10-25T04:41:47.4355164Z Prepare all required actions
+2026-10-25T04:41:47.4425841Z Getting action download info
+2026-10-25T04:41:47.6337535Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:47.8036824Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/hyunwoo-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:47.8041935Z Complete job name: hyunwoo-ci / Docker image builds
+2026-10-25T04:41:47.9081831Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:47.9082785Z with:
+2026-10-25T04:41:47.9083331Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:47.9087696Z   token: ***
+2026-10-25T04:41:47.9088253Z   ssh-strict: true
+2026-10-25T04:41:47.9088731Z   ssh-user: git
+2026-10-25T04:41:47.9089206Z   persist-credentials: true
+2026-10-25T04:41:47.9089716Z   clean: true
+2026-10-25T04:41:47.9090171Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:47.9090702Z   fetch-depth: 1
+2026-10-25T04:41:47.9091143Z   fetch-tags: false
+2026-10-25T04:41:47.9091595Z   show-progress: true
+2026-10-25T04:41:47.9092040Z   lfs: false
+2026-10-25T04:41:47.9092484Z   submodules: false
+2026-10-25T04:41:47.9092970Z   set-safe-directory: true
+2026-10-25T04:41:47.9093778Z env:
+2026-10-25T04:41:47.9094217Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:47.9094712Z   MCP_ENABLED: false
+2026-10-25T04:41:47.9095544Z   RAG_ENABLED: false
+2026-10-25T04:41:47.9096089Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:47.9096691Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:47.9097275Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:47.9097812Z ##[endgroup]
+2026-10-25T04:41:48.0120891Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.0124075Z ##[group]Getting Git version info
+2026-10-25T04:41:48.0125816Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.0127177Z [command]/usr/bin/git version
+2026-10-25T04:41:48.0191776Z git version 2.55.0
+2026-10-25T04:41:48.0230372Z ##[endgroup]
+2026-10-25T04:41:48.0244003Z Temporarily overriding HOME='/home/runner/work/_temp/d67e6d09-1c6c-427e-8671-4185104531f3' before making global git config changes
+2026-10-25T04:41:48.0246961Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:48.0251410Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.0311758Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.0316449Z ##[group]Initializing the repository
+2026-10-25T04:41:48.0322810Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.0432033Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:48.0433295Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:48.0434260Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:48.0435385Z hint: call:
+2026-10-25T04:41:48.0435973Z hint:
+2026-10-25T04:41:48.0436552Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:48.0437234Z hint:
+2026-10-25T04:41:48.0437950Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:48.0438983Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:48.0439910Z hint:
+2026-10-25T04:41:48.0440461Z hint: 	git branch -m <name>
+2026-10-25T04:41:48.0441294Z hint:
+2026-10-25T04:41:48.0442119Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:48.0444326Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:48.0453725Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.0502547Z ##[endgroup]
+2026-10-25T04:41:48.0503362Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:48.0507663Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:48.0541606Z ##[endgroup]
+2026-10-25T04:41:48.0542382Z ##[group]Setting up auth
+2026-10-25T04:41:48.0550340Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:48.0593514Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:48.0957441Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:48.0994272Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:48.1220898Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:48.1263808Z ##[endgroup]
+2026-10-25T04:41:48.1265789Z ##[group]Fetching the repository
+2026-10-25T04:41:48.1275606Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:48.4656897Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.4659093Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:48.4662821Z ##[endgroup]
+2026-10-25T04:41:48.4664475Z ##[group]Determining the checkout info
+2026-10-25T04:41:48.4666899Z ##[endgroup]
+2026-10-25T04:41:48.4668099Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:48.4722728Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:48.4757107Z ##[group]Checking out the ref
+2026-10-25T04:41:48.4762763Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:48.5129405Z Switched to a new branch 'main'
+2026-10-25T04:41:48.5134339Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:48.5141249Z ##[endgroup]
+2026-10-25T04:41:48.5184695Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:48.5219739Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:48.5440132Z ##[group]Run docker build -t hyunwoo-database:ci hyunwoo/database
+2026-10-25T04:41:48.5441197Z [36;1mdocker build -t hyunwoo-database:ci hyunwoo/database[0m
+2026-10-25T04:41:48.5706736Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:48.5707389Z env:
+2026-10-25T04:41:48.5707896Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:48.5708484Z   MCP_ENABLED: false
+2026-10-25T04:41:48.5709047Z   RAG_ENABLED: false
+2026-10-25T04:41:48.5709636Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.5710349Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:48.5711065Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.5711722Z ##[endgroup]
+2026-10-25T04:41:49.1518870Z #0 building with "default" instance using docker driver
+2026-10-25T04:41:49.1520093Z 
+2026-10-25T04:41:49.1520561Z #1 [internal] load build definition from Dockerfile
+2026-10-25T04:41:49.1521764Z #1 transferring dockerfile: 436B done
+2026-10-25T04:41:49.1522706Z #1 DONE 0.0s
+2026-10-25T04:41:49.1523112Z 
+2026-10-25T04:41:49.1523778Z #2 [auth] library/alpine:pull token for registry-1.docker.io
+2026-10-25T04:41:49.1525238Z #2 DONE 0.0s
+2026-10-25T04:41:49.1525660Z 
+2026-10-25T04:41:49.1526226Z #3 [internal] load metadata for docker.io/library/alpine:3.20
+2026-10-25T04:41:49.4087938Z #3 DONE 0.4s
+2026-10-25T04:41:49.5194205Z 
+2026-10-25T04:41:49.5195804Z #4 [internal] load .dockerignore
+2026-10-25T04:41:49.5198234Z #4 transferring context: 2B done
+2026-10-25T04:41:49.5200253Z #4 DONE 0.0s
+2026-10-25T04:41:49.5201127Z 
+2026-10-25T04:41:49.5206061Z #5 [internal] load build context
+2026-10-25T04:41:49.5207332Z #5 transferring context: 4.34kB done
+2026-10-25T04:41:49.5208531Z #5 DONE 0.0s
+2026-10-25T04:41:49.5208961Z 
+2026-10-25T04:41:49.5210710Z #6 [1/6] FROM docker.io/library/alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+2026-10-25T04:41:49.5214384Z #6 resolve docker.io/library/alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc done
+2026-10-25T04:41:49.5218521Z #6 extracting sha256:25f1d6b1951ac8eb3740558fe94cb83d377bdadf95fd9f98b50d2e1b96130471
+2026-10-25T04:41:49.6397596Z #6 extracting sha256:25f1d6b1951ac8eb3740558fe94cb83d377bdadf95fd9f98b50d2e1b96130471 0.1s done
+2026-10-25T04:41:49.6402293Z #6 sha256:bf8527eb54c3680e728d5b4b383a8ba730d72dae7236fbc8dff97ed6b224a731 612B / 612B done
+2026-10-25T04:41:49.6406695Z #6 sha256:25f1d6b1951ac8eb3740558fe94cb83d377bdadf95fd9f98b50d2e1b96130471 3.63MB / 3.63MB 0.1s done
+2026-10-25T04:41:49.6411410Z #6 sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc 9.23kB / 9.23kB done
+2026-10-25T04:41:49.6415530Z #6 sha256:c64c687cbea9300178b30c95835354e34c4e4febc4badfe27102879de0483b5e 1.02kB / 1.02kB done
+2026-10-25T04:41:49.6418856Z #6 DONE 0.2s
+2026-10-25T04:41:49.7780007Z 
+2026-10-25T04:41:49.7781712Z #7 [2/6] RUN apk add --no-cache sqlite=3.45.3-r3
+2026-10-25T04:41:49.7784089Z #7 0.137 fetch https://dl-cdn.alpinelinux.org/alpine/v3.20/main/x86_64/APKINDEX.tar.gz
+2026-10-25T04:41:49.8789107Z #7 0.238 fetch https://dl-cdn.alpinelinux.org/alpine/v3.20/community/x86_64/APKINDEX.tar.gz
+2026-10-25T04:41:50.1233788Z #7 0.482 (1/4) Installing ncurses-terminfo-base (6.4_p20240420-r2)
+2026-10-25T04:41:50.3476760Z #7 0.492 (2/4) Installing libncursesw (6.4_p20240420-r2)
+2026-10-25T04:41:50.3477219Z #7 0.505 (3/4) Installing readline (8.2.10-r0)
+2026-10-25T04:41:50.3477594Z #7 0.515 (4/4) Installing sqlite (3.45.3-r3)
+2026-10-25T04:41:50.3477979Z #7 0.550 Executing busybox-1.36.1-r31.trigger
+2026-10-25T04:41:50.3478391Z #7 0.556 OK: 10 MiB in 18 packages
+2026-10-25T04:41:52.9200787Z #7 DONE 3.3s
+2026-10-25T04:41:53.1065411Z 
+2026-10-25T04:41:53.1066652Z #8 [3/6] WORKDIR /database
+2026-10-25T04:41:53.1067110Z #8 DONE 0.0s
+2026-10-25T04:41:53.1067376Z 
+2026-10-25T04:41:53.1067573Z #9 [4/6] COPY init.sql seed.sql ./
+2026-10-25T04:41:53.1068015Z #9 DONE 0.0s
+2026-10-25T04:41:53.1068221Z 
+2026-10-25T04:41:53.1068755Z #10 [5/6] COPY entrypoint.sh /entrypoint.sh
+2026-10-25T04:41:53.1069297Z #10 DONE 0.0s
+2026-10-25T04:41:53.1069969Z 
+2026-10-25T04:41:53.1070656Z #11 [6/6] RUN chmod +x /entrypoint.sh
+2026-10-25T04:41:53.1071200Z #11 DONE 0.1s
+2026-10-25T04:41:53.2591050Z 
+2026-10-25T04:41:53.2591585Z #12 exporting to image
+2026-10-25T04:41:53.2592271Z #12 exporting layers
+2026-10-25T04:41:54.0153714Z #12 exporting layers 0.9s done
+2026-10-25T04:41:54.0341235Z #12 writing image sha256:33b8bc71dfdddf7fd5caca67bce5ff2a8f964cb24b91b2f15f2bd2c34cc694b7 done
+2026-10-25T04:41:54.0342274Z #12 naming to docker.io/library/hyunwoo-database:ci done
+2026-10-25T04:41:54.0342863Z #12 DONE 0.9s
+2026-10-25T04:41:54.0433971Z ##[group]Run docker build -t hyunwoo-backend:ci hyunwoo/backend
+2026-10-25T04:41:54.0434482Z [36;1mdocker build -t hyunwoo-backend:ci hyunwoo/backend[0m
+2026-10-25T04:41:54.0501709Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:54.0502005Z env:
+2026-10-25T04:41:54.0502208Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:54.0502445Z   MCP_ENABLED: false
+2026-10-25T04:41:54.0502669Z   RAG_ENABLED: false
+2026-10-25T04:41:54.0502920Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:54.0503236Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:54.0503571Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:54.0503830Z ##[endgroup]
+2026-10-25T04:41:54.3388219Z #0 building with "default" instance using docker driver
+2026-10-25T04:41:54.3388915Z 
+2026-10-25T04:41:54.3389282Z #1 [internal] load build definition from Dockerfile
+2026-10-25T04:41:54.3390114Z #1 transferring dockerfile: 759B done
+2026-10-25T04:41:54.3390725Z #1 DONE 0.0s
+2026-10-25T04:41:54.3391059Z 
+2026-10-25T04:41:54.3391724Z #2 [auth] library/python:pull token for registry-1.docker.io
+2026-10-25T04:41:54.3392403Z #2 DONE 0.0s
+2026-10-25T04:41:54.3392628Z 
+2026-10-25T04:41:54.3392964Z #3 [internal] load metadata for docker.io/library/python:3.11-slim
+2026-10-25T04:41:54.4956618Z #3 DONE 0.3s
+2026-10-25T04:41:54.6251515Z 
+2026-10-25T04:41:54.6252269Z #4 [internal] load .dockerignore
+2026-10-25T04:41:54.6252818Z #4 transferring context: 2B done
+2026-10-25T04:41:54.6253293Z #4 DONE 0.0s
+2026-10-25T04:41:54.6253520Z 
+2026-10-25T04:41:54.6253628Z #5 [internal] load build context
+2026-10-25T04:41:54.6253923Z #5 transferring context: 38.20kB done
+2026-10-25T04:41:54.6254197Z #5 DONE 0.0s
+2026-10-25T04:41:54.6254314Z 
+2026-10-25T04:41:54.6254901Z #6 [1/5] FROM docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377
+2026-10-25T04:41:54.6256140Z #6 resolve docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377 done
+2026-10-25T04:41:54.6256997Z #6 sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377 10.37kB / 10.37kB done
+2026-10-25T04:41:54.6257702Z #6 sha256:b95327ce1439e687237841b0210677aeadd62d55a060a5f6bcb9c15bf6251dd3 1.75kB / 1.75kB done
+2026-10-25T04:41:54.6258393Z #6 sha256:b4403f3b7acf5e0700a5dd4e7ab01456d62b557a208a04f8a42d3470d93b5730 5.49kB / 5.49kB done
+2026-10-25T04:41:54.6259090Z #6 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 17.83MB / 29.84MB 0.1s
+2026-10-25T04:41:54.6259926Z #6 sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b 1.29MB / 1.29MB 0.1s done
+2026-10-25T04:41:54.6261127Z #6 sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 2.10MB / 14.46MB 0.1s
+2026-10-25T04:41:54.6261798Z #6 sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06 0B / 249B 0.1s
+2026-10-25T04:41:54.7971335Z #6 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.1s done
+2026-10-25T04:41:54.7974318Z #6 sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 14.46MB / 14.46MB 0.2s done
+2026-10-25T04:41:54.7975671Z #6 sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06 249B / 249B 0.1s done
+2026-10-25T04:41:54.7976354Z #6 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 0.1s
+2026-10-25T04:41:55.6656013Z #6 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 1.0s done
+2026-10-25T04:41:55.9677796Z #6 extracting sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b
+2026-10-25T04:41:55.9679012Z #6 extracting sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b 0.1s done
+2026-10-25T04:41:55.9680481Z #6 extracting sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 0.1s
+2026-10-25T04:41:56.6237634Z #6 extracting sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 0.7s done
+2026-10-25T04:41:56.6253500Z #6 extracting sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06
+2026-10-25T04:41:56.8122246Z #6 extracting sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06 done
+2026-10-25T04:41:56.8123126Z #6 DONE 2.1s
+2026-10-25T04:41:56.8123276Z 
+2026-10-25T04:41:56.8123375Z #7 [2/5] WORKDIR /app
+2026-10-25T04:41:56.8123622Z #7 DONE 0.0s
+2026-10-25T04:41:56.8123766Z 
+2026-10-25T04:41:56.8123890Z #8 [3/5] COPY requirements.txt ./
+2026-10-25T04:41:56.8124186Z #8 DONE 0.0s
+2026-10-25T04:41:56.8124343Z 
+2026-10-25T04:41:56.8124565Z #9 [4/5] RUN pip install --no-cache-dir -r requirements.txt
+2026-10-25T04:41:58.1767159Z #9 1.515 Collecting Flask==3.0.3 (from -r requirements.txt (line 1))
+2026-10-25T04:41:58.2821564Z #9 1.570   Downloading flask-3.0.3-py3-none-any.whl.metadata (3.2 kB)
+2026-10-25T04:41:58.2822555Z #9 1.607 Collecting gunicorn==22.0.0 (from -r requirements.txt (line 2))
+2026-10-25T04:41:58.2823453Z #9 1.621   Downloading gunicorn-22.0.0-py3-none-any.whl.metadata (4.4 kB)
+2026-10-25T04:41:58.3822715Z #9 1.669 Collecting requests==2.32.3 (from -r requirements.txt (line 3))
+2026-10-25T04:41:58.3823659Z #9 1.682   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:58.3824532Z #9 1.721 Collecting mcp==1.30.0 (from -r requirements.txt (line 4))
+2026-10-25T04:41:58.4857730Z #9 1.734   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+2026-10-25T04:41:58.4858791Z #9 1.782 Collecting Werkzeug>=3.0.0 (from Flask==3.0.3->-r requirements.txt (line 1))
+2026-10-25T04:41:58.4859793Z #9 1.795   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:41:58.4860725Z #9 1.824 Collecting Jinja2>=3.1.2 (from Flask==3.0.3->-r requirements.txt (line 1))
+2026-10-25T04:41:58.6069240Z #9 1.837   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:58.6071678Z #9 1.862 Collecting itsdangerous>=2.1.2 (from Flask==3.0.3->-r requirements.txt (line 1))
+2026-10-25T04:41:58.6073311Z #9 1.875   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:41:58.6074642Z #9 1.909 Collecting click>=8.1.3 (from Flask==3.0.3->-r requirements.txt (line 1))
+2026-10-25T04:41:58.6076142Z #9 1.922   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:58.6077189Z #9 1.946 Collecting blinker>=1.6.2 (from Flask==3.0.3->-r requirements.txt (line 1))
+2026-10-25T04:41:58.7791572Z #9 1.959   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:58.7793112Z #9 1.967 Requirement already satisfied: packaging in /usr/local/lib/python3.11/site-packages (from gunicorn==22.0.0->-r requirements.txt (line 2)) (26.3)
+2026-10-25T04:41:58.8139978Z #9 2.153 Collecting charset-normalizer<4,>=2 (from requests==2.32.3->-r requirements.txt (line 3))
+2026-10-25T04:41:58.9375820Z #9 2.167   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:41:58.9377792Z #9 2.178      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 3.9 MB/s eta 0:00:00
+2026-10-25T04:41:58.9379169Z #9 2.211 Collecting idna<4,>=2.5 (from requests==2.32.3->-r requirements.txt (line 3))
+2026-10-25T04:41:58.9380450Z #9 2.223   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:41:58.9381524Z #9 2.276 Collecting urllib3<3,>=1.21.1 (from requests==2.32.3->-r requirements.txt (line 3))
+2026-10-25T04:41:59.0665887Z #9 2.289   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:59.0666868Z #9 2.325 Collecting certifi>=2017.4.17 (from requests==2.32.3->-r requirements.txt (line 3))
+2026-10-25T04:41:59.0668349Z #9 2.338   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:59.0669348Z #9 2.405 Collecting anyio>=4.5 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.1694726Z #9 2.418   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+2026-10-25T04:41:59.1695824Z #9 2.442 Collecting httpx-sse>=0.4 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.1696716Z #9 2.455   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:59.1697313Z #9 2.494 Collecting httpx<1.0.0,>=0.27.1 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.1697891Z #9 2.508   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-10-25T04:41:59.2708821Z #9 2.551 Collecting jsonschema>=4.20.0 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.2709967Z #9 2.564   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:59.2710741Z #9 2.597 Collecting pydantic-settings>=2.5.2 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.2711492Z #9 2.609   Downloading pydantic_settings-2.16.1-py3-none-any.whl.metadata (4.0 kB)
+2026-10-25T04:41:59.4396710Z #9 2.778 Collecting pydantic<3.0.0,>=2.11.0 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.5446341Z #9 2.791   Downloading pydantic-2.14.1-py3-none-any.whl.metadata (133 kB)
+2026-10-25T04:41:59.5447928Z #9 2.806      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 133.0/133.0 kB 9.7 MB/s eta 0:00:00
+2026-10-25T04:41:59.5448917Z #9 2.842 Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.5450015Z #9 2.855   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:59.5451060Z #9 2.883 Collecting python-multipart>=0.0.9 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.6662276Z #9 2.896   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+2026-10-25T04:41:59.6663392Z #9 2.935 Collecting sse-starlette>=1.6.1 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.6664384Z #9 2.948   Downloading sse_starlette-3.5.1-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:59.6665603Z #9 3.005 Collecting starlette>=0.27 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.8125119Z #9 3.018   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:59.8126162Z #9 3.052 Collecting typing-extensions>=4.9.0 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.8126948Z #9 3.065   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-10-25T04:41:59.8127674Z #9 3.088 Collecting typing-inspection>=0.4.1 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.8128321Z #9 3.102   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:59.8128921Z #9 3.151 Collecting uvicorn>=0.31.1 (from mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.9283659Z #9 3.164   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:59.9285880Z #9 3.224 Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:41:59.9287163Z #9 3.237   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-10-25T04:41:59.9288743Z #9 3.267 Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:00.0309288Z #9 3.280   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-10-25T04:42:00.0310129Z #9 3.369 Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->Flask==3.0.3->-r requirements.txt (line 1))
+2026-10-25T04:42:00.1346975Z #9 3.383   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:42:00.1348811Z #9 3.459 Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:00.1350648Z #9 3.473   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-10-25T04:42:00.2358183Z #9 3.501 Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:00.2359848Z #9 3.514   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:42:00.2361596Z #9 3.561 Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:00.2362574Z #9 3.574   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:42:00.5682715Z #9 3.907 Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:00.7749235Z #9 3.920   Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-10-25T04:42:00.7750160Z #9 3.950 Collecting annotated-types>=0.6.0 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:00.7750939Z #9 3.963   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:42:01.5044015Z #9 4.843 Collecting pydantic-core==2.50.1 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:01.7382878Z #9 4.856   Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+2026-10-25T04:42:01.7384373Z #9 4.913 Collecting python-dotenv>=1.2.2 (from pydantic-settings>=2.5.2->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:01.7385911Z #9 4.926   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+2026-10-25T04:42:01.9258257Z #9 5.264 Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:02.0899448Z #9 5.278   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+2026-10-25T04:42:02.1675203Z #9 5.506 Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:02.2693584Z #9 5.519   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+2026-10-25T04:42:02.2695359Z #9 5.595 Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r requirements.txt (line 4))
+2026-10-25T04:42:02.2696626Z #9 5.608   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:42:02.3703276Z #9 5.633 Downloading flask-3.0.3-py3-none-any.whl (101 kB)
+2026-10-25T04:42:02.3705216Z #9 5.636    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 101.7/101.7 kB 128.9 MB/s eta 0:00:00
+2026-10-25T04:42:02.3706350Z #9 5.648 Downloading gunicorn-22.0.0-py3-none-any.whl (84 kB)
+2026-10-25T04:42:02.3707598Z #9 5.651    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 84.4/84.4 kB 79.5 MB/s eta 0:00:00
+2026-10-25T04:42:02.3708659Z #9 5.664 Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+2026-10-25T04:42:02.3709899Z #9 5.667    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 289.3 MB/s eta 0:00:00
+2026-10-25T04:42:02.3710967Z #9 5.680 Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+2026-10-25T04:42:02.3712653Z #9 5.693    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 234.6/234.6 kB 19.4 MB/s eta 0:00:00
+2026-10-25T04:42:02.3713765Z #9 5.707 Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+2026-10-25T04:42:02.4750329Z #9 5.709    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 132.1/132.1 kB 279.9 MB/s eta 0:00:00
+2026-10-25T04:42:02.4751673Z #9 5.722 Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:42:02.4752885Z #9 5.736 Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:42:02.4754153Z #9 5.738    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.1/135.1 kB 292.1 MB/s eta 0:00:00
+2026-10-25T04:42:02.4755944Z #9 5.751 Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:42:02.4757901Z #9 5.755    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 270.0/270.0 kB 148.5 MB/s eta 0:00:00
+2026-10-25T04:42:02.4758501Z #9 5.768 Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:42:02.4759189Z #9 5.770    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 125.3/125.3 kB 319.9 MB/s eta 0:00:00
+2026-10-25T04:42:02.4759752Z #9 5.783 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-10-25T04:42:02.4760660Z #9 5.785    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.5/73.5 kB 290.7 MB/s eta 0:00:00
+2026-10-25T04:42:02.4761458Z #9 5.798 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-10-25T04:42:02.4762132Z #9 5.800    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.8/78.8 kB 282.7 MB/s eta 0:00:00
+2026-10-25T04:42:02.4762679Z #9 5.814 Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+2026-10-25T04:42:02.5932076Z #9 5.827 Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:42:02.5933556Z #9 5.829    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.6/69.6 kB 274.0 MB/s eta 0:00:00
+2026-10-25T04:42:02.5934169Z #9 5.842 Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:42:02.5934637Z #9 5.855 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:42:02.5935520Z #9 5.857    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 253.2 MB/s eta 0:00:00
+2026-10-25T04:42:02.5936009Z #9 5.871 Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+2026-10-25T04:42:02.5936568Z #9 5.873    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.6/90.6 kB 279.4 MB/s eta 0:00:00
+2026-10-25T04:42:02.5937058Z #9 5.886 Downloading pydantic-2.14.1-py3-none-any.whl (488 kB)
+2026-10-25T04:42:02.5937619Z #9 5.891    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 488.1/488.1 kB 125.2 MB/s eta 0:00:00
+2026-10-25T04:42:02.5938279Z #9 5.905 Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+2026-10-25T04:42:02.6963897Z #9 5.932    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 85.2 MB/s eta 0:00:00
+2026-10-25T04:42:02.6964501Z #9 5.945 Downloading pydantic_settings-2.16.1-py3-none-any.whl (80 kB)
+2026-10-25T04:42:02.6965460Z #9 5.947    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.8/80.8 kB 300.4 MB/s eta 0:00:00
+2026-10-25T04:42:02.6965939Z #9 5.960 Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+2026-10-25T04:42:02.6966414Z #9 5.975 Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+2026-10-25T04:42:02.6966922Z #9 5.989 Downloading sse_starlette-3.5.1-py3-none-any.whl (17 kB)
+2026-10-25T04:42:02.6967410Z #9 6.004 Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+2026-10-25T04:42:02.6967973Z #9 6.006    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.6/80.6 kB 260.0 MB/s eta 0:00:00
+2026-10-25T04:42:02.6968501Z #9 6.020 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-25T04:42:02.6969098Z #9 6.021    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 246.0 MB/s eta 0:00:00
+2026-10-25T04:42:02.6969594Z #9 6.035 Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+2026-10-25T04:42:02.8185036Z #9 6.049 Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:42:02.8186541Z #9 6.051    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.7/135.7 kB 309.5 MB/s eta 0:00:00
+2026-10-25T04:42:02.8187091Z #9 6.065 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+2026-10-25T04:42:02.8187714Z #9 6.067    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87.4/87.4 kB 267.2 MB/s eta 0:00:00
+2026-10-25T04:42:02.8188245Z #9 6.080 Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:42:02.8189046Z #9 6.083    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 228.7/228.7 kB 337.8 MB/s eta 0:00:00
+2026-10-25T04:42:02.8189603Z #9 6.096 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-10-25T04:42:02.8190106Z #9 6.111 Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-10-25T04:42:02.8190687Z #9 6.113    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 278.1 MB/s eta 0:00:00
+2026-10-25T04:42:02.8191304Z #9 6.127 Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+2026-10-25T04:42:02.9202643Z #9 6.157    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 170.2 MB/s eta 0:00:00
+2026-10-25T04:42:02.9204074Z #9 6.170 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-10-25T04:42:02.9205539Z #9 6.184 Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-10-25T04:42:02.9207162Z #9 6.197 Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:42:02.9208691Z #9 6.210 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+2026-10-25T04:42:02.9209835Z #9 6.225 Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-10-25T04:42:02.9210695Z #9 6.240 Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (375 kB)
+2026-10-25T04:42:02.9211603Z #9 6.243    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 375.4/375.4 kB 335.9 MB/s eta 0:00:00
+2026-10-25T04:42:02.9212446Z #9 6.256 Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+2026-10-25T04:42:03.0862455Z #9 6.259    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 217.8/217.8 kB 316.1 MB/s eta 0:00:00
+2026-10-25T04:42:03.0863304Z #9 6.272 Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+2026-10-25T04:42:03.0864227Z #9 6.274    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 286.7 MB/s eta 0:00:00
+2026-10-25T04:42:03.1213770Z #9 6.460 Installing collected packages: urllib3, typing-extensions, rpds-py, python-multipart, python-dotenv, pyjwt, pycparser, MarkupSafe, itsdangerous, idna, httpx-sse, h11, gunicorn, click, charset-normalizer, certifi, blinker, attrs, annotated-types, Werkzeug, uvicorn, typing-inspection, requests, referencing, pydantic-core, Jinja2, httpcore, cffi, anyio, starlette, pydantic, jsonschema-specifications, httpx, Flask, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+2026-10-25T04:42:05.1783749Z #9 8.516 Successfully installed Flask-3.0.3 Jinja2-3.1.6 MarkupSafe-3.0.4 Werkzeug-3.1.9 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 blinker-1.9.0 certifi-2026.10.23 cffi-2.1.1 charset-normalizer-3.5.2 click-8.5.0 cryptography-50.0.2 gunicorn-22.0.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 itsdangerous-2.2.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 mcp-1.30.0 pycparser-3.12 pydantic-2.14.1 pydantic-core-2.50.1 pydantic-settings-2.16.1 pyjwt-2.15.1 python-dotenv-1.2.4 python-multipart-0.0.32 referencing-0.37.0 requests-2.32.3 rpds-py-2026.9.1 sse-starlette-3.5.1 starlette-1.10.0 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0
+2026-10-25T04:42:05.4144067Z #9 8.517 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:05.4145391Z #9 8.602 
+2026-10-25T04:42:05.4145709Z #9 8.602 [notice] A new release of pip is available: 24.0 -> 26.2.2
+2026-10-25T04:42:05.4146171Z #9 8.602 [notice] To update, run: pip install --upgrade pip
+2026-10-25T04:42:05.8853914Z #9 DONE 9.2s
+2026-10-25T04:42:06.0590552Z 
+2026-10-25T04:42:06.0591632Z #10 [5/5] COPY app.py db.py calculations.py review.py llm.py integrations.py provider_references.py ./
+2026-10-25T04:42:06.0592919Z #10 DONE 0.0s
+2026-10-25T04:42:06.0593349Z 
+2026-10-25T04:42:06.0593671Z #11 exporting to image
+2026-10-25T04:42:06.0594233Z #11 exporting layers
+2026-10-25T04:42:06.6598501Z #11 exporting layers 0.8s done
+2026-10-25T04:42:06.6810131Z #11 writing image sha256:d45bc0f65749d16aef140cd3c9867110761fec08670033f0c3854019bfa256f7 done
+2026-10-25T04:42:06.6811558Z #11 naming to docker.io/library/hyunwoo-backend:ci done
+2026-10-25T04:42:06.6812599Z #11 DONE 0.8s
+2026-10-25T04:42:06.6890807Z ##[group]Run docker build -t hyunwoo-frontend:ci hyunwoo/frontend
+2026-10-25T04:42:06.6891318Z [36;1mdocker build -t hyunwoo-frontend:ci hyunwoo/frontend[0m
+2026-10-25T04:42:06.6954238Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:06.6954485Z env:
+2026-10-25T04:42:06.6954673Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:06.6955066Z   MCP_ENABLED: false
+2026-10-25T04:42:06.6955270Z   RAG_ENABLED: false
+2026-10-25T04:42:06.6955497Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:06.6955799Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:06.6956088Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:06.6956337Z ##[endgroup]
+2026-10-25T04:42:06.9776812Z #0 building with "default" instance using docker driver
+2026-10-25T04:42:06.9777257Z 
+2026-10-25T04:42:06.9777475Z #1 [internal] load build definition from Dockerfile
+2026-10-25T04:42:06.9777998Z #1 transferring dockerfile: 257B done
+2026-10-25T04:42:06.9778296Z #1 DONE 0.0s
+2026-10-25T04:42:06.9778420Z 
+2026-10-25T04:42:06.9778669Z #2 [auth] library/nginx:pull token for registry-1.docker.io
+2026-10-25T04:42:06.9779042Z #2 DONE 0.0s
+2026-10-25T04:42:06.9779161Z 
+2026-10-25T04:42:06.9779356Z #3 [internal] load metadata for docker.io/library/nginx:1.27-alpine
+2026-10-25T04:42:07.1455378Z #3 DONE 0.3s
+2026-10-25T04:42:07.2514502Z 
+2026-10-25T04:42:07.2522265Z #4 [internal] load .dockerignore
+2026-10-25T04:42:07.2523073Z #4 transferring context: 2B done
+2026-10-25T04:42:07.2523826Z #4 DONE 0.0s
+2026-10-25T04:42:07.2524199Z 
+2026-10-25T04:42:07.2524954Z #5 [internal] load build context
+2026-10-25T04:42:07.2525588Z #5 transferring context: 41.93kB done
+2026-10-25T04:42:07.2526290Z #5 DONE 0.0s
+2026-10-25T04:42:07.2526682Z 
+2026-10-25T04:42:07.2527791Z #6 [1/3] FROM docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+2026-10-25T04:42:07.2531324Z #6 resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 0.0s done
+2026-10-25T04:42:07.2532675Z #6 extracting sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870
+2026-10-25T04:42:07.3697025Z #6 extracting sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 0.1s done
+2026-10-25T04:42:07.3698715Z #6 sha256:f18232174bc91741fdf3da96d85011092101a032a93a388b79e99e69c2d5c870 3.64MB / 3.64MB 0.1s done
+2026-10-25T04:42:07.3700214Z #6 sha256:61ca4f733c802afd9e05a32f0de0361b6d713b8b53292dc15fb093229f648674 1.79MB / 1.79MB 0.1s done
+2026-10-25T04:42:07.3701443Z #6 sha256:b464cfdf2a6319875aeb27359ec549790ce14d8214fcb16ef915e4530e5ed235 629B / 629B 0.1s done
+2026-10-25T04:42:07.3702623Z #6 sha256:81bd8ed7ec6789b0cb7f1b47ee731c522f6dba83201ec73cd6bca1350f582948 402B / 402B 0.1s done
+2026-10-25T04:42:07.3703794Z #6 sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 10.33kB / 10.33kB done
+2026-10-25T04:42:07.3705223Z #6 sha256:62223d644fa234c3a1cc785ee14242ec47a77364226f1c811d2f669f96dc2ac8 2.50kB / 2.50kB done
+2026-10-25T04:42:07.3706567Z #6 sha256:6769dc3a703c719c1d2756bda113659be28ae16cf0da58dd5fd823d6b9a050ea 10.79kB / 10.79kB done
+2026-10-25T04:42:07.3708210Z #6 sha256:d7e5070240863957ebb0b5a44a5729963c3462666baa2947d00628cb5f2d5773 955B / 955B 0.1s done
+2026-10-25T04:42:07.3709458Z #6 sha256:197eb75867ef4fcecd4724f17b0972ab0489436860a594a9445f8eaff8155053 1.21kB / 1.21kB 0.1s done
+2026-10-25T04:42:07.3710784Z #6 sha256:34a64644b756511a2e217f0508e11d1a572085d66cd6dc9a555a082ad49a3102 1.40kB / 1.40kB 0.1s done
+2026-10-25T04:42:07.5409463Z #6 sha256:39c2ddfd6010082a4a646e7ca44e95aca9bf3eaebc00f17f7ccc2954004f2a7d 15.52MB / 15.52MB 0.2s done
+2026-10-25T04:42:07.5410674Z #6 extracting sha256:61ca4f733c802afd9e05a32f0de0361b6d713b8b53292dc15fb093229f648674 0.0s done
+2026-10-25T04:42:07.5411869Z #6 extracting sha256:b464cfdf2a6319875aeb27359ec549790ce14d8214fcb16ef915e4530e5ed235
+2026-10-25T04:42:07.6795562Z #6 extracting sha256:b464cfdf2a6319875aeb27359ec549790ce14d8214fcb16ef915e4530e5ed235 done
+2026-10-25T04:42:07.6798062Z #6 extracting sha256:d7e5070240863957ebb0b5a44a5729963c3462666baa2947d00628cb5f2d5773 done
+2026-10-25T04:42:07.6799617Z #6 extracting sha256:81bd8ed7ec6789b0cb7f1b47ee731c522f6dba83201ec73cd6bca1350f582948 done
+2026-10-25T04:42:07.6800727Z #6 extracting sha256:197eb75867ef4fcecd4724f17b0972ab0489436860a594a9445f8eaff8155053 done
+2026-10-25T04:42:07.6802300Z #6 extracting sha256:34a64644b756511a2e217f0508e11d1a572085d66cd6dc9a555a082ad49a3102 done
+2026-10-25T04:42:07.6803842Z #6 extracting sha256:39c2ddfd6010082a4a646e7ca44e95aca9bf3eaebc00f17f7ccc2954004f2a7d 0.1s
+2026-10-25T04:42:07.8803443Z #6 extracting sha256:39c2ddfd6010082a4a646e7ca44e95aca9bf3eaebc00f17f7ccc2954004f2a7d 0.3s done
+2026-10-25T04:42:07.9809785Z #6 DONE 0.8s
+2026-10-25T04:42:08.1577514Z 
+2026-10-25T04:42:08.1578309Z #7 [2/3] COPY index.html styles.css app.js /usr/share/nginx/html/
+2026-10-25T04:42:08.1579038Z #7 DONE 0.0s
+2026-10-25T04:42:08.1579202Z 
+2026-10-25T04:42:08.1579405Z #8 [3/3] COPY nginx.conf /etc/nginx/conf.d/default.conf
+2026-10-25T04:42:08.1579886Z #8 DONE 0.0s
+2026-10-25T04:42:08.1580047Z 
+2026-10-25T04:42:08.1580171Z #9 exporting to image
+2026-10-25T04:42:08.1580475Z #9 exporting layers
+2026-10-25T04:42:09.0065488Z #9 exporting layers 1.0s done
+2026-10-25T04:42:09.0254705Z #9 writing image sha256:bc16dffa1b9e42f68ae70dba8660d8208591911dc8bf8aa30d2d947803f354fd done
+2026-10-25T04:42:09.0255915Z #9 naming to docker.io/library/hyunwoo-frontend:ci done
+2026-10-25T04:42:09.0256240Z #9 DONE 1.0s
+2026-10-25T04:42:09.0423082Z Post job cleanup.
+2026-10-25T04:42:09.1281824Z [command]/usr/bin/git version
+2026-10-25T04:42:09.1325162Z git version 2.55.0
+2026-10-25T04:42:09.1363905Z Temporarily overriding HOME='/home/runner/work/_temp/8fd0a7ea-18ba-4871-86ae-aaa8810b2407' before making global git config changes
+2026-10-25T04:42:09.1365621Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:42:09.1369858Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:09.1409705Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:42:09.1447739Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:42:09.1697093Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:42:09.1727840Z http.https://github.com/.extraheader
+2026-10-25T04:42:09.1741624Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:42:09.1776476Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:42:09.2197006Z Cleaning up orphan processes
+2026-10-25T04:42:09.2686460Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

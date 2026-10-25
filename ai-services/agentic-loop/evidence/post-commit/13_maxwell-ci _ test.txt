@@ -1,0 +1,757 @@
+﻿2026-10-25T04:41:47.2971027Z Current runner version: '2.338.0'
+2026-10-25T04:41:47.2990806Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:47.2991391Z Hosted Compute Agent
+2026-10-25T04:41:47.2991825Z Version: 20261021.618
+2026-10-25T04:41:47.2992211Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:47.2992638Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:47.2993112Z Worker ID: {ef7850b3-a9bc-4811-8a56-f4174a004cae}
+2026-10-25T04:41:47.2993598Z Region: centralus
+2026-10-25T04:41:47.2994006Z Cloud: Azure
+2026-10-25T04:41:47.2994385Z ##[endgroup]
+2026-10-25T04:41:47.2995307Z ##[group]Operating System
+2026-10-25T04:41:47.2995875Z Ubuntu
+2026-10-25T04:41:47.2996330Z 24.04.5
+2026-10-25T04:41:47.2996793Z LTS
+2026-10-25T04:41:47.2997554Z ##[endgroup]
+2026-10-25T04:41:47.2997903Z ##[group]Runner Image
+2026-10-25T04:41:47.2998514Z Image: ubuntu-24.04
+2026-10-25T04:41:47.2998904Z Version: 20261012.334.1
+2026-10-25T04:41:47.2999730Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:47.3000639Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:47.3001250Z ##[endgroup]
+2026-10-25T04:41:47.3001978Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:47.3003582Z Contents: read
+2026-10-25T04:41:47.3003942Z Metadata: read
+2026-10-25T04:41:47.3004340Z ##[endgroup]
+2026-10-25T04:41:47.3006280Z Secret source: Actions
+2026-10-25T04:41:47.3006872Z Cache mode: write
+2026-10-25T04:41:47.3007938Z Prepare workflow directory
+2026-10-25T04:41:47.3936812Z Prepare all required actions
+2026-10-25T04:41:47.3986217Z Getting action download info
+2026-10-25T04:41:47.6330410Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-25T04:41:48.0314076Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-10-25T04:41:48.4275058Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/maxwell-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:48.4279454Z Complete job name: maxwell-ci / test
+2026-10-25T04:41:48.5124047Z ##[group]Run actions/checkout@v4
+2026-10-25T04:41:48.5124872Z with:
+2026-10-25T04:41:48.5125506Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.5131275Z   token: ***
+2026-10-25T04:41:48.5131807Z   ssh-strict: true
+2026-10-25T04:41:48.5132357Z   ssh-user: git
+2026-10-25T04:41:48.5132917Z   persist-credentials: true
+2026-10-25T04:41:48.5133533Z   clean: true
+2026-10-25T04:41:48.5134097Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:48.5134757Z   fetch-depth: 1
+2026-10-25T04:41:48.5135296Z   fetch-tags: false
+2026-10-25T04:41:48.5135868Z   show-progress: true
+2026-10-25T04:41:48.5136447Z   lfs: false
+2026-10-25T04:41:48.5136969Z   submodules: false
+2026-10-25T04:41:48.5137814Z   set-safe-directory: true
+2026-10-25T04:41:48.5138456Z   allow-unsafe-pr-checkout: false
+2026-10-25T04:41:48.5139234Z env:
+2026-10-25T04:41:48.5139775Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.5140466Z ##[endgroup]
+2026-10-25T04:41:48.5858231Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.5860408Z ##[group]Getting Git version info
+2026-10-25T04:41:48.5861571Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.5863091Z [command]/usr/bin/git version
+2026-10-25T04:41:48.5924839Z git version 2.55.0
+2026-10-25T04:41:48.5938540Z ##[endgroup]
+2026-10-25T04:41:48.5951295Z Temporarily overriding HOME='/home/runner/work/_temp/6397e03b-3bf0-4b6d-bff8-fede22be3d4b' before making global git config changes
+2026-10-25T04:41:48.5953947Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:48.5956631Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.6028004Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.6031100Z ##[group]Initializing the repository
+2026-10-25T04:41:48.6032870Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.6322086Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:48.6324512Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:48.6326659Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:48.6328350Z hint: call:
+2026-10-25T04:41:48.6329532Z hint:
+2026-10-25T04:41:48.6330671Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:48.6331989Z hint:
+2026-10-25T04:41:48.6333190Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:48.6335068Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:48.6336562Z hint:
+2026-10-25T04:41:48.6337644Z hint: 	git branch -m <name>
+2026-10-25T04:41:48.6338650Z hint:
+2026-10-25T04:41:48.6340084Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:48.6341942Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:48.6345650Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.6920897Z ##[endgroup]
+2026-10-25T04:41:48.6922032Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:48.6923553Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:48.7117729Z ##[endgroup]
+2026-10-25T04:41:48.7119114Z ##[group]Setting up auth
+2026-10-25T04:41:48.7120465Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:48.7157565Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:48.7456807Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:48.7488953Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:48.7675966Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T04:41:48.7714097Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T04:41:48.7999891Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:48.8290802Z ##[endgroup]
+2026-10-25T04:41:48.8293540Z ##[group]Fetching the repository
+2026-10-25T04:41:48.8316464Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:49.6113030Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.6113499Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:49.6116425Z ##[endgroup]
+2026-10-25T04:41:49.6116864Z ##[group]Determining the checkout info
+2026-10-25T04:41:49.6118797Z ##[endgroup]
+2026-10-25T04:41:49.6123245Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:49.6456709Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:49.6961808Z ##[group]Checking out the ref
+2026-10-25T04:41:49.6973376Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:49.8556434Z Switched to a new branch 'main'
+2026-10-25T04:41:49.8560578Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:49.8568544Z ##[endgroup]
+2026-10-25T04:41:49.8765491Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:49.8791414Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:49.9204730Z ##[group]Run actions/setup-python@v5
+2026-10-25T04:41:49.9204987Z with:
+2026-10-25T04:41:49.9205161Z   python-version: 3.11
+2026-10-25T04:41:49.9205329Z   check-latest: false
+2026-10-25T04:41:49.9206962Z   token: ***
+2026-10-25T04:41:49.9207121Z   update-environment: true
+2026-10-25T04:41:49.9207472Z   allow-prereleases: false
+2026-10-25T04:41:49.9207657Z   freethreaded: false
+2026-10-25T04:41:49.9207809Z env:
+2026-10-25T04:41:49.9207968Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.9208157Z ##[endgroup]
+2026-10-25T04:41:50.0161797Z ##[group]Installed versions
+2026-10-25T04:41:50.0261513Z (node:2054) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:50.0262175Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:50.0262610Z Successfully set up CPython (3.11.17)
+2026-10-25T04:41:50.0263036Z ##[endgroup]
+2026-10-25T04:41:50.0956555Z ##[group]Run python -m pip install --upgrade pip
+2026-10-25T04:41:50.0956962Z [36;1mpython -m pip install --upgrade pip[0m
+2026-10-25T04:41:50.0957189Z [36;1mpip install -r requirements.txt[0m
+2026-10-25T04:41:50.0957524Z [36;1mpip install pytest[0m
+2026-10-25T04:41:50.1571699Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:50.1571981Z env:
+2026-10-25T04:41:50.1572194Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.1572444Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.1572753Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:50.1573036Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.1573291Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.1573542Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.1573801Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:50.1574118Z ##[endgroup]
+2026-10-25T04:41:52.3295776Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (26.2.1)
+2026-10-25T04:41:52.4442760Z Collecting pip
+2026-10-25T04:41:52.5059382Z   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:52.5195379Z Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+2026-10-25T04:41:52.5995587Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 32.3 MB/s  0:00:00
+2026-10-25T04:41:52.8736990Z Installing collected packages: pip
+2026-10-25T04:41:52.8737891Z   Attempting uninstall: pip
+2026-10-25T04:41:52.8746692Z     Found existing installation: pip 26.2.1
+2026-10-25T04:41:53.0025439Z     Uninstalling pip-26.2.1:
+2026-10-25T04:41:53.0070602Z       Successfully uninstalled pip-26.2.1
+2026-10-25T04:41:53.6114251Z Successfully installed pip-26.2.2
+2026-10-25T04:41:53.9422007Z Collecting Flask==3.0.0 (from -r requirements.txt (line 1))
+2026-10-25T04:41:54.0038577Z   Downloading flask-3.0.0-py3-none-any.whl.metadata (3.6 kB)
+2026-10-25T04:41:54.0294041Z Collecting requests==2.31.0 (from -r requirements.txt (line 2))
+2026-10-25T04:41:54.0402195Z   Downloading requests-2.31.0-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:54.0610733Z Collecting Werkzeug>=3.0.0 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:41:54.0718549Z   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:41:54.0889513Z Collecting Jinja2>=3.1.2 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:41:54.0993674Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:54.1148796Z Collecting itsdangerous>=2.1.2 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:41:54.1251118Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:41:54.1545348Z Collecting click>=8.1.3 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:41:54.1639262Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:54.1782874Z Collecting blinker>=1.6.2 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:41:54.1893403Z   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:54.2889180Z Collecting charset-normalizer<4,>=2 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:41:54.2999710Z   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:41:54.3273810Z Collecting idna<4,>=2.5 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:41:54.3379724Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:41:54.3664436Z Collecting urllib3<3,>=1.21.1 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:41:54.3775337Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:54.3972398Z Collecting certifi>=2017.4.17 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:41:54.4081747Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:54.4484740Z Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:41:54.4592392Z   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:41:54.4734667Z Downloading flask-3.0.0-py3-none-any.whl (99 kB)
+2026-10-25T04:41:54.4948072Z Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+2026-10-25T04:41:54.5070006Z Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:41:54.5292765Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:41:54.5412880Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:41:54.5668322Z Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:41:54.5788593Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:41:54.5932197Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:41:54.6056446Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:41:54.6175456Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:41:54.6305149Z Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:41:54.6425293Z Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:41:54.6764283Z Installing collected packages: urllib3, MarkupSafe, itsdangerous, idna, click, charset-normalizer, certifi, blinker, Werkzeug, requests, Jinja2, Flask
+2026-10-25T04:41:55.0056511Z 
+2026-10-25T04:41:55.0065219Z Successfully installed Flask-3.0.0 Jinja2-3.1.6 MarkupSafe-3.0.4 Werkzeug-3.1.9 blinker-1.9.0 certifi-2026.10.23 charset-normalizer-3.5.2 click-8.5.0 idna-3.20 itsdangerous-2.2.0 requests-2.31.0 urllib3-2.8.0
+2026-10-25T04:41:55.3696297Z Collecting pytest
+2026-10-25T04:41:55.4379005Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:55.4599149Z Collecting iniconfig>=1.0.1 (from pytest)
+2026-10-25T04:41:55.4735717Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:41:55.4970285Z Collecting packaging>=22 (from pytest)
+2026-10-25T04:41:55.5108532Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:55.5328117Z Collecting pluggy<2,>=1.5 (from pytest)
+2026-10-25T04:41:55.5490069Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-10-25T04:41:55.5738076Z Collecting pygments>=2.7.2 (from pytest)
+2026-10-25T04:41:55.5872647Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:55.6036870Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:41:55.6681871Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-10-25T04:41:55.6829272Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-10-25T04:41:55.6978059Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-25T04:41:55.7145525Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-10-25T04:41:55.7551656Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 28.3 MB/s  0:00:00
+2026-10-25T04:41:55.7910854Z Installing collected packages: pygments, pluggy, packaging, iniconfig, pytest
+2026-10-25T04:41:56.4136915Z 
+2026-10-25T04:41:56.4146250Z Successfully installed iniconfig-2.3.1 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1
+2026-10-25T04:41:56.4640717Z ##[group]Run docker compose build maxwell-database maxwell-backend maxwell-frontend
+2026-10-25T04:41:56.4641082Z [36;1mdocker compose build maxwell-database maxwell-backend maxwell-frontend[0m
+2026-10-25T04:41:56.4697331Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:56.4697507Z env:
+2026-10-25T04:41:56.4697653Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:56.4697853Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:56.4698096Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:56.4698361Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:56.4698576Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:56.4698791Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:56.4699005Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:56.4699188Z ##[endgroup]
+2026-10-25T04:42:03.4934589Z #1 [internal] load local bake definitions
+2026-10-25T04:42:03.6441594Z #1 reading from stdin 1.37kB done
+2026-10-25T04:42:03.6441930Z #1 DONE 0.0s
+2026-10-25T04:42:03.9025162Z 
+2026-10-25T04:42:03.9025799Z #2 [maxwell-database internal] load build definition from Dockerfile
+2026-10-25T04:42:03.9026193Z #2 transferring dockerfile: 30B
+2026-10-25T04:42:04.0113415Z #2 transferring dockerfile: 739B 0.1s done
+2026-10-25T04:42:04.0113656Z #2 DONE 0.1s
+2026-10-25T04:42:04.0113730Z 
+2026-10-25T04:42:04.0113851Z #3 [maxwell-frontend internal] load build definition from Dockerfile
+2026-10-25T04:42:04.0114069Z #3 transferring dockerfile: 403B 0.1s done
+2026-10-25T04:42:04.0114262Z #3 DONE 0.1s
+2026-10-25T04:42:04.0114328Z 
+2026-10-25T04:42:04.0114434Z #4 [maxwell-backend internal] load build definition from Dockerfile
+2026-10-25T04:42:04.0114643Z #4 transferring dockerfile: 427B 0.1s done
+2026-10-25T04:42:04.0114790Z #4 DONE 0.1s
+2026-10-25T04:42:04.0114852Z 
+2026-10-25T04:42:04.0114956Z #5 [auth] library/python:pull token for registry-1.docker.io
+2026-10-25T04:42:04.1764831Z #5 DONE 0.0s
+2026-10-25T04:42:04.1765037Z 
+2026-10-25T04:42:04.1765211Z #6 [auth] library/alpine:pull token for registry-1.docker.io
+2026-10-25T04:42:04.1765487Z #6 DONE 0.0s
+2026-10-25T04:42:04.1765581Z 
+2026-10-25T04:42:04.1765775Z #7 [maxwell-backend internal] load metadata for docker.io/library/python:3.11-slim
+2026-10-25T04:42:04.6193468Z #7 DONE 0.6s
+2026-10-25T04:42:04.6193727Z 
+2026-10-25T04:42:04.6193857Z #8 [maxwell-backend internal] load .dockerignore
+2026-10-25T04:42:04.6194141Z #8 transferring context: 2B done
+2026-10-25T04:42:04.6194388Z #8 DONE 0.0s
+2026-10-25T04:42:04.6194531Z 
+2026-10-25T04:42:04.6194900Z #9 [maxwell-frontend internal] load .dockerignore
+2026-10-25T04:42:04.6195266Z #9 transferring context: 2B done
+2026-10-25T04:42:04.6195464Z #9 DONE 0.0s
+2026-10-25T04:42:04.6195556Z 
+2026-10-25T04:42:04.6195660Z #10 [maxwell-backend internal] load build context
+2026-10-25T04:42:04.6195915Z #10 transferring context: 28.94kB done
+2026-10-25T04:42:04.6196297Z #10 DONE 0.0s
+2026-10-25T04:42:04.6196611Z 
+2026-10-25T04:42:04.6196717Z #11 [maxwell-frontend internal] load build context
+2026-10-25T04:42:04.6197113Z #11 transferring context: 39.71kB done
+2026-10-25T04:42:04.6197710Z #11 DONE 0.0s
+2026-10-25T04:42:04.6197812Z 
+2026-10-25T04:42:04.6198010Z #12 [maxwell-database internal] load metadata for docker.io/library/alpine:3.20
+2026-10-25T04:42:04.6198324Z #12 DONE 0.6s
+2026-10-25T04:42:04.6198392Z 
+2026-10-25T04:42:04.6198466Z #13 [maxwell-database internal] load .dockerignore
+2026-10-25T04:42:04.6198649Z #13 transferring context: 2B done
+2026-10-25T04:42:04.6199127Z #13 DONE 0.0s
+2026-10-25T04:42:04.6199190Z 
+2026-10-25T04:42:04.6199264Z #14 [maxwell-database internal] load build context
+2026-10-25T04:42:04.6199438Z #14 transferring context: 6.29kB done
+2026-10-25T04:42:04.6199577Z #14 DONE 0.0s
+2026-10-25T04:42:04.6199639Z 
+2026-10-25T04:42:04.6200066Z #15 [maxwell-backend 1/4] FROM docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377
+2026-10-25T04:42:04.6200552Z #15 resolve docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377 done
+2026-10-25T04:42:04.6201336Z #15 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 0B / 29.84MB 0.1s
+2026-10-25T04:42:04.6201687Z #15 sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b 0B / 1.29MB 0.1s
+2026-10-25T04:42:04.6202551Z #15 sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 0B / 14.46MB 0.1s
+2026-10-25T04:42:04.6203653Z #15 sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377 10.37kB / 10.37kB done
+2026-10-25T04:42:04.6204055Z #15 sha256:b95327ce1439e687237841b0210677aeadd62d55a060a5f6bcb9c15bf6251dd3 1.75kB / 1.75kB done
+2026-10-25T04:42:04.6204460Z #15 sha256:b4403f3b7acf5e0700a5dd4e7ab01456d62b557a208a04f8a42d3470d93b5730 5.49kB / 5.49kB done
+2026-10-25T04:42:04.7347124Z #15 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 24.12MB / 29.84MB 0.2s
+2026-10-25T04:42:04.7347728Z #15 sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b 1.29MB / 1.29MB 0.2s done
+2026-10-25T04:42:04.7348100Z #15 sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 1.05MB / 14.46MB 0.2s
+2026-10-25T04:42:04.7348571Z #15 sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377 10.37kB / 10.37kB done
+2026-10-25T04:42:04.7349100Z #15 sha256:b95327ce1439e687237841b0210677aeadd62d55a060a5f6bcb9c15bf6251dd3 1.75kB / 1.75kB done
+2026-10-25T04:42:04.7349929Z #15 sha256:b4403f3b7acf5e0700a5dd4e7ab01456d62b557a208a04f8a42d3470d93b5730 5.49kB / 5.49kB done
+2026-10-25T04:42:04.7350480Z #15 sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06 0B / 249B 0.2s
+2026-10-25T04:42:04.8348664Z #15 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.3s
+2026-10-25T04:42:04.8349126Z #15 sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 14.46MB / 14.46MB 0.3s
+2026-10-25T04:42:04.8349504Z #15 sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06 249B / 249B 0.2s done
+2026-10-25T04:42:05.0740164Z #15 ...
+2026-10-25T04:42:05.0740366Z 
+2026-10-25T04:42:05.0741301Z #16 [maxwell-database 1/5] FROM docker.io/library/alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+2026-10-25T04:42:05.0742355Z #16 resolve docker.io/library/alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc done
+2026-10-25T04:42:05.0742998Z #16 sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc 9.23kB / 9.23kB done
+2026-10-25T04:42:05.0743622Z #16 sha256:c64c687cbea9300178b30c95835354e34c4e4febc4badfe27102879de0483b5e 1.02kB / 1.02kB done
+2026-10-25T04:42:05.0744194Z #16 sha256:bf8527eb54c3680e728d5b4b383a8ba730d72dae7236fbc8dff97ed6b224a731 612B / 612B done
+2026-10-25T04:42:05.0744796Z #16 sha256:25f1d6b1951ac8eb3740558fe94cb83d377bdadf95fd9f98b50d2e1b96130471 3.63MB / 3.63MB 0.4s done
+2026-10-25T04:42:05.0745407Z #16 extracting sha256:25f1d6b1951ac8eb3740558fe94cb83d377bdadf95fd9f98b50d2e1b96130471 0.0s done
+2026-10-25T04:42:05.0745828Z #16 DONE 0.5s
+2026-10-25T04:42:05.0745937Z 
+2026-10-25T04:42:05.0746327Z #15 [maxwell-backend 1/4] FROM docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377
+2026-10-25T04:42:05.0747062Z #15 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.4s done
+2026-10-25T04:42:05.0747795Z #15 sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 14.46MB / 14.46MB 0.4s done
+2026-10-25T04:42:05.0748583Z #15 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034
+2026-10-25T04:42:05.7727060Z #15 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 0.7s done
+2026-10-25T04:42:05.7727669Z #15 extracting sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b 0.1s done
+2026-10-25T04:42:05.9232828Z #15 extracting sha256:90d47cf54851a8d83f33db71f0025a8ba367c12fb24817259dd9736098cb305b 0.1s done
+2026-10-25T04:42:11.0923062Z #15 ...
+2026-10-25T04:42:11.0923277Z 
+2026-10-25T04:42:11.0923506Z #17 [maxwell-database 2/5] RUN apk add --no-cache sqlite=3.45.3-r3
+2026-10-25T04:42:11.0924039Z #17 0.140 fetch https://dl-cdn.alpinelinux.org/alpine/v3.20/main/x86_64/APKINDEX.tar.gz
+2026-10-25T04:42:11.0924526Z #17 0.570 fetch https://dl-cdn.alpinelinux.org/alpine/v3.20/community/x86_64/APKINDEX.tar.gz
+2026-10-25T04:42:11.0924986Z #17 0.937 (1/4) Installing ncurses-terminfo-base (6.4_p20240420-r2)
+2026-10-25T04:42:11.0926655Z #17 0.955 (2/4) Installing libncursesw (6.4_p20240420-r2)
+2026-10-25T04:42:11.0927059Z #17 1.047 (3/4) Installing readline (8.2.10-r0)
+2026-10-25T04:42:11.0927447Z #17 1.065 (4/4) Installing sqlite (3.45.3-r3)
+2026-10-25T04:42:11.0927738Z #17 1.112 Executing busybox-1.36.1-r31.trigger
+2026-10-25T04:42:11.0928009Z #17 1.405 OK: 10 MiB in 18 packages
+2026-10-25T04:42:11.0928206Z #17 DONE 6.0s
+2026-10-25T04:42:11.2025358Z 
+2026-10-25T04:42:11.2025918Z #18 [maxwell-database 3/5] COPY init.sql seed.sql seed_glossary.sh /sql/
+2026-10-25T04:42:11.2026196Z #18 DONE 0.0s
+2026-10-25T04:42:11.2026268Z 
+2026-10-25T04:42:11.2026398Z #19 [maxwell-database 4/5] COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+2026-10-25T04:42:11.2026619Z #19 DONE 0.0s
+2026-10-25T04:42:11.2026690Z 
+2026-10-25T04:42:11.2026932Z #15 [maxwell-backend 1/4] FROM docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377
+2026-10-25T04:42:11.2029714Z #15 extracting sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 0.1s
+2026-10-25T04:42:11.4208719Z #15 ...
+2026-10-25T04:42:11.4208856Z 
+2026-10-25T04:42:11.4209233Z #20 [maxwell-database 5/5] RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh     && chmod +x /usr/local/bin/entrypoint.sh     && chmod +x /sql/seed_glossary.sh
+2026-10-25T04:42:11.4209738Z #20 DONE 0.2s
+2026-10-25T04:42:11.4209942Z 
+2026-10-25T04:42:11.4210318Z #15 [maxwell-backend 1/4] FROM docker.io/library/python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377
+2026-10-25T04:42:11.7985764Z #15 extracting sha256:6d9af71a343efe2a00fdfc9507db3bdf3530bf3f8cf2975eb1be235a7eb70128 0.6s done
+2026-10-25T04:42:11.7986438Z #15 extracting sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06
+2026-10-25T04:42:12.0034339Z #15 extracting sha256:b0aec4a98ced1e92f1d50c37aa89c78d60e3dc6a52d61f8134afda24b185ad06 done
+2026-10-25T04:42:12.0034840Z #15 DONE 7.3s
+2026-10-25T04:42:12.0035260Z 
+2026-10-25T04:42:12.0035518Z #21 [maxwell-backend 2/4] WORKDIR /app
+2026-10-25T04:42:12.0035794Z #21 DONE 0.0s
+2026-10-25T04:42:12.0035901Z 
+2026-10-25T04:42:12.0036028Z #22 [maxwell-backend 3/5] COPY requirements.txt .
+2026-10-25T04:42:12.0036301Z #22 DONE 0.0s
+2026-10-25T04:42:12.0036408Z 
+2026-10-25T04:42:12.0036584Z #23 [maxwell-frontend 3/4] COPY Maxwell/frontend/index.html ./index.html
+2026-10-25T04:42:12.0036910Z #23 DONE 0.0s
+2026-10-25T04:42:12.0037028Z 
+2026-10-25T04:42:12.0037191Z #24 [maxwell-frontend 4/4] COPY Maxwell/frontend/styles.css ./styles.css
+2026-10-25T04:42:12.0037657Z #24 DONE 0.0s
+2026-10-25T04:42:12.0037757Z 
+2026-10-25T04:42:12.0037861Z #25 [maxwell-frontend] exporting to image
+2026-10-25T04:42:12.0038109Z #25 exporting layers
+2026-10-25T04:42:12.2307605Z #25 ...
+2026-10-25T04:42:12.2307817Z 
+2026-10-25T04:42:12.2307934Z #26 [maxwell-database] exporting to image
+2026-10-25T04:42:12.2308144Z #26 exporting layers 0.6s done
+2026-10-25T04:42:12.2308408Z #26 writing image sha256:5d455cea25b2c73fb05ddab0ef194a22ebcb600ab210112fe575cae6ff0c95b7 done
+2026-10-25T04:42:12.3092174Z #26 naming to docker.io/library/asd2026-maxwell-database done
+2026-10-25T04:42:12.3092375Z #26 DONE 0.6s
+2026-10-25T04:42:12.3092451Z 
+2026-10-25T04:42:12.3092552Z #27 [maxwell-database] resolving provenance for metadata file
+2026-10-25T04:42:12.3092734Z #27 DONE 0.0s
+2026-10-25T04:42:12.3478616Z 
+2026-10-25T04:42:12.3479540Z #25 [maxwell-frontend] exporting to image
+2026-10-25T04:42:12.3479800Z #25 exporting layers 0.5s done
+2026-10-25T04:42:12.5141707Z #25 writing image sha256:12087afac0b9a1a94ff7a118ba7c7f80bba5c71be9b083abcee2c94939822042 done
+2026-10-25T04:42:12.5142630Z #25 naming to docker.io/library/asd2026-maxwell-frontend done
+2026-10-25T04:42:12.5143237Z #25 DONE 0.5s
+2026-10-25T04:42:12.5143381Z 
+2026-10-25T04:42:12.5143560Z #28 [maxwell-frontend] resolving provenance for metadata file
+2026-10-25T04:42:12.5143848Z #28 DONE 0.0s
+2026-10-25T04:42:12.5143948Z 
+2026-10-25T04:42:12.5144131Z #29 [maxwell-backend 4/5] RUN pip install --no-cache-dir -r requirements.txt
+2026-10-25T04:42:13.2585533Z #29 1.429 Collecting Flask==3.0.0 (from -r requirements.txt (line 1))
+2026-10-25T04:42:13.3843550Z #29 1.483   Downloading flask-3.0.0-py3-none-any.whl.metadata (3.6 kB)
+2026-10-25T04:42:13.3843972Z #29 1.514 Collecting requests==2.31.0 (from -r requirements.txt (line 2))
+2026-10-25T04:42:13.3844310Z #29 1.524   Downloading requests-2.31.0-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:42:13.3845969Z #29 1.555 Collecting Werkzeug>=3.0.0 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:42:13.4856399Z #29 1.566   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:42:13.4856934Z #29 1.586 Collecting Jinja2>=3.1.2 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:42:13.4857496Z #29 1.596   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:42:13.4857948Z #29 1.613 Collecting itsdangerous>=2.1.2 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:42:13.4858461Z #29 1.623   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:42:13.4858934Z #29 1.646 Collecting click>=8.1.3 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:42:13.4859359Z #29 1.656   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:42:13.6440687Z #29 1.678 Collecting blinker>=1.6.2 (from Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:42:13.6441295Z #29 1.694   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:42:13.6441781Z #29 1.815 Collecting charset-normalizer<4,>=2 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:42:13.7682109Z #29 1.825   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:42:13.7683242Z #29 1.836      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 4.4 MB/s eta 0:00:00
+2026-10-25T04:42:13.7683680Z #29 1.860 Collecting idna<4,>=2.5 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:42:13.7684211Z #29 1.870   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:42:13.7684647Z #29 1.904 Collecting urllib3<3,>=1.21.1 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:42:13.7685094Z #29 1.915   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:42:13.7685569Z #29 1.939 Collecting certifi>=2017.4.17 (from requests==2.31.0->-r requirements.txt (line 2))
+2026-10-25T04:42:13.8796114Z #29 1.949   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:42:13.8796680Z #29 2.000 Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->Flask==3.0.0->-r requirements.txt (line 1))
+2026-10-25T04:42:13.8797566Z #29 2.010   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:42:13.8797977Z #29 2.050 Downloading flask-3.0.0-py3-none-any.whl (99 kB)
+2026-10-25T04:42:13.9904532Z #29 2.060    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 99.7/99.7 kB 10.6 MB/s eta 0:00:00
+2026-10-25T04:42:13.9905439Z #29 2.070 Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+2026-10-25T04:42:13.9905901Z #29 2.072    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 kB 155.9 MB/s eta 0:00:00
+2026-10-25T04:42:13.9906279Z #29 2.082 Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:42:13.9906776Z #29 2.092 Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:42:13.9907077Z #29 2.095    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.1/135.1 kB 56.2 MB/s eta 0:00:00
+2026-10-25T04:42:13.9907629Z #29 2.105 Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:42:13.9908064Z #29 2.115    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 270.0/270.0 kB 29.3 MB/s eta 0:00:00
+2026-10-25T04:42:13.9908299Z #29 2.125 Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:42:13.9908575Z #29 2.127    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 125.3/125.3 kB 521.6 MB/s eta 0:00:00
+2026-10-25T04:42:13.9908810Z #29 2.137 Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:42:13.9909077Z #29 2.139    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.6/69.6 kB 386.3 MB/s eta 0:00:00
+2026-10-25T04:42:13.9909316Z #29 2.150 Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:42:13.9909549Z #29 2.161 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:42:14.2208003Z #29 2.163    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 134.9/134.9 kB 483.2 MB/s eta 0:00:00
+2026-10-25T04:42:14.2208316Z #29 2.174 Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:42:14.2208619Z #29 2.176    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.7/135.7 kB 561.5 MB/s eta 0:00:00
+2026-10-25T04:42:14.2208851Z #29 2.186 Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:42:14.2209132Z #29 2.188    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 228.7/228.7 kB 346.9 MB/s eta 0:00:00
+2026-10-25T04:42:14.2209488Z #29 2.199 Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:42:14.2210036Z #29 2.241 Installing collected packages: urllib3, MarkupSafe, itsdangerous, idna, click, charset-normalizer, certifi, blinker, Werkzeug, requests, Jinja2, Flask
+2026-10-25T04:42:14.4200055Z #29 2.590 Successfully installed Flask-3.0.0 Jinja2-3.1.6 MarkupSafe-3.0.4 Werkzeug-3.1.9 blinker-1.9.0 certifi-2026.10.23 charset-normalizer-3.5.2 click-8.5.0 idna-3.20 itsdangerous-2.2.0 requests-2.31.0 urllib3-2.8.0
+2026-10-25T04:42:14.6413959Z #29 2.591 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+2026-10-25T04:42:14.6414664Z #29 2.661 
+2026-10-25T04:42:14.6414845Z #29 2.661 [notice] A new release of pip is available: 24.0 -> 26.2.2
+2026-10-25T04:42:14.6415077Z #29 2.661 [notice] To update, run: pip install --upgrade pip
+2026-10-25T04:42:14.7260844Z #29 DONE 2.9s
+2026-10-25T04:42:14.8863411Z 
+2026-10-25T04:42:14.8863943Z #30 [maxwell-backend 5/5] COPY app.py .
+2026-10-25T04:42:14.8864277Z #30 DONE 0.0s
+2026-10-25T04:42:14.8864393Z 
+2026-10-25T04:42:14.8864497Z #31 [maxwell-backend] exporting to image
+2026-10-25T04:42:15.0974286Z #31 exporting layers 0.4s done
+2026-10-25T04:42:15.1181342Z #31 writing image sha256:3864c04f1b892c6187563c84db22e66192a83c0ffcda77efc2e6b0ba0a048986 done
+2026-10-25T04:42:15.1181890Z #31 naming to docker.io/library/asd2026-maxwell-backend done
+2026-10-25T04:42:15.1182190Z #31 DONE 0.4s
+2026-10-25T04:42:15.1182294Z 
+2026-10-25T04:42:15.1182427Z #32 [maxwell-backend] resolving provenance for metadata file
+2026-10-25T04:42:15.1182614Z #32 DONE 0.0s
+2026-10-25T04:42:15.1182827Z  maxwell-database  Built
+2026-10-25T04:42:15.1182968Z  maxwell-backend  Built
+2026-10-25T04:42:15.1183104Z  maxwell-frontend  Built
+2026-10-25T04:42:15.1257909Z ##[group]Run docker compose up -d maxwell-database maxwell-backend maxwell-frontend
+2026-10-25T04:42:15.1258419Z [36;1mdocker compose up -d maxwell-database maxwell-backend maxwell-frontend[0m
+2026-10-25T04:42:15.1315430Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:15.1315582Z env:
+2026-10-25T04:42:15.1315734Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:15.1315935Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:15.1316182Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:15.1316426Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:15.1316645Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:15.1316870Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:15.1317094Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:15.1317440Z ##[endgroup]
+2026-10-25T04:42:15.2227603Z  Network asd2026_default  Creating
+2026-10-25T04:42:15.2514866Z  Network asd2026_default  Created
+2026-10-25T04:42:15.2732065Z  Volume "asd2026_maxwell-db-data"  Creating
+2026-10-25T04:42:15.2746116Z  Volume "asd2026_maxwell-db-data"  Created
+2026-10-25T04:42:15.2750612Z  Container maxwell-database  Creating
+2026-10-25T04:42:15.2928307Z  Container maxwell-database  Created
+2026-10-25T04:42:15.2928669Z  Container maxwell-backend  Creating
+2026-10-25T04:42:15.3012636Z  Container maxwell-backend  Created
+2026-10-25T04:42:15.3012980Z  Container maxwell-frontend  Creating
+2026-10-25T04:42:15.3093822Z  Container maxwell-frontend  Created
+2026-10-25T04:42:15.3102695Z  Container maxwell-database  Starting
+2026-10-25T04:42:15.4285451Z  Container maxwell-database  Started
+2026-10-25T04:42:15.4285774Z  Container maxwell-database  Waiting
+2026-10-25T04:42:45.9296055Z  Container maxwell-database  Healthy
+2026-10-25T04:42:45.9296391Z  Container maxwell-backend  Starting
+2026-10-25T04:42:46.1455101Z  Container maxwell-backend  Started
+2026-10-25T04:42:46.1455626Z  Container maxwell-frontend  Starting
+2026-10-25T04:42:46.2551181Z  Container maxwell-frontend  Started
+2026-10-25T04:42:46.2646771Z ##[group]Run for i in {1..30}; do
+2026-10-25T04:42:46.2647090Z [36;1mfor i in {1..30}; do[0m
+2026-10-25T04:42:46.2648088Z [36;1m  if curl -s http://localhost:8021/api/glossary > /dev/null; then[0m
+2026-10-25T04:42:46.2648425Z [36;1m    echo "Backend is ready"[0m
+2026-10-25T04:42:46.2648657Z [36;1m    break[0m
+2026-10-25T04:42:46.2648836Z [36;1m  fi[0m
+2026-10-25T04:42:46.2649037Z [36;1m  echo "Waiting for backend..."[0m
+2026-10-25T04:42:46.2649279Z [36;1m  sleep 2[0m
+2026-10-25T04:42:46.2649467Z [36;1mdone[0m
+2026-10-25T04:42:46.2724425Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:46.2724671Z env:
+2026-10-25T04:42:46.2724920Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:46.2725242Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:46.2725641Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:46.2726140Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:46.2726554Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:46.2726917Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:46.2727507Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:46.2727812Z ##[endgroup]
+2026-10-25T04:42:46.2939177Z Waiting for backend...
+2026-10-25T04:42:48.3034117Z Backend is ready
+2026-10-25T04:42:48.3059938Z ##[group]Run pytest tests/test_glossary.py -v
+2026-10-25T04:42:48.3060157Z [36;1mpytest tests/test_glossary.py -v[0m
+2026-10-25T04:42:48.3114735Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:48.3114874Z env:
+2026-10-25T04:42:48.3115080Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:48.3115278Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:48.3115520Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:48.3115756Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:48.3116114Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:48.3116322Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:48.3116535Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:48.3116715Z ##[endgroup]
+2026-10-25T04:42:48.8570433Z ============================= test session starts ==============================
+2026-10-25T04:42:48.8570931Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:48.8571212Z cachedir: .pytest_cache
+2026-10-25T04:42:48.8571463Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/Maxwell
+2026-10-25T04:42:48.8961981Z collecting ... collected 15 items
+2026-10-25T04:42:48.8962208Z 
+2026-10-25T04:42:49.2064486Z tests/test_glossary.py::GlossaryTestCase::test_ai_mode_disabled_returns_503 PASSED [  6%]
+2026-10-25T04:42:49.2102513Z tests/test_glossary.py::GlossaryTestCase::test_create_term_endpoint PASSED [ 13%]
+2026-10-25T04:42:49.2114993Z tests/test_glossary.py::GlossaryTestCase::test_delete_nonexistent_term PASSED [ 20%]
+2026-10-25T04:42:49.2154995Z tests/test_glossary.py::GlossaryTestCase::test_delete_term_endpoint PASSED [ 26%]
+2026-10-25T04:42:49.2180647Z tests/test_glossary.py::GlossaryTestCase::test_get_term_endpoint PASSED  [ 33%]
+2026-10-25T04:42:49.2190113Z tests/test_glossary.py::GlossaryTestCase::test_glossary_endpoint PASSED  [ 40%]
+2026-10-25T04:42:49.2198341Z tests/test_glossary.py::GlossaryTestCase::test_health_endpoint PASSED    [ 46%]
+2026-10-25T04:42:49.2207719Z tests/test_glossary.py::GlossaryTestCase::test_mcp_proxy_disabled_in_ci PASSED [ 53%]
+2026-10-25T04:42:49.2216131Z tests/test_glossary.py::GlossaryTestCase::test_multi_agent_proxy_disabled_in_ci PASSED [ 60%]
+2026-10-25T04:42:49.2225927Z tests/test_glossary.py::GlossaryTestCase::test_non_financial_term_rejected PASSED [ 66%]
+2026-10-25T04:42:49.2239275Z tests/test_glossary.py::GlossaryTestCase::test_ollama_unreachable_returns_500 PASSED [ 73%]
+2026-10-25T04:42:49.2258877Z tests/test_glossary.py::GlossaryTestCase::test_rag_proxy_disabled_in_ci PASSED [ 80%]
+2026-10-25T04:42:49.2268770Z tests/test_glossary.py::GlossaryTestCase::test_update_nonexistent_term PASSED [ 86%]
+2026-10-25T04:42:49.2406756Z tests/test_glossary.py::GlossaryTestCase::test_update_term_empty_definition PASSED [ 93%]
+2026-10-25T04:42:49.2655710Z tests/test_glossary.py::GlossaryTestCase::test_update_term_endpoint PASSED [100%]
+2026-10-25T04:42:49.2655922Z 
+2026-10-25T04:42:49.2656016Z ============================== 15 passed in 0.39s ==============================
+2026-10-25T04:42:49.3108812Z ##[group]Run python - <<'PY'
+2026-10-25T04:42:49.3109017Z [36;1mpython - <<'PY'[0m
+2026-10-25T04:42:49.3109155Z [36;1mimport app[0m
+2026-10-25T04:42:49.3109276Z [36;1m[0m
+2026-10-25T04:42:49.3109398Z [36;1mclient = app.app.test_client()[0m
+2026-10-25T04:42:49.3109623Z [36;1mmcp = client.post("/api/mcp/glossary-lookup", data={"term": "ETF"})[0m
+2026-10-25T04:42:49.3109919Z [36;1mrag = client.post("/api/rag/answer", json={"query": "What is an ETF?"})[0m
+2026-10-25T04:42:49.3110125Z [36;1m[0m
+2026-10-25T04:42:49.3110271Z [36;1mprint(f"/api/mcp/...   -> HTTP {mcp.status_code}")[0m
+2026-10-25T04:42:49.3110494Z [36;1mprint(f"/api/rag/answer -> HTTP {rag.status_code}")[0m
+2026-10-25T04:42:49.3110672Z [36;1m[0m
+2026-10-25T04:42:49.3110885Z [36;1massert mcp.status_code == 503, f"MCP proxy must be disabled in CI, got {mcp.status_code}"[0m
+2026-10-25T04:42:49.3111215Z [36;1massert rag.status_code == 503, f"RAG proxy must be disabled in CI, got {rag.status_code}"[0m
+2026-10-25T04:42:49.3111513Z [36;1mprint("MCP and RAG proxies correctly disabled.")[0m
+2026-10-25T04:42:49.3111692Z [36;1mPY[0m
+2026-10-25T04:42:49.3165349Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:49.3165492Z env:
+2026-10-25T04:42:49.3165629Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:49.3165826Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.3166229Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:49.3166470Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.3166684Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.3166898Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.3167115Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:49.3167386Z   DISABLE_MCP_PROXY: true
+2026-10-25T04:42:49.3167518Z   DISABLE_RAG_PROXY: true
+2026-10-25T04:42:49.3167646Z ##[endgroup]
+2026-10-25T04:42:49.4484803Z /api/mcp/...   -> HTTP 503
+2026-10-25T04:42:49.4485134Z /api/rag/answer -> HTTP 503
+2026-10-25T04:42:49.4485377Z MCP and RAG proxies correctly disabled.
+2026-10-25T04:42:49.4821866Z ##[group]Run python - <<'PY'
+2026-10-25T04:42:49.4822175Z [36;1mpython - <<'PY'[0m
+2026-10-25T04:42:49.4822380Z [36;1mimport app[0m
+2026-10-25T04:42:49.4822561Z [36;1m[0m
+2026-10-25T04:42:49.4822745Z [36;1mclient = app.app.test_client()[0m
+2026-10-25T04:42:49.4823186Z [36;1mma = client.post("/api/multi-agent/workflow", json={"task": "test", "evidence": {}})[0m
+2026-10-25T04:42:49.4823561Z [36;1m[0m
+2026-10-25T04:42:49.4823814Z [36;1mprint(f"/api/multi-agent/workflow -> HTTP {ma.status_code}")[0m
+2026-10-25T04:42:49.4824115Z [36;1m[0m
+2026-10-25T04:42:49.4824451Z [36;1massert ma.status_code == 503, f"Multi-Agent proxy must be disabled in CI, got {ma.status_code}"[0m
+2026-10-25T04:42:49.4824897Z [36;1mprint("Multi-Agent proxy correctly disabled.")[0m
+2026-10-25T04:42:49.4825166Z [36;1mPY[0m
+2026-10-25T04:42:49.4884371Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:49.4884537Z env:
+2026-10-25T04:42:49.4884689Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:49.4884938Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.4885189Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:49.4885428Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.4885656Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.4885873Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.4886088Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:49.4886285Z   DISABLE_MULTI_AGENT_PROXY: true
+2026-10-25T04:42:49.4886435Z ##[endgroup]
+2026-10-25T04:42:49.6172227Z /api/multi-agent/workflow -> HTTP 503
+2026-10-25T04:42:49.6172478Z Multi-Agent proxy correctly disabled.
+2026-10-25T04:42:49.6504134Z ##[group]Run pip install flake8
+2026-10-25T04:42:49.6504435Z [36;1mpip install flake8[0m
+2026-10-25T04:42:49.6504765Z [36;1mflake8 . --count --select=E9,F63,F7,F82 --show-source --statistics[0m
+2026-10-25T04:42:49.6505243Z [36;1mflake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics[0m
+2026-10-25T04:42:49.6572357Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:49.6572596Z env:
+2026-10-25T04:42:49.6572782Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:49.6573009Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.6573259Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:49.6573505Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.6573720Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.6573935Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:49.6574186Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:49.6574368Z ##[endgroup]
+2026-10-25T04:42:49.9554984Z Collecting flake8
+2026-10-25T04:42:50.0130602Z   Downloading flake8-7.4.1-py2.py3-none-any.whl.metadata (3.8 kB)
+2026-10-25T04:42:50.0357446Z Collecting mccabe<0.8.0,>=0.7.0 (from flake8)
+2026-10-25T04:42:50.0461475Z   Downloading mccabe-0.7.0-py2.py3-none-any.whl.metadata (5.0 kB)
+2026-10-25T04:42:50.0803034Z Collecting pycodestyle<2.16.0,>=2.15.0 (from flake8)
+2026-10-25T04:42:50.0909443Z   Downloading pycodestyle-2.15.0-py2.py3-none-any.whl.metadata (4.5 kB)
+2026-10-25T04:42:50.1145351Z Collecting pyflakes<4.1.0,>=4.0.0 (from flake8)
+2026-10-25T04:42:50.1248019Z   Downloading pyflakes-4.0.3-py2.py3-none-any.whl.metadata (3.7 kB)
+2026-10-25T04:42:50.1386297Z Downloading flake8-7.4.1-py2.py3-none-any.whl (57 kB)
+2026-10-25T04:42:50.1597917Z Downloading mccabe-0.7.0-py2.py3-none-any.whl (7.3 kB)
+2026-10-25T04:42:50.1714094Z Downloading pycodestyle-2.15.0-py2.py3-none-any.whl (31 kB)
+2026-10-25T04:42:50.1833778Z Downloading pyflakes-4.0.3-py2.py3-none-any.whl (66 kB)
+2026-10-25T04:42:50.2081457Z Installing collected packages: pyflakes, pycodestyle, mccabe, flake8
+2026-10-25T04:42:50.2974431Z 
+2026-10-25T04:42:50.2984981Z Successfully installed flake8-7.4.1 mccabe-0.7.0 pycodestyle-2.15.0 pyflakes-4.0.3
+2026-10-25T04:42:50.6644813Z 0
+2026-10-25T04:42:50.7828751Z ./app.py:5:1: F401 'json' imported but unused
+2026-10-25T04:42:50.7829022Z ./app.py:12:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7829253Z ./app.py:21:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7829447Z ./app.py:92:128: E501 line too long (149 > 127 characters)
+2026-10-25T04:42:50.7829699Z ./app.py:131:1: E305 expected 2 blank lines after class or function definition, found 1
+2026-10-25T04:42:50.7829949Z ./app.py:160:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7830131Z ./app.py:170:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7830309Z ./app.py:182:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7830512Z ./app.py:189:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7830706Z ./app.py:190:1: C901 'get_term_definition' is too complex (12)
+2026-10-25T04:42:50.7830924Z ./app.py:243:128: E501 line too long (132 > 127 characters)
+2026-10-25T04:42:50.7831112Z ./app.py:301:1: E303 too many blank lines (3)
+2026-10-25T04:42:50.7831287Z ./app.py:304:1: E302 expected 2 blank lines, found 3
+2026-10-25T04:42:50.7831464Z ./app.py:401:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7831642Z ./app.py:434:1: E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7831816Z ./app.py:696:52: W292 no newline at end of file
+2026-10-25T04:42:50.7831995Z 1     C901 'get_term_definition' is too complex (12)
+2026-10-25T04:42:50.7832169Z 9     E302 expected 2 blank lines, found 1
+2026-10-25T04:42:50.7832324Z 1     E303 too many blank lines (3)
+2026-10-25T04:42:50.7832524Z 1     E305 expected 2 blank lines after class or function definition, found 1
+2026-10-25T04:42:50.7833229Z 2     E501 line too long (149 > 127 characters)
+2026-10-25T04:42:50.7833393Z 1     F401 'json' imported but unused
+2026-10-25T04:42:50.7833540Z 1     W292 no newline at end of file
+2026-10-25T04:42:50.7833680Z 16
+2026-10-25T04:42:50.8014977Z ##[group]Run # Wait a bit more for frontend
+2026-10-25T04:42:50.8015200Z [36;1m# Wait a bit more for frontend[0m
+2026-10-25T04:42:50.8015350Z [36;1msleep 5[0m
+2026-10-25T04:42:50.8015562Z [36;1mHTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8020/)[0m
+2026-10-25T04:42:50.8015809Z [36;1mif [ "$HTTP_CODE" -eq 200 ]; then[0m
+2026-10-25T04:42:50.8015977Z [36;1m  echo "Frontend is serving correctly"[0m
+2026-10-25T04:42:50.8016133Z [36;1melse[0m
+2026-10-25T04:42:50.8016268Z [36;1m  echo "Frontend returned HTTP $HTTP_CODE"[0m
+2026-10-25T04:42:50.8016428Z [36;1m  exit 1[0m
+2026-10-25T04:42:50.8016537Z [36;1mfi[0m
+2026-10-25T04:42:50.8016653Z [36;1m# Check backend API again[0m
+2026-10-25T04:42:50.8016882Z [36;1mAPI_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8021/api/glossary)[0m
+2026-10-25T04:42:50.8017120Z [36;1mif [ "$API_CODE" -eq 200 ]; then[0m
+2026-10-25T04:42:50.8017412Z [36;1m  echo "Backend API is responding"[0m
+2026-10-25T04:42:50.8017583Z [36;1melse[0m
+2026-10-25T04:42:50.8017723Z [36;1m  echo "Backend API returned HTTP $API_CODE"[0m
+2026-10-25T04:42:50.8017887Z [36;1m  exit 1[0m
+2026-10-25T04:42:50.8017996Z [36;1mfi[0m
+2026-10-25T04:42:50.8071110Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:50.8071434Z env:
+2026-10-25T04:42:50.8071565Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:50.8071760Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:50.8072000Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:50.8072236Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:50.8072450Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:50.8072659Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:50.8072873Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:50.8073051Z ##[endgroup]
+2026-10-25T04:42:55.8221205Z Frontend is serving correctly
+2026-10-25T04:42:55.8283009Z Backend API is responding
+2026-10-25T04:42:55.8308969Z ##[group]Run echo "Testing GET /api/glossary endpoint..."
+2026-10-25T04:42:55.8309249Z [36;1mecho "Testing GET /api/glossary endpoint..."[0m
+2026-10-25T04:42:55.8309508Z [36;1mRESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8021/api/glossary)[0m
+2026-10-25T04:42:55.8309759Z [36;1mHTTP_CODE=$(echo "$RESPONSE" | tail -n1)[0m
+2026-10-25T04:42:55.8309937Z [36;1mBODY=$(echo "$RESPONSE" | head -n-1)[0m
+2026-10-25T04:42:55.8310108Z [36;1mif [ "$HTTP_CODE" -eq 200 ]; then[0m
+2026-10-25T04:42:55.8310276Z [36;1m  echo "GET /api/glossary - PASS (200)"[0m
+2026-10-25T04:42:55.8310515Z [36;1m  echo "$BODY" | python -m json.tool > /dev/null && echo "  Response is valid JSON"[0m
+2026-10-25T04:42:55.8310739Z [36;1melse[0m
+2026-10-25T04:42:55.8310888Z [36;1m  echo "GET /api/glossary - FAIL (HTTP $HTTP_CODE)"[0m
+2026-10-25T04:42:55.8311063Z [36;1m  exit 1[0m
+2026-10-25T04:42:55.8311172Z [36;1mfi[0m
+2026-10-25T04:42:55.8311281Z [36;1m[0m
+2026-10-25T04:42:55.8311439Z [36;1mecho "Testing GET /health endpoint..."[0m
+2026-10-25T04:42:55.8311663Z [36;1mRESPONSE=$(curl -s -w "\n%{http_code}" http://localhost:8021/health)[0m
+2026-10-25T04:42:55.8311886Z [36;1mHTTP_CODE=$(echo "$RESPONSE" | tail -n1)[0m
+2026-10-25T04:42:55.8312067Z [36;1mBODY=$(echo "$RESPONSE" | head -n-1)[0m
+2026-10-25T04:42:55.8312235Z [36;1mif [ "$HTTP_CODE" -eq 200 ]; then[0m
+2026-10-25T04:42:55.8312397Z [36;1m  echo "GET /health - PASS (200)"[0m
+2026-10-25T04:42:55.8312623Z [36;1m  echo "$BODY" | python -m json.tool > /dev/null && echo "  Response is valid JSON"[0m
+2026-10-25T04:42:55.8312840Z [36;1melse[0m
+2026-10-25T04:42:55.8312977Z [36;1m  echo "GET /health - FAIL (HTTP $HTTP_CODE)"[0m
+2026-10-25T04:42:55.8313141Z [36;1m  exit 1[0m
+2026-10-25T04:42:55.8313249Z [36;1mfi[0m
+2026-10-25T04:42:55.8313355Z [36;1m[0m
+2026-10-25T04:42:55.8313489Z [36;1mecho "All post-commit endpoint tests passed!"[0m
+2026-10-25T04:42:55.8367742Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:55.8367903Z env:
+2026-10-25T04:42:55.8368038Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:55.8368229Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.8368464Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:55.8368710Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.8368921Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.8369129Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.8369341Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:55.8369521Z ##[endgroup]
+2026-10-25T04:42:55.8438112Z Testing GET /api/glossary endpoint...
+2026-10-25T04:42:55.8543810Z GET /api/glossary - PASS (200)
+2026-10-25T04:42:55.8994768Z   Response is valid JSON
+2026-10-25T04:42:55.8995143Z Testing GET /health endpoint...
+2026-10-25T04:42:55.9087983Z GET /health - PASS (200)
+2026-10-25T04:42:55.9299892Z   Response is valid JSON
+2026-10-25T04:42:55.9300224Z All post-commit endpoint tests passed!
+2026-10-25T04:42:55.9329965Z ##[group]Run docker compose down
+2026-10-25T04:42:55.9330247Z [36;1mdocker compose down[0m
+2026-10-25T04:42:55.9383177Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:55.9383585Z env:
+2026-10-25T04:42:55.9383794Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:55.9384050Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.9384441Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:55.9384753Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.9385103Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.9385388Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:55.9385662Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:55.9385988Z ##[endgroup]
+2026-10-25T04:42:56.0263422Z  Container maxwell-frontend  Stopping
+2026-10-25T04:43:06.2062656Z  Container maxwell-frontend  Stopped
+2026-10-25T04:43:06.2063477Z  Container maxwell-frontend  Removing
+2026-10-25T04:43:06.2217754Z  Container maxwell-frontend  Removed
+2026-10-25T04:43:06.2218820Z  Container maxwell-backend  Stopping
+2026-10-25T04:43:16.3472620Z  Container maxwell-backend  Stopped
+2026-10-25T04:43:16.3472991Z  Container maxwell-backend  Removing
+2026-10-25T04:43:16.3529877Z  Container maxwell-backend  Removed
+2026-10-25T04:43:16.3530394Z  Container maxwell-database  Stopping
+2026-10-25T04:43:26.4167706Z  Container maxwell-database  Stopped
+2026-10-25T04:43:26.4168589Z  Container maxwell-database  Removing
+2026-10-25T04:43:26.4229770Z  Container maxwell-database  Removed
+2026-10-25T04:43:26.4236124Z  Network asd2026_default  Removing
+2026-10-25T04:43:26.5106138Z  Network asd2026_default  Removed
+2026-10-25T04:43:26.5212593Z Post job cleanup.
+2026-10-25T04:43:26.5981101Z (node:3310) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:43:26.5981566Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:43:26.6159103Z Post job cleanup.
+2026-10-25T04:43:26.6765999Z [command]/usr/bin/git version
+2026-10-25T04:43:26.6798027Z git version 2.55.0
+2026-10-25T04:43:26.6821376Z Temporarily overriding HOME='/home/runner/work/_temp/42203d5c-b528-4ba1-9932-46e53c0cda77' before making global git config changes
+2026-10-25T04:43:26.6822031Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:43:26.6824214Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:43:26.6854343Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:43:26.6881384Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:43:26.7084734Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:43:26.7113125Z http.https://github.com/.extraheader
+2026-10-25T04:43:26.7128549Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:43:26.7165093Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:43:26.7359080Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T04:43:26.7389297Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T04:43:26.7692743Z Cleaning up orphan processes
+2026-10-25T04:43:26.7952141Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

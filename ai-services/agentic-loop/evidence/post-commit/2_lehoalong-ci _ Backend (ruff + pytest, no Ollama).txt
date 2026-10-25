@@ -1,0 +1,1036 @@
+﻿2026-10-25T04:41:48.1495809Z Current runner version: '2.338.0'
+2026-10-25T04:41:48.1522558Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:48.1523478Z Hosted Compute Agent
+2026-10-25T04:41:48.1524637Z Version: 20261021.618
+2026-10-25T04:41:48.1525295Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:48.1526074Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:48.1526835Z Worker ID: {5dd69a1c-22f7-47a4-8549-a4f8079101f1}
+2026-10-25T04:41:48.1527583Z Region: westcentralus
+2026-10-25T04:41:48.1528229Z Cloud: Azure
+2026-10-25T04:41:48.1528805Z ##[endgroup]
+2026-10-25T04:41:48.1530106Z ##[group]Operating System
+2026-10-25T04:41:48.1530916Z Ubuntu
+2026-10-25T04:41:48.1531656Z 24.04.5
+2026-10-25T04:41:48.1532246Z LTS
+2026-10-25T04:41:48.1532805Z ##[endgroup]
+2026-10-25T04:41:48.1533364Z ##[group]Runner Image
+2026-10-25T04:41:48.1534135Z Image: ubuntu-24.04
+2026-10-25T04:41:48.1534734Z Version: 20261012.334.1
+2026-10-25T04:41:48.1536069Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:48.1537614Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:48.1538748Z ##[endgroup]
+2026-10-25T04:41:48.1539904Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:48.1542171Z Contents: read
+2026-10-25T04:41:48.1542798Z Metadata: read
+2026-10-25T04:41:48.1543536Z ##[endgroup]
+2026-10-25T04:41:48.1546053Z Secret source: Actions
+2026-10-25T04:41:48.1547116Z Cache mode: write
+2026-10-25T04:41:48.1547839Z Prepare workflow directory
+2026-10-25T04:41:48.1946347Z Prepare all required actions
+2026-10-25T04:41:48.1995038Z Getting action download info
+2026-10-25T04:41:48.4720737Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:48.6016602Z Download action repository 'actions/setup-python@v5.3.0' (SHA:0b93645e9fea7318ecaed2b359559ac225c90a2b)
+2026-10-25T04:41:48.8205532Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/lehoalong-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:48.8211139Z Complete job name: lehoalong-ci / Backend (ruff + pytest, no Ollama)
+2026-10-25T04:41:48.9126772Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:48.9127722Z with:
+2026-10-25T04:41:48.9128261Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.9132333Z   token: ***
+2026-10-25T04:41:48.9132778Z   ssh-strict: true
+2026-10-25T04:41:48.9133223Z   ssh-user: git
+2026-10-25T04:41:48.9133676Z   persist-credentials: true
+2026-10-25T04:41:48.9134170Z   clean: true
+2026-10-25T04:41:48.9134624Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:48.9135146Z   fetch-depth: 1
+2026-10-25T04:41:48.9135578Z   fetch-tags: false
+2026-10-25T04:41:48.9136028Z   show-progress: true
+2026-10-25T04:41:48.9136472Z   lfs: false
+2026-10-25T04:41:48.9136881Z   submodules: false
+2026-10-25T04:41:48.9137336Z   set-safe-directory: true
+2026-10-25T04:41:48.9138536Z env:
+2026-10-25T04:41:48.9138992Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.9139575Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:41:48.9140062Z   MCP_ENABLED: false
+2026-10-25T04:41:48.9140576Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:48.9141124Z   RAG_ENABLED: false
+2026-10-25T04:41:48.9141941Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.9142503Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:48.9142989Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:41:48.9143496Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.9144013Z ##[endgroup]
+2026-10-25T04:41:49.0226516Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.0229033Z ##[group]Getting Git version info
+2026-10-25T04:41:49.0230523Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:49.0232778Z [command]/usr/bin/git version
+2026-10-25T04:41:49.0322870Z git version 2.55.0
+2026-10-25T04:41:49.0358718Z ##[endgroup]
+2026-10-25T04:41:49.0366228Z Temporarily overriding HOME='/home/runner/work/_temp/dab1e7cb-2672-47fe-ba2c-63389079f6d8' before making global git config changes
+2026-10-25T04:41:49.0368947Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:49.0371245Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:49.0424575Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:49.0432075Z ##[group]Initializing the repository
+2026-10-25T04:41:49.0442370Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:49.0510389Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:49.0518099Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:49.0520407Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:49.0522365Z hint: call:
+2026-10-25T04:41:49.0523440Z hint:
+2026-10-25T04:41:49.0524377Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:49.0525388Z hint:
+2026-10-25T04:41:49.0526303Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:49.0527797Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:49.0529036Z hint:
+2026-10-25T04:41:49.0529683Z hint: 	git branch -m <name>
+2026-10-25T04:41:49.0530424Z hint:
+2026-10-25T04:41:49.0531416Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:49.0533672Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:49.0536879Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.0576062Z ##[endgroup]
+2026-10-25T04:41:49.0577211Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:49.0579458Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:49.0617583Z ##[endgroup]
+2026-10-25T04:41:49.0618812Z ##[group]Setting up auth
+2026-10-25T04:41:49.0626089Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:49.0663244Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:49.1005960Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:49.1044180Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:49.1293238Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:49.1337028Z ##[endgroup]
+2026-10-25T04:41:49.1337881Z ##[group]Fetching the repository
+2026-10-25T04:41:49.1347163Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:49.8391137Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.8402815Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:49.8405905Z ##[endgroup]
+2026-10-25T04:41:49.8406858Z ##[group]Determining the checkout info
+2026-10-25T04:41:49.8407876Z ##[endgroup]
+2026-10-25T04:41:49.8408790Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:49.8465069Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:49.8502836Z ##[group]Checking out the ref
+2026-10-25T04:41:49.8509018Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:49.8883036Z Switched to a new branch 'main'
+2026-10-25T04:41:49.8887846Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:49.8896958Z ##[endgroup]
+2026-10-25T04:41:49.8944705Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:49.8981602Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:49.9338143Z ##[group]Run actions/setup-python@v5.3.0
+2026-10-25T04:41:49.9339432Z with:
+2026-10-25T04:41:49.9340419Z   python-version: 3.11
+2026-10-25T04:41:49.9341579Z   cache: pip
+2026-10-25T04:41:49.9343218Z   cache-dependency-path: LeHoaLong/backend/requirements.txt
+LeHoaLong/tests/requirements.txt
+
+2026-10-25T04:41:49.9345126Z   check-latest: false
+2026-10-25T04:41:49.9353166Z   token: ***
+2026-10-25T04:41:49.9354172Z   update-environment: true
+2026-10-25T04:41:49.9355285Z   allow-prereleases: false
+2026-10-25T04:41:49.9356349Z env:
+2026-10-25T04:41:49.9357325Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.9358528Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:41:49.9359645Z   MCP_ENABLED: false
+2026-10-25T04:41:49.9360687Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:49.9361961Z   RAG_ENABLED: false
+2026-10-25T04:41:49.9362979Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.9364120Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:49.9365250Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:41:49.9366346Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.9367456Z ##[endgroup]
+2026-10-25T04:41:50.0685321Z ##[group]Installed versions
+2026-10-25T04:41:50.0764412Z (node:2328) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:50.0767379Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:50.0768970Z Successfully set up CPython (3.11.17)
+2026-10-25T04:41:50.0770729Z ##[endgroup]
+2026-10-25T04:41:50.1140860Z [command]/opt/hostedtoolcache/Python/3.11.17/x64/bin/pip cache dir
+2026-10-25T04:41:50.3472234Z /home/runner/.cache/pip
+2026-10-25T04:41:50.4840704Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:41:50.4850150Z pip cache is not found
+2026-10-25T04:41:50.4982530Z ##[group]Run python -m pip install --upgrade pip
+2026-10-25T04:41:50.4983169Z [36;1mpython -m pip install --upgrade pip[0m
+2026-10-25T04:41:50.4983631Z [36;1mpip install -r LeHoaLong/tests/requirements.txt[0m
+2026-10-25T04:41:50.4984056Z [36;1mpip install ruff==0.16.6 pip-audit==2.10.1[0m
+2026-10-25T04:41:50.5208523Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:50.5208877Z env:
+2026-10-25T04:41:50.5209195Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.5209542Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:41:50.5209844Z   MCP_ENABLED: false
+2026-10-25T04:41:50.5210157Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:50.5210488Z   RAG_ENABLED: false
+2026-10-25T04:41:50.5210770Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.5211083Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:50.5211368Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:41:50.5211872Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:41:50.5212317Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5212833Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:50.5213311Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5213739Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5214166Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:50.5214595Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:50.5214973Z ##[endgroup]
+2026-10-25T04:41:51.3475934Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (26.2.1)
+2026-10-25T04:41:51.4815894Z Collecting pip
+2026-10-25T04:41:51.5926533Z   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:51.6182664Z Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+2026-10-25T04:41:51.7468202Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 21.4 MB/s  0:00:00
+2026-10-25T04:41:51.7919631Z Installing collected packages: pip
+2026-10-25T04:41:51.7920298Z   Attempting uninstall: pip
+2026-10-25T04:41:51.7933292Z     Found existing installation: pip 26.2.1
+2026-10-25T04:41:51.8708745Z     Uninstalling pip-26.2.1:
+2026-10-25T04:41:51.8766339Z       Successfully uninstalled pip-26.2.1
+2026-10-25T04:41:52.7105428Z Successfully installed pip-26.2.2
+2026-10-25T04:41:53.6596320Z Collecting Flask==3.1.3 (from -r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:53.7513516Z   Downloading flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+2026-10-25T04:41:53.7981162Z Collecting requests==2.34.2 (from -r LeHoaLong/tests/requirements.txt (line 4))
+2026-10-25T04:41:53.8177051Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+2026-10-25T04:41:53.8605249Z Collecting pytest==9.1.1 (from -r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:41:53.8812725Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:53.9106900Z Collecting blinker>=1.9.0 (from Flask==3.1.3->-r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:53.9302180Z   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:53.9608902Z Collecting click>=8.1.3 (from Flask==3.1.3->-r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:53.9900283Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:54.0166000Z Collecting itsdangerous>=2.2.0 (from Flask==3.1.3->-r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:54.0359402Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:41:54.0646747Z Collecting jinja2>=3.1.2 (from Flask==3.1.3->-r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:54.0839895Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:54.1624327Z Collecting markupsafe>=2.1.1 (from Flask==3.1.3->-r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:54.1819793Z   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:41:54.2145393Z Collecting werkzeug>=3.1.0 (from Flask==3.1.3->-r LeHoaLong/tests/requirements.txt (line 3))
+2026-10-25T04:41:54.2343189Z   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:41:54.3657860Z Collecting charset_normalizer<4,>=2 (from requests==2.34.2->-r LeHoaLong/tests/requirements.txt (line 4))
+2026-10-25T04:41:54.3855235Z   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:41:54.4333484Z Collecting idna<4,>=2.5 (from requests==2.34.2->-r LeHoaLong/tests/requirements.txt (line 4))
+2026-10-25T04:41:54.4526470Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:41:54.4859635Z Collecting urllib3<3,>=1.26 (from requests==2.34.2->-r LeHoaLong/tests/requirements.txt (line 4))
+2026-10-25T04:41:54.5054759Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:54.5367591Z Collecting certifi>=2023.5.7 (from requests==2.34.2->-r LeHoaLong/tests/requirements.txt (line 4))
+2026-10-25T04:41:54.5577502Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:54.5834751Z Collecting iniconfig>=1.0.1 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:41:54.6029073Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:41:54.6315847Z Collecting packaging>=22 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:41:54.6509155Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:54.6774753Z Collecting pluggy<2,>=1.5 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:41:54.6970679Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-10-25T04:41:54.7288619Z Collecting pygments>=2.7.2 (from pytest==9.1.1->-r LeHoaLong/tests/requirements.txt (line 5))
+2026-10-25T04:41:54.7485331Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:54.7763080Z Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+2026-10-25T04:41:54.8146593Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+2026-10-25T04:41:54.8384362Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:41:54.8935666Z Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:41:54.9194537Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:41:54.9407705Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-10-25T04:41:54.9621359Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:41:54.9846703Z Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:41:55.0053829Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:41:55.0278692Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:41:55.0494928Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-10-25T04:41:55.0704889Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:41:55.0913691Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:41:55.1142223Z Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:41:55.1352211Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-25T04:41:55.1575320Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-10-25T04:41:55.1976332Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 28.3 MB/s  0:00:00
+2026-10-25T04:41:55.2168123Z Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:41:55.2826900Z Installing collected packages: urllib3, pygments, pluggy, packaging, markupsafe, itsdangerous, iniconfig, idna, click, charset_normalizer, certifi, blinker, werkzeug, requests, pytest, jinja2, Flask
+2026-10-25T04:41:56.8902448Z 
+2026-10-25T04:41:56.8917331Z Successfully installed Flask-3.1.3 blinker-1.9.0 certifi-2026.10.23 charset_normalizer-3.5.2 click-8.5.0 idna-3.20 iniconfig-2.3.1 itsdangerous-2.2.0 jinja2-3.1.6 markupsafe-3.0.4 packaging-26.3 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1 requests-2.34.2 urllib3-2.8.0 werkzeug-3.1.9
+2026-10-25T04:41:58.0525677Z Collecting ruff==0.16.6
+2026-10-25T04:41:58.1494036Z   Downloading ruff-0.16.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (26 kB)
+2026-10-25T04:41:58.1893433Z Collecting pip-audit==2.10.1
+2026-10-25T04:41:58.2115206Z   Downloading pip_audit-2.10.1-py3-none-any.whl.metadata (28 kB)
+2026-10-25T04:41:58.2474271Z Collecting CacheControl>=0.13.0 (from CacheControl[filecache]>=0.13.0->pip-audit==2.10.1)
+2026-10-25T04:41:58.2674073Z   Downloading cachecontrol-0.14.4-py3-none-any.whl.metadata (3.1 kB)
+2026-10-25T04:41:58.3078070Z Collecting cyclonedx-python-lib<12,>=5 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.3284042Z   Downloading cyclonedx_python_lib-11.12.0-py3-none-any.whl.metadata (6.9 kB)
+2026-10-25T04:41:58.3323066Z Requirement already satisfied: packaging>=23.0.0 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pip-audit==2.10.1) (26.3)
+2026-10-25T04:41:58.3579815Z Collecting pip-api>=0.0.28 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.3774908Z   Downloading pip_api-0.0.35-py3-none-any.whl.metadata (17 kB)
+2026-10-25T04:41:58.4072346Z Collecting pip-requirements-parser>=32.0.0 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.4268265Z   Downloading pip_requirements_parser-32.0.1-py3-none-any.whl.metadata (9.3 kB)
+2026-10-25T04:41:58.4309977Z Requirement already satisfied: requests>=2.31.0 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pip-audit==2.10.1) (2.34.2)
+2026-10-25T04:41:58.4683997Z Collecting rich>=12.4 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.4878040Z   Downloading rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+2026-10-25T04:41:58.5302075Z Collecting tomli>=2.2.1 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.5501842Z   Downloading tomli-2.5.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (10 kB)
+2026-10-25T04:41:58.5761798Z Collecting tomli-w>=1.2.0 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.5956766Z   Downloading tomli_w-1.2.0-py3-none-any.whl.metadata (5.7 kB)
+2026-10-25T04:41:58.6280775Z Collecting platformdirs>=4.2.0 (from pip-audit==2.10.1)
+2026-10-25T04:41:58.6480712Z   Downloading platformdirs-4.13.5-py3-none-any.whl.metadata (5.5 kB)
+2026-10-25T04:41:58.6769754Z Collecting license-expression<31,>=30 (from cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.6963953Z   Downloading license_expression-30.4.4-py3-none-any.whl.metadata (11 kB)
+2026-10-25T04:41:58.7286381Z Collecting packageurl-python<2,>=0.11 (from cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.7482652Z   Downloading packageurl_python-0.17.6-py3-none-any.whl.metadata (5.1 kB)
+2026-10-25T04:41:58.7775723Z Collecting py-serializable<3.0.0,>=2.1.0 (from cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.7968164Z   Downloading py_serializable-2.1.0-py3-none-any.whl.metadata (4.3 kB)
+2026-10-25T04:41:58.8238976Z Collecting sortedcontainers<3.0.0,>=2.4.0 (from cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.8435726Z   Downloading sortedcontainers-2.4.0-py2.py3-none-any.whl.metadata (10 kB)
+2026-10-25T04:41:58.8743574Z Collecting typing_extensions<5.0,>=4.6 (from cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.8940143Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-10-25T04:41:58.9209984Z Collecting boolean.py>=4.0 (from license-expression<31,>=30->cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.9405816Z   Downloading boolean_py-5.0-py3-none-any.whl.metadata (2.3 kB)
+2026-10-25T04:41:58.9671628Z Collecting defusedxml<0.8.0,>=0.7.1 (from py-serializable<3.0.0,>=2.1.0->cyclonedx-python-lib<12,>=5->pip-audit==2.10.1)
+2026-10-25T04:41:58.9866563Z   Downloading defusedxml-0.7.1-py2.py3-none-any.whl.metadata (32 kB)
+2026-10-25T04:41:59.0900638Z Collecting msgpack<2.0.0,>=0.5.2 (from CacheControl>=0.13.0->CacheControl[filecache]>=0.13.0->pip-audit==2.10.1)
+2026-10-25T04:41:59.1104358Z   Downloading msgpack-1.2.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.3 kB)
+2026-10-25T04:41:59.1485161Z Collecting filelock>=3.8.0 (from CacheControl[filecache]>=0.13.0->pip-audit==2.10.1)
+2026-10-25T04:41:59.1681956Z   Downloading filelock-4.2.4-py3-none-any.whl.metadata (2.0 kB)
+2026-10-25T04:41:59.1723766Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pip-api>=0.0.28->pip-audit==2.10.1) (26.2.2)
+2026-10-25T04:41:59.2052476Z Collecting pyparsing (from pip-requirements-parser>=32.0.0->pip-audit==2.10.1)
+2026-10-25T04:41:59.2251017Z   Downloading pyparsing-3.3.3-py3-none-any.whl.metadata (5.9 kB)
+2026-10-25T04:41:59.2295153Z Requirement already satisfied: charset_normalizer<4,>=2 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests>=2.31.0->pip-audit==2.10.1) (3.5.2)
+2026-10-25T04:41:59.2301746Z Requirement already satisfied: idna<4,>=2.5 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests>=2.31.0->pip-audit==2.10.1) (3.20)
+2026-10-25T04:41:59.2306276Z Requirement already satisfied: urllib3<3,>=1.26 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests>=2.31.0->pip-audit==2.10.1) (2.8.0)
+2026-10-25T04:41:59.2310455Z Requirement already satisfied: certifi>=2023.5.7 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests>=2.31.0->pip-audit==2.10.1) (2026.10.23)
+2026-10-25T04:41:59.2599059Z Collecting markdown-it-py>=2.2.0 (from rich>=12.4->pip-audit==2.10.1)
+2026-10-25T04:41:59.2797302Z   Downloading markdown_it_py-4.2.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:59.2851252Z Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from rich>=12.4->pip-audit==2.10.1) (2.21.0)
+2026-10-25T04:41:59.3083894Z Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=12.4->pip-audit==2.10.1)
+2026-10-25T04:41:59.3279813Z   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:59.3546581Z Downloading ruff-0.16.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.3 MB)
+2026-10-25T04:41:59.5682469Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 60.2 MB/s  0:00:00
+2026-10-25T04:41:59.5879966Z Downloading pip_audit-2.10.1-py3-none-any.whl (62 kB)
+2026-10-25T04:41:59.6095618Z Downloading cyclonedx_python_lib-11.12.0-py3-none-any.whl (529 kB)
+2026-10-25T04:41:59.6145191Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 529.5/529.5 kB 107.3 MB/s  0:00:00
+2026-10-25T04:41:59.6340689Z Downloading license_expression-30.4.4-py3-none-any.whl (120 kB)
+2026-10-25T04:41:59.6562439Z Downloading packageurl_python-0.17.6-py3-none-any.whl (36 kB)
+2026-10-25T04:41:59.6773731Z Downloading py_serializable-2.1.0-py3-none-any.whl (23 kB)
+2026-10-25T04:41:59.6984212Z Downloading defusedxml-0.7.1-py2.py3-none-any.whl (25 kB)
+2026-10-25T04:41:59.7196618Z Downloading sortedcontainers-2.4.0-py2.py3-none-any.whl (29 kB)
+2026-10-25T04:41:59.7407267Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-25T04:41:59.7617814Z Downloading boolean_py-5.0-py3-none-any.whl (26 kB)
+2026-10-25T04:41:59.7826439Z Downloading cachecontrol-0.14.4-py3-none-any.whl (22 kB)
+2026-10-25T04:41:59.8037958Z Downloading msgpack-1.2.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (477 kB)
+2026-10-25T04:41:59.8259731Z Downloading filelock-4.2.4-py3-none-any.whl (162 kB)
+2026-10-25T04:41:59.8474895Z Downloading pip_api-0.0.35-py3-none-any.whl (123 kB)
+2026-10-25T04:41:59.8687812Z Downloading pip_requirements_parser-32.0.1-py3-none-any.whl (35 kB)
+2026-10-25T04:41:59.8898204Z Downloading platformdirs-4.13.5-py3-none-any.whl (32 kB)
+2026-10-25T04:41:59.9110958Z Downloading rich-15.0.0-py3-none-any.whl (310 kB)
+2026-10-25T04:41:59.9355338Z Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+2026-10-25T04:41:59.9570663Z Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+2026-10-25T04:41:59.9784488Z Downloading tomli-2.5.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (276 kB)
+2026-10-25T04:42:00.0013211Z Downloading tomli_w-1.2.0-py3-none-any.whl (6.7 kB)
+2026-10-25T04:42:00.0237091Z Downloading pyparsing-3.3.3-py3-none-any.whl (126 kB)
+2026-10-25T04:42:00.1251132Z Installing collected packages: sortedcontainers, boolean.py, typing_extensions, tomli-w, tomli, ruff, pyparsing, platformdirs, pip-api, packageurl-python, msgpack, mdurl, license-expression, filelock, defusedxml, py-serializable, pip-requirements-parser, markdown-it-py, CacheControl, rich, cyclonedx-python-lib, pip-audit
+2026-10-25T04:42:01.0979066Z 
+2026-10-25T04:42:01.0999305Z Successfully installed CacheControl-0.14.4 boolean.py-5.0 cyclonedx-python-lib-11.12.0 defusedxml-0.7.1 filelock-4.2.4 license-expression-30.4.4 markdown-it-py-4.2.0 mdurl-0.1.2 msgpack-1.2.3 packageurl-python-0.17.6 pip-api-0.0.35 pip-audit-2.10.1 pip-requirements-parser-32.0.1 platformdirs-4.13.5 py-serializable-2.1.0 pyparsing-3.3.3 rich-15.0.0 ruff-0.16.6 sortedcontainers-2.4.0 tomli-2.5.0 tomli-w-1.2.0 typing_extensions-4.16.0
+2026-10-25T04:42:01.1833007Z ##[group]Run echo "OLLAMA_BASE_URL = ${OLLAMA_BASE_URL}  (dead port, AI-Mode disabled)"
+2026-10-25T04:42:01.1833636Z [36;1mecho "OLLAMA_BASE_URL = ${OLLAMA_BASE_URL}  (dead port, AI-Mode disabled)"[0m
+2026-10-25T04:42:01.1834063Z [36;1mecho "MCP_ENABLED     = ${MCP_ENABLED}"[0m
+2026-10-25T04:42:01.1834431Z [36;1mecho "MCP_SERVER_URL  = ${MCP_SERVER_URL}  (dead port)"[0m
+2026-10-25T04:42:01.1834805Z [36;1mecho "RAG_ENABLED     = ${RAG_ENABLED}"[0m
+2026-10-25T04:42:01.1835143Z [36;1mecho "RAG_SERVER_URL  = ${RAG_SERVER_URL}  (dead port)"[0m
+2026-10-25T04:42:01.1835516Z [36;1mecho "AI_MODE_ENABLED     = ${AI_MODE_ENABLED}"[0m
+2026-10-25T04:42:01.1836064Z [36;1mecho "MULTI_AGENT_ENABLED = ${MULTI_AGENT_ENABLED}"[0m
+2026-10-25T04:42:01.1836463Z [36;1mecho "MULTI_AGENT_URL     = ${MULTI_AGENT_URL}  (dead port)"[0m
+2026-10-25T04:42:01.1836821Z [36;1mtest "${MCP_ENABLED}" = "false"[0m
+2026-10-25T04:42:01.1837095Z [36;1mtest "${RAG_ENABLED}" = "false"[0m
+2026-10-25T04:42:01.1837434Z [36;1mtest "${AI_MODE_ENABLED}" = "false"[0m
+2026-10-25T04:42:01.1837747Z [36;1mtest "${MULTI_AGENT_ENABLED}" = "false"[0m
+2026-10-25T04:42:01.1838137Z [36;1m# Each URL on its own: the old single `case` over the concatenation[0m
+2026-10-25T04:42:01.1838533Z [36;1m# passed if any one of them was dead.[0m
+2026-10-25T04:42:01.1839013Z [36;1mfor url in "${OLLAMA_BASE_URL}" "${MCP_SERVER_URL}" "${RAG_SERVER_URL}" "${MULTI_AGENT_URL}"; do[0m
+2026-10-25T04:42:01.1839475Z [36;1m  case "${url}" in[0m
+2026-10-25T04:42:01.1839721Z [36;1m    *127.0.0.1:1*) ;;[0m
+2026-10-25T04:42:01.1840041Z [36;1m    *) echo "${url} is not pointed at a dead port"; exit 1 ;;[0m
+2026-10-25T04:42:01.1840384Z [36;1m  esac[0m
+2026-10-25T04:42:01.1840580Z [36;1mdone[0m
+2026-10-25T04:42:01.1840878Z [36;1m# The suite must never speak the MCP protocol, so the SDK is not[0m
+2026-10-25T04:42:01.1841325Z [36;1m# installed. app/mcp/client.py imports it lazily inside the one[0m
+2026-10-25T04:42:01.1842060Z [36;1m# transport function every test replaces, which is why 400+ tests[0m
+2026-10-25T04:42:01.1842518Z [36;1m# pass without it. If this import ever starts succeeding, something[0m
+2026-10-25T04:42:01.1842947Z [36;1m# has added a real dependency on it to the test path.[0m
+2026-10-25T04:42:01.1843319Z [36;1mif python -c "import mcp" 2>/dev/null; then[0m
+2026-10-25T04:42:01.1843745Z [36;1m  echo "the mcp SDK is installed in the test environment -- it should not be"[0m
+2026-10-25T04:42:01.1844128Z [36;1m  exit 1[0m
+2026-10-25T04:42:01.1844344Z [36;1mfi[0m
+2026-10-25T04:42:01.1844581Z [36;1mecho "the mcp SDK is absent, as intended"[0m
+2026-10-25T04:42:01.1917032Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:01.1917308Z env:
+2026-10-25T04:42:01.1917568Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.1917878Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:42:01.1918142Z   MCP_ENABLED: false
+2026-10-25T04:42:01.1918395Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:01.1918699Z   RAG_ENABLED: false
+2026-10-25T04:42:01.1918928Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.1919194Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:01.1919427Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:01.1919678Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.1920018Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.1920436Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:01.1920861Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.1921245Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.1921889Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.1922283Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:01.1922610Z ##[endgroup]
+2026-10-25T04:42:01.2015686Z OLLAMA_BASE_URL = http://127.0.0.1:1  (dead port, AI-Mode disabled)
+2026-10-25T04:42:01.2016288Z MCP_ENABLED     = false
+2026-10-25T04:42:01.2017061Z MCP_SERVER_URL  = http://127.0.0.1:1/mcp  (dead port)
+2026-10-25T04:42:01.2017394Z RAG_ENABLED     = false
+2026-10-25T04:42:01.2017820Z RAG_SERVER_URL  = http://127.0.0.1:1  (dead port)
+2026-10-25T04:42:01.2018264Z AI_MODE_ENABLED     = false
+2026-10-25T04:42:01.2018635Z MULTI_AGENT_ENABLED = false
+2026-10-25T04:42:01.2019077Z MULTI_AGENT_URL     = http://127.0.0.1:1  (dead port)
+2026-10-25T04:42:01.2140647Z the mcp SDK is absent, as intended
+2026-10-25T04:42:01.2175055Z ##[group]Run ruff check LeHoaLong
+2026-10-25T04:42:01.2175356Z [36;1mruff check LeHoaLong[0m
+2026-10-25T04:42:01.2244427Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:01.2244684Z env:
+2026-10-25T04:42:01.2244925Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.2245379Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:42:01.2245631Z   MCP_ENABLED: false
+2026-10-25T04:42:01.2245910Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:01.2246247Z   RAG_ENABLED: false
+2026-10-25T04:42:01.2246473Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.2246735Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:01.2246968Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:01.2247219Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.2247543Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2247962Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:01.2248423Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2248811Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2249182Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2249547Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:01.2249875Z ##[endgroup]
+2026-10-25T04:42:01.2517105Z All checks passed!
+2026-10-25T04:42:01.2560386Z ##[group]Run pip-audit -r LeHoaLong/backend/requirements.txt
+2026-10-25T04:42:01.2560860Z [36;1mpip-audit -r LeHoaLong/backend/requirements.txt[0m
+2026-10-25T04:42:01.2561231Z [36;1mpip-audit -r LeHoaLong/tests/requirements.txt[0m
+2026-10-25T04:42:01.2636335Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:01.2636614Z env:
+2026-10-25T04:42:01.2636883Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.2637177Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:42:01.2637429Z   MCP_ENABLED: false
+2026-10-25T04:42:01.2637675Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:01.2637951Z   RAG_ENABLED: false
+2026-10-25T04:42:01.2638181Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.2638449Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:01.2638682Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:01.2638934Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:01.2639280Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2639748Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:01.2640174Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2640553Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2640919Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:01.2641288Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:01.2641813Z ##[endgroup]
+2026-10-25T04:42:12.8555816Z No known vulnerabilities found
+2026-10-25T04:42:20.0943582Z No known vulnerabilities found
+2026-10-25T04:42:20.1409355Z ##[group]Run python LeHoaLong/database/init_db.py --db "${RUNNER_TEMP}/goals.db" --force
+2026-10-25T04:42:20.1409975Z [36;1mpython LeHoaLong/database/init_db.py --db "${RUNNER_TEMP}/goals.db" --force[0m
+2026-10-25T04:42:20.1479113Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:20.1479376Z env:
+2026-10-25T04:42:20.1479638Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:20.1479940Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:42:20.1480210Z   MCP_ENABLED: false
+2026-10-25T04:42:20.1480463Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:20.1480738Z   RAG_ENABLED: false
+2026-10-25T04:42:20.1480966Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:20.1481232Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:20.1481624Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:20.1481878Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:20.1482207Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.1482684Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:20.1483106Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.1483487Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.1483863Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.1484425Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:20.1484752Z ##[endgroup]
+2026-10-25T04:42:20.3153081Z [init_db] schema created from schema.sql
+2026-10-25T04:42:20.3153657Z [init_db] seed data loaded from seed.sql
+2026-10-25T04:42:20.3154182Z [init_db] initialised /home/runner/work/_temp/goals.db
+2026-10-25T04:42:20.3154532Z 
+2026-10-25T04:42:20.3154664Z Row counts
+2026-10-25T04:42:20.3155083Z ------------------------------------------------------------------------------
+2026-10-25T04:42:20.3155656Z   goals              13   ok
+2026-10-25T04:42:20.3155998Z   goal_steps         77   ok
+2026-10-25T04:42:20.3156339Z   contributions      26   ok
+2026-10-25T04:42:20.3156712Z   ai_plan_log        12   ok
+2026-10-25T04:42:20.3157047Z   budget_settings    10   ok
+2026-10-25T04:42:20.3157288Z 
+2026-10-25T04:42:20.3157396Z Goals
+2026-10-25T04:42:20.3157807Z ------------------------------------------------------------------------------
+2026-10-25T04:42:20.3158447Z   id  usr  name                            target     saved steps  status    pri
+2026-10-25T04:42:20.3159120Z    1    1  Emergency Fund               10,000.00  4,202.00    12  active    high
+2026-10-25T04:42:20.3159807Z    2    1  Japan Trip 2027               6,000.00  1,000.00    12  active    medium
+2026-10-25T04:42:20.3160523Z    3    1  New Laptop                    2,800.00    450.00     6  active    high
+2026-10-25T04:42:20.3161237Z    4    1  Car Service and Rego          1,200.00    300.00     4  active    medium
+2026-10-25T04:42:20.3162152Z    5    1  Wedding Gift Fund             1,500.00    750.00     2  paused    low
+2026-10-25T04:42:20.3162916Z    6    1  Rental Bond and Moving Costs  4,200.00    700.00     6  active    high
+2026-10-25T04:42:20.3163702Z    7    1  Masters Tuition Deposit       8,000.00      0.00     0  active    medium
+2026-10-25T04:42:20.3164382Z    8    1  Road Bike                     3,500.00  3,500.00     6  achieved  low
+2026-10-25T04:42:20.3165011Z    9    2  Home Deposit                 60,000.00 12,000.00    12  active    high
+2026-10-25T04:42:20.3165687Z   10    2  Festival Tickets                900.00    300.00     3  active    low
+2026-10-25T04:42:20.3166315Z   11    2  Camera Upgrade                2,200.00    150.00     2  abandoned medium
+2026-10-25T04:42:20.3166966Z   12    3  Debt Payoff Buffer            5,000.00  1,251.00    12  active    high
+2026-10-25T04:42:20.3167653Z   13    3  Holiday in Vietnam            3,200.00      0.00     0  active    medium
+2026-10-25T04:42:20.3168092Z 
+2026-10-25T04:42:20.3168238Z Budget settings
+2026-10-25T04:42:20.3168710Z ------------------------------------------------------------------------------
+2026-10-25T04:42:20.3169643Z   user  1    2,500.00 AUD   6 active goal(s)
+2026-10-25T04:42:20.3170130Z   user  2    6,000.00 AUD   2 active goal(s)
+2026-10-25T04:42:20.3170581Z   user  3    1,400.00 AUD   2 active goal(s)
+2026-10-25T04:42:20.3171037Z   user  4    3,200.00 AUD   0 active goal(s)
+2026-10-25T04:42:20.3171641Z   user  5      950.00 AUD   0 active goal(s)
+2026-10-25T04:42:20.3172106Z   user  6    4,500.00 AUD   0 active goal(s)
+2026-10-25T04:42:20.3172573Z   user  7    1,800.00 NZD   0 active goal(s)
+2026-10-25T04:42:20.3173000Z   user  8      700.00 AUD   0 active goal(s)
+2026-10-25T04:42:20.3173436Z   user  9    5,200.00 USD   0 active goal(s)
+2026-10-25T04:42:20.3173894Z   user 10    2,100.00 AUD   0 active goal(s)
+2026-10-25T04:42:20.3174184Z 
+2026-10-25T04:42:20.3174343Z ai_plan_log by phase and model
+2026-10-25T04:42:20.3174853Z ------------------------------------------------------------------------------
+2026-10-25T04:42:20.3175365Z   adapt     qwen2.5:0.5b     1
+2026-10-25T04:42:20.3175713Z   observe   python           5
+2026-10-25T04:42:20.3176118Z   plan      llama3.1:8b      1
+2026-10-25T04:42:20.3176512Z   plan      python           2
+2026-10-25T04:42:20.3176867Z   plan      qwen2.5:0.5b     3
+2026-10-25T04:42:20.3177114Z 
+2026-10-25T04:42:20.3177315Z [init_db] ready: /home/runner/work/_temp/goals.db
+2026-10-25T04:42:20.3242682Z ##[group]Run pytest LeHoaLong/tests -v
+2026-10-25T04:42:20.3243162Z [36;1mpytest LeHoaLong/tests -v[0m
+2026-10-25T04:42:20.3311599Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:20.3311869Z env:
+2026-10-25T04:42:20.3312104Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:20.3312396Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:42:20.3312651Z   MCP_ENABLED: false
+2026-10-25T04:42:20.3312901Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:20.3313170Z   RAG_ENABLED: false
+2026-10-25T04:42:20.3313392Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:20.3313656Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:20.3313890Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:20.3314138Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:20.3314466Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.3314881Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:20.3315349Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.3315750Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.3316132Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:20.3316502Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:20.3316823Z ##[endgroup]
+2026-10-25T04:42:20.9100736Z ============================= test session starts ==============================
+2026-10-25T04:42:20.9101918Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:20.9102445Z cachedir: .pytest_cache
+2026-10-25T04:42:20.9102865Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:20.9103328Z plugins: platformdirs-4.13.5
+2026-10-25T04:42:21.5222739Z collecting ... collected 467 items
+2026-10-25T04:42:21.5223097Z 
+2026-10-25T04:42:21.5232818Z LeHoaLong/tests/test_ai_contract.py::test_a_clean_response_is_parsed PASSED [  0%]
+2026-10-25T04:42:21.5240749Z LeHoaLong/tests/test_ai_contract.py::test_json_wrapped_in_prose_or_a_fence_is_recovered PASSED [  0%]
+2026-10-25T04:42:21.5248587Z LeHoaLong/tests/test_ai_contract.py::test_whitespace_in_a_description_is_normalised PASSED [  0%]
+2026-10-25T04:42:21.5256706Z LeHoaLong/tests/test_ai_contract.py::test_an_over_long_description_is_truncated_not_rejected PASSED [  0%]
+2026-10-25T04:42:21.5264465Z LeHoaLong/tests/test_ai_contract.py::test_a_partial_answer_keeps_what_is_usable PASSED [  1%]
+2026-10-25T04:42:21.5271984Z LeHoaLong/tests/test_ai_contract.py::test_entries_for_steps_that_were_not_asked_for_are_discarded PASSED [  1%]
+2026-10-25T04:42:21.5280536Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[I'm sorry, I can't help with that.] PASSED [  1%]
+2026-10-25T04:42:21.5288908Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[] PASSED [  1%]
+2026-10-25T04:42:21.5296530Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{] PASSED [  1%]
+2026-10-25T04:42:21.5304148Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"plan": "save more money"}] PASSED [  2%]
+2026-10-25T04:42:21.5311595Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": "not a list"}] PASSED [  2%]
+2026-10-25T04:42:21.5319124Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": []}] PASSED [  2%]
+2026-10-25T04:42:21.5326820Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": [{"step_order": 1}]}] PASSED [  2%]
+2026-10-25T04:42:21.5334716Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": [{"step_order": 1, "description": ""}]}] PASSED [  2%]
+2026-10-25T04:42:21.5342146Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": [{"step_order": "1", "description": "x"}]}] PASSED [  3%]
+2026-10-25T04:42:21.5352590Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": [{"step_order": true, "description": "x"}]}] PASSED [  3%]
+2026-10-25T04:42:21.5359906Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[{"steps": ["just a string"]}] PASSED [  3%]
+2026-10-25T04:42:21.5367260Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_reported_as_such[[1, 2, 3]] PASSED [  3%]
+2026-10-25T04:42:21.5374048Z LeHoaLong/tests/test_ai_contract.py::test_a_summary_is_read_when_present_and_absent_otherwise PASSED [  4%]
+2026-10-25T04:42:21.5380401Z LeHoaLong/tests/test_ai_contract.py::test_merge_walks_pythons_schedule_and_takes_only_words_from_the_model PASSED [  4%]
+2026-10-25T04:42:21.5387681Z LeHoaLong/tests/test_ai_contract.py::test_the_schedule_sums_to_exactly_the_amount_owed PASSED [  4%]
+2026-10-25T04:42:21.5395011Z LeHoaLong/tests/test_ai_contract.py::test_the_last_instalment_absorbs_the_rounding_remainder PASSED [  4%]
+2026-10-25T04:42:21.5401787Z LeHoaLong/tests/test_ai_contract.py::test_the_final_step_falls_due_on_the_target_date_itself PASSED [  4%]
+2026-10-25T04:42:21.5408386Z LeHoaLong/tests/test_ai_contract.py::test_step_numbering_continues_from_where_it_was_told_to PASSED [  5%]
+2026-10-25T04:42:21.5415112Z LeHoaLong/tests/test_ai_contract.py::test_a_one_month_plan_is_a_single_instalment PASSED [  5%]
+2026-10-25T04:42:21.5422467Z LeHoaLong/tests/test_ai_contract.py::test_a_schedule_with_no_months_left_is_a_programming_error PASSED [  5%]
+2026-10-25T04:42:21.6101928Z LeHoaLong/tests/test_ai_contract.py::test_plan_returns_201_and_persists_the_schedule PASSED [  5%]
+2026-10-25T04:42:21.6246755Z LeHoaLong/tests/test_ai_contract.py::test_the_planned_steps_sum_to_what_is_still_owed PASSED [  5%]
+2026-10-25T04:42:21.6384979Z LeHoaLong/tests/test_ai_contract.py::test_the_model_writes_the_descriptions PASSED [  6%]
+2026-10-25T04:42:21.6530759Z LeHoaLong/tests/test_ai_contract.py::test_planning_a_goal_that_already_has_a_plan_replaces_the_pending_steps PASSED [  6%]
+2026-10-25T04:42:21.6691147Z LeHoaLong/tests/test_ai_contract.py::test_a_new_plan_is_numbered_after_the_steps_it_preserved PASSED [  6%]
+2026-10-25T04:42:21.6825926Z LeHoaLong/tests/test_ai_contract.py::test_the_plan_only_covers_what_is_left_to_save PASSED [  6%]
+2026-10-25T04:42:21.6979777Z LeHoaLong/tests/test_ai_contract.py::test_the_model_cannot_change_a_single_figure PASSED [  7%]
+2026-10-25T04:42:21.7264579Z LeHoaLong/tests/test_ai_contract.py::test_the_prompt_states_the_figures_and_asks_only_for_descriptions PASSED [  7%]
+2026-10-25T04:42:21.7401321Z LeHoaLong/tests/test_ai_contract.py::test_an_unusable_response_is_retried_once PASSED [  7%]
+2026-10-25T04:42:21.7538467Z LeHoaLong/tests/test_ai_contract.py::test_two_unusable_responses_fall_back_to_the_deterministic_plan PASSED [  7%]
+2026-10-25T04:42:21.7677430Z LeHoaLong/tests/test_ai_contract.py::test_the_fallback_plan_is_a_real_plan_not_an_error_state PASSED [  7%]
+2026-10-25T04:42:21.7834897Z LeHoaLong/tests/test_ai_contract.py::test_a_partial_answer_is_topped_up_rather_than_thrown_away PASSED [  8%]
+2026-10-25T04:42:21.7952856Z LeHoaLong/tests/test_ai_contract.py::test_an_unreachable_ollama_is_a_503 PASSED [  8%]
+2026-10-25T04:42:21.8072462Z LeHoaLong/tests/test_ai_contract.py::test_a_model_that_was_never_pulled_says_so_and_gives_the_command PASSED [  8%]
+2026-10-25T04:42:21.8196867Z LeHoaLong/tests/test_ai_contract.py::test_nothing_is_written_when_ollama_is_unreachable PASSED [  8%]
+2026-10-25T04:42:21.8312810Z LeHoaLong/tests/test_ai_contract.py::test_a_fully_funded_goal_cannot_be_planned PASSED [  8%]
+2026-10-25T04:42:21.8448769Z LeHoaLong/tests/test_ai_contract.py::test_a_goal_whose_target_date_has_passed_cannot_be_planned PASSED [  9%]
+2026-10-25T04:42:21.8578354Z LeHoaLong/tests/test_ai_contract.py::test_planning_an_unknown_goal_is_a_404 PASSED [  9%]
+2026-10-25T04:42:21.8725879Z LeHoaLong/tests/test_ai_contract.py::test_replan_returns_the_observation_and_the_adaptation PASSED [  9%]
+2026-10-25T04:42:21.8883714Z LeHoaLong/tests/test_ai_contract.py::test_replan_preserves_completed_steps_and_regenerates_only_pending_ones PASSED [  9%]
+2026-10-25T04:42:21.9030583Z LeHoaLong/tests/test_ai_contract.py::test_replan_raises_the_instalments_when_the_saver_has_fallen_behind PASSED [ 10%]
+2026-10-25T04:42:21.9179210Z LeHoaLong/tests/test_ai_contract.py::test_replan_writes_a_python_summary_when_the_model_gives_none PASSED [ 10%]
+2026-10-25T04:42:21.9335220Z LeHoaLong/tests/test_ai_contract.py::test_replan_tells_the_model_what_actually_happened PASSED [ 10%]
+2026-10-25T04:42:21.9502109Z LeHoaLong/tests/test_ai_contract.py::test_replan_falls_back_like_plan_does PASSED [ 10%]
+2026-10-25T04:42:21.9641218Z LeHoaLong/tests/test_ai_contract.py::test_every_model_call_is_written_to_the_audit_trail PASSED [ 10%]
+2026-10-25T04:42:21.9780478Z LeHoaLong/tests/test_ai_contract.py::test_the_audit_row_holds_the_exact_prompt_and_the_raw_response PASSED [ 11%]
+2026-10-25T04:42:21.9921370Z LeHoaLong/tests/test_ai_contract.py::test_a_retry_and_a_fallback_are_all_recorded PASSED [ 11%]
+2026-10-25T04:42:22.0070944Z LeHoaLong/tests/test_ai_contract.py::test_replan_logs_under_the_adapt_phase PASSED [ 11%]
+2026-10-25T04:42:22.0228520Z LeHoaLong/tests/test_ai_contract.py::test_the_ai_log_endpoint_shows_the_trail_for_a_goal PASSED [ 11%]
+2026-10-25T04:42:22.0357734Z LeHoaLong/tests/test_ai_contract.py::test_the_ai_log_endpoint_404s_for_an_unknown_goal PASSED [ 11%]
+2026-10-25T04:42:22.0512588Z LeHoaLong/tests/test_ai_contract.py::test_replan_reports_the_instalment_it_replaced_not_the_one_it_created PASSED [ 12%]
+2026-10-25T04:42:22.0663295Z LeHoaLong/tests/test_ai_contract.py::test_replan_reports_no_previous_instalment_when_there_was_no_plan PASSED [ 12%]
+2026-10-25T04:42:22.0672479Z LeHoaLong/tests/test_budget.py::test_months_between_rounds_up_and_never_goes_negative[start0-end0-3] PASSED [ 12%]
+2026-10-25T04:42:22.0680962Z LeHoaLong/tests/test_budget.py::test_months_between_rounds_up_and_never_goes_negative[start1-end1-4] PASSED [ 12%]
+2026-10-25T04:42:22.0692336Z LeHoaLong/tests/test_budget.py::test_months_between_rounds_up_and_never_goes_negative[start2-end2-1] PASSED [ 13%]
+2026-10-25T04:42:22.0702184Z LeHoaLong/tests/test_budget.py::test_months_between_rounds_up_and_never_goes_negative[start3-end3-0] PASSED [ 13%]
+2026-10-25T04:42:22.0710354Z LeHoaLong/tests/test_budget.py::test_months_between_rounds_up_and_never_goes_negative[start4-end4-0] PASSED [ 13%]
+2026-10-25T04:42:22.0718407Z LeHoaLong/tests/test_budget.py::test_months_between_rounds_up_and_never_goes_negative[start5-end5-28] PASSED [ 13%]
+2026-10-25T04:42:22.0726436Z LeHoaLong/tests/test_budget.py::test_add_months_clamps_to_the_end_of_a_short_month[start0-1-expected0] PASSED [ 13%]
+2026-10-25T04:42:22.0734444Z LeHoaLong/tests/test_budget.py::test_add_months_clamps_to_the_end_of_a_short_month[start1-2-expected1] PASSED [ 14%]
+2026-10-25T04:42:22.0742233Z LeHoaLong/tests/test_budget.py::test_add_months_clamps_to_the_end_of_a_short_month[start2-1-expected2] PASSED [ 14%]
+2026-10-25T04:42:22.0749899Z LeHoaLong/tests/test_budget.py::test_add_months_clamps_to_the_end_of_a_short_month[start3-1-expected3] PASSED [ 14%]
+2026-10-25T04:42:22.0756877Z LeHoaLong/tests/test_budget.py::test_commitment_spreads_the_remaining_amount_over_the_months_left PASSED [ 14%]
+2026-10-25T04:42:22.0763528Z LeHoaLong/tests/test_budget.py::test_commitment_rounds_to_cents PASSED   [ 14%]
+2026-10-25T04:42:22.0770130Z LeHoaLong/tests/test_budget.py::test_a_fully_funded_goal_commits_nothing_further PASSED [ 15%]
+2026-10-25T04:42:22.0776853Z LeHoaLong/tests/test_budget.py::test_an_over_funded_goal_commits_nothing_and_does_not_go_negative PASSED [ 15%]
+2026-10-25T04:42:22.0783444Z LeHoaLong/tests/test_budget.py::test_an_overdue_goal_owes_the_whole_shortfall_now PASSED [ 15%]
+2026-10-25T04:42:22.0789841Z LeHoaLong/tests/test_budget.py::test_a_goal_due_today_is_treated_as_overdue PASSED [ 15%]
+2026-10-25T04:42:22.0796930Z LeHoaLong/tests/test_budget.py::test_an_overdue_but_funded_goal_is_not_flagged_overdue PASSED [ 16%]
+2026-10-25T04:42:22.0816792Z LeHoaLong/tests/test_budget.py::test_summary_totals_the_seeded_active_goals_for_user_1 PASSED [ 16%]
+2026-10-25T04:42:22.0835666Z LeHoaLong/tests/test_budget.py::test_user_1_is_seeded_over_budget_so_the_warning_state_is_visible PASSED [ 16%]
+2026-10-25T04:42:22.0853615Z LeHoaLong/tests/test_budget.py::test_summary_for_a_user_within_budget PASSED [ 16%]
+2026-10-25T04:42:22.0872676Z LeHoaLong/tests/test_budget.py::test_only_active_goals_count_toward_the_commitment PASSED [ 16%]
+2026-10-25T04:42:22.0891616Z LeHoaLong/tests/test_budget.py::test_a_goal_with_no_plan_still_counts_against_the_budget PASSED [ 17%]
+2026-10-25T04:42:22.0913328Z LeHoaLong/tests/test_budget.py::test_the_total_is_always_the_sum_of_the_listed_goals PASSED [ 17%]
+2026-10-25T04:42:22.0930029Z LeHoaLong/tests/test_budget.py::test_summary_for_a_user_who_has_no_budget_and_no_goals PASSED [ 17%]
+2026-10-25T04:42:22.0946886Z LeHoaLong/tests/test_budget.py::test_summary_for_a_budget_only_user_reports_an_unspent_budget PASSED [ 17%]
+2026-10-25T04:42:22.0965869Z LeHoaLong/tests/test_budget.py::test_available_budget_excludes_the_goal_being_planned PASSED [ 17%]
+2026-10-25T04:42:22.0982876Z LeHoaLong/tests/test_budget.py::test_available_budget_is_none_when_no_budget_has_been_set PASSED [ 18%]
+2026-10-25T04:42:22.1104892Z LeHoaLong/tests/test_budget.py::test_summary_endpoint_is_internally_consistent PASSED [ 18%]
+2026-10-25T04:42:22.1222099Z LeHoaLong/tests/test_budget.py::test_summary_endpoint_scopes_to_the_requested_user PASSED [ 18%]
+2026-10-25T04:42:22.1351124Z LeHoaLong/tests/test_budget.py::test_summary_endpoint_rejects_a_bad_user_id PASSED [ 18%]
+2026-10-25T04:42:22.1503049Z LeHoaLong/tests/test_budget.py::test_summary_reflects_a_newly_created_goal_immediately PASSED [ 19%]
+2026-10-25T04:42:22.1648732Z LeHoaLong/tests/test_budget.py::test_summary_reflects_a_contribution_immediately PASSED [ 19%]
+2026-10-25T04:42:22.1763637Z LeHoaLong/tests/test_budget.py::test_get_settings_returns_the_seeded_budget PASSED [ 19%]
+2026-10-25T04:42:22.1880948Z LeHoaLong/tests/test_budget.py::test_get_settings_for_a_user_with_no_budget_is_not_a_404 PASSED [ 19%]
+2026-10-25T04:42:22.2015672Z LeHoaLong/tests/test_budget.py::test_put_settings_updates_an_existing_budget PASSED [ 19%]
+2026-10-25T04:42:22.2163062Z LeHoaLong/tests/test_budget.py::test_put_settings_creates_a_budget_for_a_user_who_had_none PASSED [ 20%]
+2026-10-25T04:42:22.2326863Z LeHoaLong/tests/test_budget.py::test_put_settings_does_not_duplicate_a_row_on_repeat PASSED [ 20%]
+2026-10-25T04:42:22.2453054Z LeHoaLong/tests/test_budget.py::test_put_settings_normalises_the_currency_code PASSED [ 20%]
+2026-10-25T04:42:22.2577690Z LeHoaLong/tests/test_budget.py::test_a_zero_budget_is_allowed PASSED     [ 20%]
+2026-10-25T04:42:22.2714788Z LeHoaLong/tests/test_budget.py::test_a_zero_budget_reports_no_percentage_rather_than_dividing_by_zero PASSED [ 20%]
+2026-10-25T04:42:22.2828147Z LeHoaLong/tests/test_budget.py::test_put_settings_rejects_invalid_payloads[payload0-monthly_budget is required] PASSED [ 21%]
+2026-10-25T04:42:22.2958296Z LeHoaLong/tests/test_budget.py::test_put_settings_rejects_invalid_payloads[payload1-monthly_budget must not be negative] PASSED [ 21%]
+2026-10-25T04:42:22.3070518Z LeHoaLong/tests/test_budget.py::test_put_settings_rejects_invalid_payloads[payload2-monthly_budget must be a number] PASSED [ 21%]
+2026-10-25T04:42:22.3183316Z LeHoaLong/tests/test_budget.py::test_put_settings_rejects_invalid_payloads[payload3-currency must be] PASSED [ 21%]
+2026-10-25T04:42:22.3296240Z LeHoaLong/tests/test_budget.py::test_put_settings_rejects_invalid_payloads[payload4-currency must be] PASSED [ 22%]
+2026-10-25T04:42:22.3409594Z LeHoaLong/tests/test_budget.py::test_put_settings_rejects_invalid_payloads[payload5-user_id must be a positive integer] PASSED [ 22%]
+2026-10-25T04:42:22.3569644Z LeHoaLong/tests/test_budget.py::test_changing_the_budget_flips_the_summary_status PASSED [ 22%]
+2026-10-25T04:42:22.3700745Z LeHoaLong/tests/test_goals_api.py::test_health_reports_ok_when_database_and_model_are_present PASSED [ 22%]
+2026-10-25T04:42:22.3813465Z LeHoaLong/tests/test_goals_api.py::test_health_stays_ok_when_ollama_is_down PASSED [ 22%]
+2026-10-25T04:42:22.3924563Z LeHoaLong/tests/test_goals_api.py::test_health_is_503_when_the_database_is_unusable PASSED [ 23%]
+2026-10-25T04:42:22.4042469Z LeHoaLong/tests/test_goals_api.py::test_list_defaults_to_the_single_user_scope PASSED [ 23%]
+2026-10-25T04:42:22.4159688Z LeHoaLong/tests/test_goals_api.py::test_list_can_be_scoped_to_another_user PASSED [ 23%]
+2026-10-25T04:42:22.4277807Z LeHoaLong/tests/test_goals_api.py::test_list_all_lifts_the_user_scope PASSED [ 23%]
+2026-10-25T04:42:22.4413614Z LeHoaLong/tests/test_goals_api.py::test_list_filters_by_status_and_priority_together PASSED [ 23%]
+2026-10-25T04:42:22.4532124Z LeHoaLong/tests/test_goals_api.py::test_list_orders_by_priority_then_deadline PASSED [ 24%]
+2026-10-25T04:42:22.4648317Z LeHoaLong/tests/test_goals_api.py::test_list_rows_carry_funding_figures_calculated_in_python PASSED [ 24%]
+2026-10-25T04:42:22.4766594Z LeHoaLong/tests/test_goals_api.py::test_list_reports_zero_funding_rather_than_null_for_an_unfunded_goal PASSED [ 24%]
+2026-10-25T04:42:22.4880154Z LeHoaLong/tests/test_goals_api.py::test_list_rejects_unusable_filters[status=finished-status must be one of] PASSED [ 24%]
+2026-10-25T04:42:22.4993973Z LeHoaLong/tests/test_goals_api.py::test_list_rejects_unusable_filters[priority=urgent-priority must be one of] PASSED [ 25%]
+2026-10-25T04:42:22.5125358Z LeHoaLong/tests/test_goals_api.py::test_list_rejects_unusable_filters[user_id=-1-user_id must be a positive integer] PASSED [ 25%]
+2026-10-25T04:42:22.5237452Z LeHoaLong/tests/test_goals_api.py::test_list_rejects_unusable_filters[user_id=nobody-user_id must be a positive integer] PASSED [ 25%]
+2026-10-25T04:42:22.5356642Z LeHoaLong/tests/test_goals_api.py::test_detail_includes_ordered_steps_and_the_contribution_total PASSED [ 25%]
+2026-10-25T04:42:22.5474001Z LeHoaLong/tests/test_goals_api.py::test_detail_of_a_goal_with_no_plan_returns_empty_collections PASSED [ 25%]
+2026-10-25T04:42:22.5590611Z LeHoaLong/tests/test_goals_api.py::test_detail_404s_for_a_goal_that_does_not_exist PASSED [ 26%]
+2026-10-25T04:42:22.5728790Z LeHoaLong/tests/test_goals_api.py::test_create_returns_201_with_the_stored_goal_and_a_location_header PASSED [ 26%]
+2026-10-25T04:42:22.5877239Z LeHoaLong/tests/test_goals_api.py::test_create_stamps_the_default_user_when_the_client_names_none PASSED [ 26%]
+2026-10-25T04:42:22.6210144Z LeHoaLong/tests/test_goals_api.py::test_create_accepts_an_explicit_user_id PASSED [ 26%]
+2026-10-25T04:42:22.6338346Z LeHoaLong/tests/test_goals_api.py::test_create_ignores_a_client_supplied_timestamp PASSED [ 26%]
+2026-10-25T04:42:22.6453056Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload0-name is required] PASSED [ 27%]
+2026-10-25T04:42:22.6566012Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload1-name must not be empty] PASSED [ 27%]
+2026-10-25T04:42:22.6691072Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload2-name must be 120 characters or fewer] PASSED [ 27%]
+2026-10-25T04:42:22.6803711Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload3-target_amount is required] PASSED [ 27%]
+2026-10-25T04:42:22.6917310Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload4-target_amount must be greater than 0] PASSED [ 28%]
+2026-10-25T04:42:22.7031677Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload5-target_amount must be greater than 0] PASSED [ 28%]
+2026-10-25T04:42:22.7145320Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload6-target_amount must be a number] PASSED [ 28%]
+2026-10-25T04:42:22.7260486Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload7-target_amount must be a number] PASSED [ 28%]
+2026-10-25T04:42:22.7391704Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload8-target_amount must be] PASSED [ 28%]
+2026-10-25T04:42:22.7505403Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload9-target_date is required] PASSED [ 29%]
+2026-10-25T04:42:22.7618657Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload10-target_date must be an ISO-8601 date] PASSED [ 29%]
+2026-10-25T04:42:22.7732359Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload11-target_date must be an ISO-8601 date] PASSED [ 29%]
+2026-10-25T04:42:22.7847725Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload12-is in the past] PASSED [ 29%]
+2026-10-25T04:42:22.7962400Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload13-priority must be one of] PASSED [ 29%]
+2026-10-25T04:42:22.8092580Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload14-status must be one of] PASSED [ 30%]
+2026-10-25T04:42:22.8207720Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_invalid_payloads[payload15-user_id must be a positive integer] PASSED [ 30%]
+2026-10-25T04:42:22.8318870Z LeHoaLong/tests/test_goals_api.py::test_create_reports_every_problem_at_once PASSED [ 30%]
+2026-10-25T04:42:22.8428961Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_a_body_that_is_not_an_object PASSED [ 30%]
+2026-10-25T04:42:22.8541808Z LeHoaLong/tests/test_goals_api.py::test_create_rejects_malformed_json_with_json PASSED [ 31%]
+2026-10-25T04:42:22.8675528Z LeHoaLong/tests/test_goals_api.py::test_a_past_target_date_is_allowed_on_a_goal_that_is_not_active PASSED [ 31%]
+2026-10-25T04:42:22.8830298Z LeHoaLong/tests/test_goals_api.py::test_update_merges_and_leaves_unmentioned_fields_alone PASSED [ 31%]
+2026-10-25T04:42:22.8968367Z LeHoaLong/tests/test_goals_api.py::test_update_touches_updated_at_but_not_created_at PASSED [ 31%]
+2026-10-25T04:42:22.9100654Z LeHoaLong/tests/test_goals_api.py::test_update_keeps_steps_and_contributions PASSED [ 31%]
+2026-10-25T04:42:22.9217119Z LeHoaLong/tests/test_goals_api.py::test_update_refuses_to_move_a_goal_to_another_user PASSED [ 32%]
+2026-10-25T04:42:22.9332469Z LeHoaLong/tests/test_goals_api.py::test_update_rejects_an_empty_body PASSED [ 32%]
+2026-10-25T04:42:22.9448731Z LeHoaLong/tests/test_goals_api.py::test_update_rejects_back_dating_an_active_goal PASSED [ 32%]
+2026-10-25T04:42:22.9595085Z LeHoaLong/tests/test_goals_api.py::test_update_allows_back_dating_when_the_goal_is_paused_in_the_same_request PASSED [ 32%]
+2026-10-25T04:42:22.9709745Z LeHoaLong/tests/test_goals_api.py::test_update_404s_for_a_goal_that_does_not_exist PASSED [ 32%]
+2026-10-25T04:42:22.9844250Z LeHoaLong/tests/test_goals_api.py::test_delete_returns_204_and_an_empty_body PASSED [ 33%]
+2026-10-25T04:42:22.9976828Z LeHoaLong/tests/test_goals_api.py::test_delete_cascades_to_steps_and_contributions PASSED [ 33%]
+2026-10-25T04:42:23.0108163Z LeHoaLong/tests/test_goals_api.py::test_delete_keeps_the_ai_audit_trail PASSED [ 33%]
+2026-10-25T04:42:23.0242049Z LeHoaLong/tests/test_goals_api.py::test_delete_is_not_idempotent_and_404s_the_second_time PASSED [ 33%]
+2026-10-25T04:42:23.0402690Z LeHoaLong/tests/test_goals_api.py::test_deleting_a_goal_does_not_disturb_the_others PASSED [ 34%]
+2026-10-25T04:42:23.0514864Z LeHoaLong/tests/test_goals_api.py::test_an_unknown_route_returns_json_not_html PASSED [ 34%]
+2026-10-25T04:42:23.0628251Z LeHoaLong/tests/test_goals_api.py::test_an_unsupported_method_returns_json PASSED [ 34%]
+2026-10-25T04:42:23.0746614Z LeHoaLong/tests/test_goals_api.py::test_cors_headers_are_returned_for_the_frontend_origin PASSED [ 34%]
+2026-10-25T04:42:23.0862915Z LeHoaLong/tests/test_goals_api.py::test_cors_headers_are_withheld_from_an_unlisted_origin PASSED [ 34%]
+2026-10-25T04:42:23.0974034Z LeHoaLong/tests/test_goals_api.py::test_a_preflight_request_is_answered PASSED [ 35%]
+2026-10-25T04:42:23.1102587Z LeHoaLong/tests/test_goals_api.py::test_foreign_keys_are_enforced_on_the_request_connection PASSED [ 35%]
+2026-10-25T04:42:23.1123865Z LeHoaLong/tests/test_init_db_checks.py::test_freshly_seeded_database_is_clean PASSED [ 35%]
+2026-10-25T04:42:23.1156345Z LeHoaLong/tests/test_init_db_checks.py::test_replan_drift_is_fatal_on_a_fresh_build PASSED [ 35%]
+2026-10-25T04:42:23.1185394Z LeHoaLong/tests/test_init_db_checks.py::test_replan_drift_is_only_advisory_on_a_live_database PASSED [ 35%]
+2026-10-25T04:42:23.1215843Z LeHoaLong/tests/test_init_db_checks.py::test_row_count_shortfall_is_fatal_on_a_fresh_build PASSED [ 36%]
+2026-10-25T04:42:23.1244555Z LeHoaLong/tests/test_init_db_checks.py::test_row_count_shortfall_is_only_advisory_on_a_live_database PASSED [ 36%]
+2026-10-25T04:42:23.1275040Z LeHoaLong/tests/test_init_db_checks.py::test_unfunded_achieved_goal_is_only_advisory_on_a_live_database PASSED [ 36%]
+2026-10-25T04:42:23.1305733Z LeHoaLong/tests/test_init_db_checks.py::test_orphaned_row_is_fatal_however_the_database_got_there[True] PASSED [ 36%]
+2026-10-25T04:42:23.1336211Z LeHoaLong/tests/test_init_db_checks.py::test_orphaned_row_is_fatal_however_the_database_got_there[False] PASSED [ 37%]
+2026-10-25T04:42:23.1405098Z LeHoaLong/tests/test_init_db_checks.py::test_a_release_0_database_rejects_the_release_1_phases PASSED [ 37%]
+2026-10-25T04:42:23.1432500Z LeHoaLong/tests/test_init_db_checks.py::test_the_probe_leaves_no_row_behind PASSED [ 37%]
+2026-10-25T04:42:23.1523313Z LeHoaLong/tests/test_init_db_checks.py::test_migration_preserves_every_existing_row_and_its_id PASSED [ 37%]
+2026-10-25T04:42:23.1616327Z LeHoaLong/tests/test_init_db_checks.py::test_migration_makes_the_new_phases_insertable PASSED [ 37%]
+2026-10-25T04:42:23.1710817Z LeHoaLong/tests/test_init_db_checks.py::test_a_release_1_database_is_migrated_to_accept_the_agent_phase PASSED [ 38%]
+2026-10-25T04:42:23.1798584Z LeHoaLong/tests/test_init_db_checks.py::test_migration_still_rejects_a_phase_that_is_not_a_phase PASSED [ 38%]
+2026-10-25T04:42:23.1825301Z LeHoaLong/tests/test_init_db_checks.py::test_migration_is_a_no_op_on_a_current_database PASSED [ 38%]
+2026-10-25T04:42:23.1913376Z LeHoaLong/tests/test_init_db_checks.py::test_migration_recreates_the_indexes PASSED [ 38%]
+2026-10-25T04:42:23.2019995Z LeHoaLong/tests/test_init_db_checks.py::test_migration_keeps_the_audit_trail_surviving_a_deleted_goal PASSED [ 38%]
+2026-10-25T04:42:23.2155339Z LeHoaLong/tests/test_mcp_client.py::test_tools_endpoint_lists_what_the_server_advertises PASSED [ 39%]
+2026-10-25T04:42:23.2285051Z LeHoaLong/tests/test_mcp_client.py::test_tools_endpoint_reports_each_tool_schema_and_the_round_trip_time PASSED [ 39%]
+2026-10-25T04:42:23.2415593Z LeHoaLong/tests/test_mcp_client.py::test_tools_listing_is_written_to_the_audit_trail PASSED [ 39%]
+2026-10-25T04:42:23.2546370Z LeHoaLong/tests/test_mcp_client.py::test_call_passes_the_tool_payload_through_untouched PASSED [ 39%]
+2026-10-25T04:42:23.2690091Z LeHoaLong/tests/test_mcp_client.py::test_call_sends_named_arguments_over_the_protocol PASSED [ 40%]
+2026-10-25T04:42:23.2819417Z LeHoaLong/tests/test_mcp_client.py::test_call_defaults_to_no_arguments PASSED [ 40%]
+2026-10-25T04:42:23.2951776Z LeHoaLong/tests/test_mcp_client.py::test_call_is_written_to_the_audit_trail_with_its_result PASSED [ 40%]
+2026-10-25T04:42:23.3092001Z LeHoaLong/tests/test_mcp_client.py::test_call_can_be_attributed_to_a_goal PASSED [ 40%]
+2026-10-25T04:42:23.3210091Z LeHoaLong/tests/test_mcp_client.py::test_call_404s_for_a_goal_that_does_not_exist PASSED [ 40%]
+2026-10-25T04:42:23.3338618Z LeHoaLong/tests/test_mcp_client.py::test_a_relayed_error_payload_is_detected_as_an_error PASSED [ 41%]
+2026-10-25T04:42:23.3486129Z LeHoaLong/tests/test_mcp_client.py::test_a_protocol_level_error_is_detected_as_an_error PASSED [ 41%]
+2026-10-25T04:42:23.3632798Z LeHoaLong/tests/test_mcp_client.py::test_an_unknown_tool_name_comes_back_as_an_error_not_a_400 PASSED [ 41%]
+2026-10-25T04:42:23.3788596Z LeHoaLong/tests/test_mcp_client.py::test_a_failed_tool_call_is_still_audited PASSED [ 41%]
+2026-10-25T04:42:23.3937390Z LeHoaLong/tests/test_mcp_client.py::test_an_unreachable_server_is_a_503_naming_the_url PASSED [ 41%]
+2026-10-25T04:42:23.4076226Z LeHoaLong/tests/test_mcp_client.py::test_an_unreachable_server_is_recorded_as_an_attempt PASSED [ 42%]
+2026-10-25T04:42:23.4193315Z LeHoaLong/tests/test_mcp_client.py::test_disabled_mcp_is_a_503_that_says_so[get-/api/mcp/tools] PASSED [ 42%]
+2026-10-25T04:42:23.4326190Z LeHoaLong/tests/test_mcp_client.py::test_disabled_mcp_is_a_503_that_says_so[post-/api/mcp/call] PASSED [ 42%]
+2026-10-25T04:42:23.4438130Z LeHoaLong/tests/test_mcp_client.py::test_disabled_mcp_does_not_touch_the_transport PASSED [ 42%]
+2026-10-25T04:42:23.4551881Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body0-tool is required] PASSED [ 43%]
+2026-10-25T04:42:23.4668196Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body1-tool must not be empty] PASSED [ 43%]
+2026-10-25T04:42:23.4783696Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body2-tool must be a string] PASSED [ 43%]
+2026-10-25T04:42:23.4901908Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body3-arguments must be a JSON object] PASSED [ 43%]
+2026-10-25T04:42:23.5241857Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body4-arguments must be a JSON object] PASSED [ 43%]
+2026-10-25T04:42:23.5358192Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body5-goal_id must be an integer] PASSED [ 44%]
+2026-10-25T04:42:23.5477104Z LeHoaLong/tests/test_mcp_client.py::test_call_rejects_an_unusable_body[body6-goal_id must be a positive integer] PASSED [ 44%]
+2026-10-25T04:42:23.5595254Z LeHoaLong/tests/test_mcp_client.py::test_call_validates_before_connecting PASSED [ 44%]
+2026-10-25T04:42:23.5602623Z LeHoaLong/tests/test_mcp_client.py::test_result_parsing_prefers_structured_content PASSED [ 44%]
+2026-10-25T04:42:23.5610228Z LeHoaLong/tests/test_mcp_client.py::test_result_parsing_decodes_the_single_json_block_fastmcp_sends PASSED [ 44%]
+2026-10-25T04:42:23.5617602Z LeHoaLong/tests/test_mcp_client.py::test_result_parsing_decodes_several_blocks_as_a_list PASSED [ 45%]
+2026-10-25T04:42:23.5624949Z LeHoaLong/tests/test_mcp_client.py::test_result_parsing_keeps_text_that_is_not_json PASSED [ 45%]
+2026-10-25T04:42:23.5631999Z LeHoaLong/tests/test_mcp_client.py::test_result_parsing_handles_a_tool_that_returned_nothing PASSED [ 45%]
+2026-10-25T04:42:23.5639501Z LeHoaLong/tests/test_mcp_client.py::test_result_parsing_never_invents_an_error_for_an_empty_error_string PASSED [ 45%]
+2026-10-25T04:42:23.5750187Z LeHoaLong/tests/test_mcp_client.py::test_a_refused_connection_names_the_server PASSED [ 46%]
+2026-10-25T04:42:23.5873366Z LeHoaLong/tests/test_mcp_client.py::test_an_exception_group_is_flattened_to_the_real_cause PASSED [ 46%]
+2026-10-25T04:42:23.5978881Z LeHoaLong/tests/test_mcp_client.py::test_a_timeout_says_it_timed_out_and_names_the_limit PASSED [ 46%]
+2026-10-25T04:42:23.6086169Z LeHoaLong/tests/test_mcp_client.py::test_a_missing_sdk_says_which_package_to_install PASSED [ 46%]
+2026-10-25T04:42:23.6201991Z LeHoaLong/tests/test_mcp_client.py::test_health_reports_reachable_with_the_tool_count PASSED [ 46%]
+2026-10-25T04:42:23.6315518Z LeHoaLong/tests/test_mcp_client.py::test_health_reports_an_unreachable_server_as_200 PASSED [ 47%]
+2026-10-25T04:42:23.6427690Z LeHoaLong/tests/test_mcp_client.py::test_health_reports_disabled_without_connecting PASSED [ 47%]
+2026-10-25T04:42:23.6550348Z LeHoaLong/tests/test_mcp_client.py::test_the_probe_uses_its_own_short_timeout PASSED [ 47%]
+2026-10-25T04:42:23.6557670Z LeHoaLong/tests/test_mcp_context.py::test_available_to_save_subtracts_both_commitments PASSED [ 47%]
+2026-10-25T04:42:23.6564395Z LeHoaLong/tests/test_mcp_context.py::test_available_to_save_is_signed_not_floored PASSED [ 47%]
+2026-10-25T04:42:23.6570874Z LeHoaLong/tests/test_mcp_context.py::test_available_to_save_is_none_without_a_budget PASSED [ 48%]
+2026-10-25T04:42:23.6577665Z LeHoaLong/tests/test_mcp_context.py::test_available_to_save_without_bills_is_release_0s_figure PASSED [ 48%]
+2026-10-25T04:42:23.6583984Z LeHoaLong/tests/test_mcp_context.py::test_available_to_save_rounds_to_cents PASSED [ 48%]
+2026-10-25T04:42:23.6736248Z LeHoaLong/tests/test_mcp_context.py::test_the_bills_figure_is_the_one_the_owning_backend_computed PASSED [ 48%]
+2026-10-25T04:42:23.6879997Z LeHoaLong/tests/test_mcp_context.py::test_every_bills_field_is_carried_through_verbatim PASSED [ 49%]
+2026-10-25T04:42:23.7024029Z LeHoaLong/tests/test_mcp_context.py::test_transaction_totals_are_carried_through_and_labelled_by_period PASSED [ 49%]
+2026-10-25T04:42:23.7189374Z LeHoaLong/tests/test_mcp_context.py::test_observed_totals_never_enter_the_arithmetic PASSED [ 49%]
+2026-10-25T04:42:23.7330481Z LeHoaLong/tests/test_mcp_context.py::test_the_available_figure_is_the_breakdown_applied PASSED [ 49%]
+2026-10-25T04:42:23.7485980Z LeHoaLong/tests/test_mcp_context.py::test_each_term_names_the_service_that_produced_it PASSED [ 49%]
+2026-10-25T04:42:23.7636293Z LeHoaLong/tests/test_mcp_context.py::test_mcp_adds_exactly_the_bills_term_to_release_0s_figure PASSED [ 50%]
+2026-10-25T04:42:23.7776909Z LeHoaLong/tests/test_mcp_context.py::test_both_tools_are_called_over_one_session PASSED [ 50%]
+2026-10-25T04:42:23.7918974Z LeHoaLong/tests/test_mcp_context.py::test_each_tool_is_timed_and_attributed_separately PASSED [ 50%]
+2026-10-25T04:42:23.8064678Z LeHoaLong/tests/test_mcp_context.py::test_every_tool_call_is_written_to_the_audit_trail PASSED [ 50%]
+2026-10-25T04:42:23.8211087Z LeHoaLong/tests/test_mcp_context.py::test_the_logged_result_is_the_payload_the_tool_returned PASSED [ 50%]
+2026-10-25T04:42:23.8349887Z LeHoaLong/tests/test_mcp_context.py::test_use_mcp_false_falls_back_without_calling_anything PASSED [ 51%]
+2026-10-25T04:42:23.8471905Z LeHoaLong/tests/test_mcp_context.py::test_disabled_mcp_falls_back_and_says_so PASSED [ 51%]
+2026-10-25T04:42:23.8602821Z LeHoaLong/tests/test_mcp_context.py::test_an_unreachable_server_falls_back_to_budget_settings PASSED [ 51%]
+2026-10-25T04:42:23.8740597Z LeHoaLong/tests/test_mcp_context.py::test_an_unreachable_server_is_still_audited PASSED [ 51%]
+2026-10-25T04:42:23.8882940Z LeHoaLong/tests/test_mcp_context.py::test_a_failed_bills_tool_falls_back_with_the_tools_own_reason PASSED [ 52%]
+2026-10-25T04:42:23.9040373Z LeHoaLong/tests/test_mcp_context.py::test_a_failed_transactions_tool_is_partial_not_unused PASSED [ 52%]
+2026-10-25T04:42:23.9183280Z LeHoaLong/tests/test_mcp_context.py::test_an_unexpected_bills_shape_degrades_visibly[payload0] PASSED [ 52%]
+2026-10-25T04:42:23.9324188Z LeHoaLong/tests/test_mcp_context.py::test_an_unexpected_bills_shape_degrades_visibly[payload1] PASSED [ 52%]
+2026-10-25T04:42:23.9467293Z LeHoaLong/tests/test_mcp_context.py::test_an_unexpected_bills_shape_degrades_visibly[payload2] PASSED [ 52%]
+2026-10-25T04:42:23.9616581Z LeHoaLong/tests/test_mcp_context.py::test_an_unexpected_bills_shape_degrades_visibly[payload3] PASSED [ 53%]
+2026-10-25T04:42:23.9757481Z LeHoaLong/tests/test_mcp_context.py::test_an_unexpected_bills_shape_degrades_visibly[payload4] PASSED [ 53%]
+2026-10-25T04:42:23.9918414Z LeHoaLong/tests/test_mcp_context.py::test_an_unexpected_bills_shape_degrades_visibly[not an object at all] PASSED [ 53%]
+2026-10-25T04:42:24.0069612Z LeHoaLong/tests/test_mcp_context.py::test_a_goal_with_no_budget_set_reports_no_available_figure PASSED [ 53%]
+2026-10-25T04:42:24.0189384Z LeHoaLong/tests/test_mcp_context.py::test_mcp_context_404s_for_a_goal_that_does_not_exist PASSED [ 53%]
+2026-10-25T04:42:24.0307735Z LeHoaLong/tests/test_mcp_context.py::test_a_mistyped_flag_is_a_400_not_a_silent_default PASSED [ 54%]
+2026-10-25T04:42:24.0429561Z LeHoaLong/tests/test_mcp_context.py::test_the_flag_accepts_the_same_spellings_as_the_environment[no-False] PASSED [ 54%]
+2026-10-25T04:42:24.0551755Z LeHoaLong/tests/test_mcp_context.py::test_the_flag_accepts_the_same_spellings_as_the_environment[0-False] PASSED [ 54%]
+2026-10-25T04:42:24.0693646Z LeHoaLong/tests/test_mcp_context.py::test_the_flag_accepts_the_same_spellings_as_the_environment[off-False] PASSED [ 54%]
+2026-10-25T04:42:24.0841044Z LeHoaLong/tests/test_mcp_context.py::test_the_flag_accepts_the_same_spellings_as_the_environment[yes-True] PASSED [ 55%]
+2026-10-25T04:42:24.1004744Z LeHoaLong/tests/test_plan_with_mcp.py::test_planning_with_mcp_on_produces_a_valid_schedule PASSED [ 55%]
+2026-10-25T04:42:24.1145973Z LeHoaLong/tests/test_plan_with_mcp.py::test_planning_with_mcp_off_produces_a_valid_schedule PASSED [ 55%]
+2026-10-25T04:42:24.1327202Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_schedule_is_identical_with_mcp_on_and_off PASSED [ 55%]
+2026-10-25T04:42:24.1484850Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_available_figure_is_net_of_the_bills_mcp_reported PASSED [ 55%]
+2026-10-25T04:42:24.1663892Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_shortfall_is_computed_in_python PASSED [ 56%]
+2026-10-25T04:42:24.1822938Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_seeded_user_is_over_committed_so_the_plan_is_a_stretch PASSED [ 56%]
+2026-10-25T04:42:24.2009954Z LeHoaLong/tests/test_plan_with_mcp.py::test_mcp_tightens_the_verdict_without_touching_the_amount PASSED [ 56%]
+2026-10-25T04:42:24.2170600Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_prompt_states_the_bills_figure_as_settled_fact PASSED [ 56%]
+2026-10-25T04:42:24.2329373Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_prompt_labels_the_ledger_totals_with_their_period PASSED [ 56%]
+2026-10-25T04:42:24.2490312Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_prompt_says_what_the_available_figure_accounts_for PASSED [ 57%]
+2026-10-25T04:42:24.2648859Z LeHoaLong/tests/test_plan_with_mcp.py::test_with_mcp_off_the_prompt_makes_no_mention_of_bills PASSED [ 57%]
+2026-10-25T04:42:24.2816769Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_model_is_still_never_asked_for_a_number PASSED [ 57%]
+2026-10-25T04:42:24.2974684Z LeHoaLong/tests/test_plan_with_mcp.py::test_a_figure_the_model_returns_is_discarded_unread PASSED [ 57%]
+2026-10-25T04:42:24.3123774Z LeHoaLong/tests/test_plan_with_mcp.py::test_an_unreachable_mcp_server_still_returns_a_plan PASSED [ 58%]
+2026-10-25T04:42:24.3283775Z LeHoaLong/tests/test_plan_with_mcp.py::test_a_teammates_backend_being_down_still_returns_a_plan PASSED [ 58%]
+2026-10-25T04:42:24.3422613Z LeHoaLong/tests/test_plan_with_mcp.py::test_disabled_mcp_reports_itself_as_configuration_not_failure PASSED [ 58%]
+2026-10-25T04:42:24.3592448Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_two_fallbacks_are_reported_separately PASSED [ 58%]
+2026-10-25T04:42:24.3735564Z LeHoaLong/tests/test_plan_with_mcp.py::test_mcp_working_does_not_mask_ollama_being_down PASSED [ 58%]
+2026-10-25T04:42:24.3877865Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_flag_is_accepted_in_a_body_or_a_query_string[body] PASSED [ 59%]
+2026-10-25T04:42:24.4019763Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_flag_is_accepted_in_a_body_or_a_query_string[query] PASSED [ 59%]
+2026-10-25T04:42:24.4178721Z LeHoaLong/tests/test_plan_with_mcp.py::test_planning_defaults_to_using_mcp PASSED [ 59%]
+2026-10-25T04:42:24.4296547Z LeHoaLong/tests/test_plan_with_mcp.py::test_a_mistyped_flag_is_a_400 PASSED [ 59%]
+2026-10-25T04:42:24.4699118Z LeHoaLong/tests/test_plan_with_mcp.py::test_every_tool_call_behind_a_plan_is_in_the_goals_audit_trail PASSED [ 59%]
+2026-10-25T04:42:24.4860943Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_logged_plan_prompt_carries_the_mcp_figures PASSED [ 60%]
+2026-10-25T04:42:24.5028510Z LeHoaLong/tests/test_plan_with_mcp.py::test_replanning_with_mcp_uses_the_same_available_figure PASSED [ 60%]
+2026-10-25T04:42:24.5190566Z LeHoaLong/tests/test_plan_with_mcp.py::test_replanning_reports_the_fallback_too PASSED [ 60%]
+2026-10-25T04:42:24.5355096Z LeHoaLong/tests/test_plan_with_mcp.py::test_replanning_keeps_the_revised_amount_free_of_mcp PASSED [ 60%]
+2026-10-25T04:42:24.5540797Z LeHoaLong/tests/test_plan_with_mcp.py::test_the_adapt_prompt_states_the_budget_without_scolding PASSED [ 61%]
+2026-10-25T04:42:24.5654368Z LeHoaLong/tests/test_progress.py::test_a_goal_keeping_up_with_its_plan_is_on_track PASSED [ 61%]
+2026-10-25T04:42:24.5767953Z LeHoaLong/tests/test_progress.py::test_a_goal_that_has_missed_instalments_is_behind PASSED [ 61%]
+2026-10-25T04:42:24.5881688Z LeHoaLong/tests/test_progress.py::test_a_goal_well_past_its_plan_is_ahead PASSED [ 61%]
+2026-10-25T04:42:24.5995287Z LeHoaLong/tests/test_progress.py::test_a_fully_funded_goal_is_achieved_whatever_the_variance PASSED [ 61%]
+2026-10-25T04:42:24.6109733Z LeHoaLong/tests/test_progress.py::test_a_goal_with_no_plan_has_nothing_to_be_behind PASSED [ 62%]
+2026-10-25T04:42:24.6239810Z LeHoaLong/tests/test_progress.py::test_a_goal_with_neither_plan_nor_contributions PASSED [ 62%]
+2026-10-25T04:42:24.6249214Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[-50.0-1000.0-behind] PASSED [ 62%]
+2026-10-25T04:42:24.6257584Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[-10.0-1000.0-on_track] PASSED [ 62%]
+2026-10-25T04:42:24.6265198Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[-10.01-1000.0-behind] PASSED [ 62%]
+2026-10-25T04:42:24.6272980Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[10.01-1000.0-ahead] PASSED [ 63%]
+2026-10-25T04:42:24.6280675Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[0.0-0.0-on_track] PASSED [ 63%]
+2026-10-25T04:42:24.6288553Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[-0.5-0.0-on_track] PASSED [ 63%]
+2026-10-25T04:42:24.6296221Z LeHoaLong/tests/test_progress.py::test_classify_applies_the_tolerance_band[-1.01-0.0-behind] PASSED [ 63%]
+2026-10-25T04:42:24.6404626Z LeHoaLong/tests/test_progress.py::test_classify_calls_a_funded_goal_achieved_before_anything_else PASSED [ 64%]
+2026-10-25T04:42:24.6519358Z LeHoaLong/tests/test_progress.py::test_the_tolerance_is_configurable PASSED [ 64%]
+2026-10-25T04:42:24.6633969Z LeHoaLong/tests/test_progress.py::test_projection_extrapolates_the_average_rate_so_far PASSED [ 64%]
+2026-10-25T04:42:24.6747829Z LeHoaLong/tests/test_progress.py::test_a_goal_can_be_on_track_and_still_project_past_its_target PASSED [ 64%]
+2026-10-25T04:42:24.6755144Z LeHoaLong/tests/test_progress.py::test_projection_is_unknown_when_nothing_has_been_saved PASSED [ 64%]
+2026-10-25T04:42:24.6761772Z LeHoaLong/tests/test_progress.py::test_projection_of_a_funded_goal_is_today PASSED [ 65%]
+2026-10-25T04:42:24.6768473Z LeHoaLong/tests/test_progress.py::test_a_derisory_saving_rate_projects_nothing_rather_than_the_year_3000 PASSED [ 65%]
+2026-10-25T04:42:24.6775171Z LeHoaLong/tests/test_progress.py::test_projection_handles_a_goal_created_today PASSED [ 65%]
+2026-10-25T04:42:24.6909883Z LeHoaLong/tests/test_progress.py::test_an_observation_is_written_to_the_audit_trail PASSED [ 65%]
+2026-10-25T04:42:24.7099424Z LeHoaLong/tests/test_progress.py::test_the_observe_row_records_python_not_a_model PASSED [ 65%]
+2026-10-25T04:42:24.7229913Z LeHoaLong/tests/test_progress.py::test_an_unchanged_observation_is_not_logged_twice PASSED [ 66%]
+2026-10-25T04:42:24.7383092Z LeHoaLong/tests/test_progress.py::test_a_changed_observation_is_logged_again PASSED [ 66%]
+2026-10-25T04:42:24.7518563Z LeHoaLong/tests/test_progress.py::test_progress_endpoint_returns_the_observation PASSED [ 66%]
+2026-10-25T04:42:24.7732780Z LeHoaLong/tests/test_progress.py::test_progress_variance_is_always_saved_minus_required PASSED [ 66%]
+2026-10-25T04:42:24.7899292Z LeHoaLong/tests/test_progress.py::test_progress_reflects_a_contribution_immediately PASSED [ 67%]
+2026-10-25T04:42:24.8036037Z LeHoaLong/tests/test_progress.py::test_progress_404s_for_a_goal_that_does_not_exist PASSED [ 67%]
+2026-10-25T04:42:24.8168682Z LeHoaLong/tests/test_progress.py::test_progress_never_calls_the_model PASSED [ 67%]
+2026-10-25T04:42:24.8305589Z LeHoaLong/tests/test_rag_client.py::test_ask_returns_the_answer_citations_confidence_and_chunks PASSED [ 67%]
+2026-10-25T04:42:24.8438027Z LeHoaLong/tests/test_rag_client.py::test_ask_calls_retrieve_and_answer_with_the_same_question_and_depth PASSED [ 67%]
+2026-10-25T04:42:24.8576857Z LeHoaLong/tests/test_rag_client.py::test_the_chunks_are_confirmed_to_match_the_citations PASSED [ 68%]
+2026-10-25T04:42:24.8709532Z LeHoaLong/tests/test_rag_client.py::test_a_mismatch_between_chunks_and_citations_is_reported_not_hidden PASSED [ 68%]
+2026-10-25T04:42:24.8863588Z LeHoaLong/tests/test_rag_client.py::test_this_backend_identifies_itself_to_the_rag_servers_audit_log PASSED [ 68%]
+2026-10-25T04:42:24.8994641Z LeHoaLong/tests/test_rag_client.py::test_citations_are_passed_through_object_for_object PASSED [ 68%]
+2026-10-25T04:42:24.9131290Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_category_is_never_relabelled[High] PASSED [ 68%]
+2026-10-25T04:42:24.9264889Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_category_is_never_relabelled[Medium] PASSED [ 69%]
+2026-10-25T04:42:24.9397507Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_category_is_never_relabelled[Low] PASSED [ 69%]
+2026-10-25T04:42:24.9533083Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_category_is_never_relabelled[Unknown] PASSED [ 69%]
+2026-10-25T04:42:24.9683247Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_category_is_never_relabelled[] PASSED [ 69%]
+2026-10-25T04:42:24.9825358Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_category_is_never_relabelled[None] PASSED [ 70%]
+2026-10-25T04:42:24.9955035Z LeHoaLong/tests/test_rag_client.py::test_the_confidence_is_not_recomputed_from_the_chunk_count PASSED [ 70%]
+2026-10-25T04:42:25.0087669Z LeHoaLong/tests/test_rag_client.py::test_the_distance_is_not_converted_into_a_similarity PASSED [ 70%]
+2026-10-25T04:42:25.0219491Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_surfaced_exactly PASSED [ 70%]
+2026-10-25T04:42:25.0350734Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_does_not_fall_back_to_an_ungrounded_answer PASSED [ 70%]
+2026-10-25T04:42:25.0498163Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_still_returns_the_citations_it_had PASSED [ 71%]
+2026-10-25T04:42:25.0630660Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_detected_despite_small_model_variation[Insufficient evidence.] PASSED [ 71%]
+2026-10-25T04:42:25.0762497Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_detected_despite_small_model_variation[insufficient evidence.] PASSED [ 71%]
+2026-10-25T04:42:25.0896051Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_detected_despite_small_model_variation[  Insufficient evidence.  ] PASSED [ 71%]
+2026-10-25T04:42:25.1029236Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_detected_despite_small_model_variation[INSUFFICIENT EVIDENCE.] PASSED [ 71%]
+2026-10-25T04:42:25.1160915Z LeHoaLong/tests/test_rag_client.py::test_an_answer_that_merely_mentions_evidence_is_not_flagged PASSED [ 72%]
+2026-10-25T04:42:25.1315779Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_recorded_as_such_in_the_audit_trail PASSED [ 72%]
+2026-10-25T04:42:25.1447741Z LeHoaLong/tests/test_rag_client.py::test_an_answer_the_retrieved_text_cannot_support_is_withheld PASSED [ 72%]
+2026-10-25T04:42:25.1579176Z LeHoaLong/tests/test_rag_client.py::test_withholding_leaves_the_servers_fields_untouched PASSED [ 72%]
+2026-10-25T04:42:25.1710661Z LeHoaLong/tests/test_rag_client.py::test_an_on_topic_answer_is_not_withheld PASSED [ 73%]
+2026-10-25T04:42:25.1841864Z LeHoaLong/tests/test_rag_client.py::test_half_the_key_words_is_not_enough PASSED [ 73%]
+2026-10-25T04:42:25.1974349Z LeHoaLong/tests/test_rag_client.py::test_plurals_and_word_forms_still_match PASSED [ 73%]
+2026-10-25T04:42:25.2122998Z LeHoaLong/tests/test_rag_client.py::test_a_question_with_no_key_words_is_left_to_the_server PASSED [ 73%]
+2026-10-25T04:42:25.2254256Z LeHoaLong/tests/test_rag_client.py::test_insufficient_evidence_is_not_also_marked_withheld PASSED [ 73%]
+2026-10-25T04:42:25.2394146Z LeHoaLong/tests/test_rag_client.py::test_a_withheld_answer_is_recorded_with_its_reason PASSED [ 74%]
+2026-10-25T04:42:25.2523435Z LeHoaLong/tests/test_rag_client.py::test_an_unreachable_server_is_a_503_that_says_what_to_check PASSED [ 74%]
+2026-10-25T04:42:25.2656105Z LeHoaLong/tests/test_rag_client.py::test_an_unreachable_server_still_records_the_question PASSED [ 74%]
+2026-10-25T04:42:25.2802247Z LeHoaLong/tests/test_rag_client.py::test_an_answer_with_no_answer_text_is_a_503_naming_the_contract PASSED [ 74%]
+2026-10-25T04:42:25.2932261Z LeHoaLong/tests/test_rag_client.py::test_a_missing_citations_field_does_not_invent_citations PASSED [ 74%]
+2026-10-25T04:42:25.3048006Z LeHoaLong/tests/test_rag_client.py::test_disabled_rag_is_a_503_that_says_so[post-/api/rag/ask-body0] PASSED [ 75%]
+2026-10-25T04:42:25.3167313Z LeHoaLong/tests/test_rag_client.py::test_disabled_rag_is_a_503_that_says_so[post-/api/goals/3/explain-None] PASSED [ 75%]
+2026-10-25T04:42:25.3281276Z LeHoaLong/tests/test_rag_client.py::test_disabled_rag_does_not_touch_the_server PASSED [ 75%]
+2026-10-25T04:42:25.3398008Z LeHoaLong/tests/test_rag_client.py::test_health_reports_a_reachable_server PASSED [ 75%]
+2026-10-25T04:42:25.3531761Z LeHoaLong/tests/test_rag_client.py::test_health_reports_an_unreachable_server_as_200 PASSED [ 76%]
+2026-10-25T04:42:25.3875512Z LeHoaLong/tests/test_rag_client.py::test_health_reports_disabled_without_connecting PASSED [ 76%]
+2026-10-25T04:42:25.3990356Z LeHoaLong/tests/test_rag_client.py::test_the_health_probe_uses_its_own_short_timeout PASSED [ 76%]
+2026-10-25T04:42:25.4106373Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body0-question is required] PASSED [ 76%]
+2026-10-25T04:42:25.4223404Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body1-question must not be empty] PASSED [ 76%]
+2026-10-25T04:42:25.4352621Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body2-question must be a string] PASSED [ 77%]
+2026-10-25T04:42:25.4470167Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body3-question must be 500 characters or fewer] PASSED [ 77%]
+2026-10-25T04:42:25.4589722Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body4-top_k must be between 1 and 20] PASSED [ 77%]
+2026-10-25T04:42:25.4706174Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body5-top_k must be between 1 and 20] PASSED [ 77%]
+2026-10-25T04:42:25.4822520Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body6-top_k must be an integer] PASSED [ 77%]
+2026-10-25T04:42:25.4942556Z LeHoaLong/tests/test_rag_client.py::test_ask_rejects_an_unusable_body[body7-top_k must be an integer] PASSED [ 78%]
+2026-10-25T04:42:25.5093946Z LeHoaLong/tests/test_rag_client.py::test_top_k_overrides_the_configured_default PASSED [ 78%]
+2026-10-25T04:42:25.5220891Z LeHoaLong/tests/test_rag_client.py::test_validation_happens_before_the_server_is_called PASSED [ 78%]
+2026-10-25T04:42:25.5357207Z LeHoaLong/tests/test_rag_client.py::test_explain_builds_the_question_from_pythons_figures PASSED [ 78%]
+2026-10-25T04:42:25.5493064Z LeHoaLong/tests/test_rag_client.py::test_the_question_leads_with_concepts_not_figures PASSED [ 79%]
+2026-10-25T04:42:25.5656945Z LeHoaLong/tests/test_rag_client.py::test_the_question_vocabulary_follows_the_observed_status PASSED [ 79%]
+2026-10-25T04:42:25.5797288Z LeHoaLong/tests/test_rag_client.py::test_explain_reports_the_python_figures_as_figures PASSED [ 79%]
+2026-10-25T04:42:25.5949896Z LeHoaLong/tests/test_rag_client.py::test_explain_returns_citations_and_confidence_like_ask_does PASSED [ 79%]
+2026-10-25T04:42:25.6084424Z LeHoaLong/tests/test_rag_client.py::test_explain_checks_relevance_against_the_concepts_not_the_figures PASSED [ 79%]
+2026-10-25T04:42:25.6219493Z LeHoaLong/tests/test_rag_client.py::test_explain_attributes_its_audit_row_to_the_goal PASSED [ 80%]
+2026-10-25T04:42:25.6357156Z LeHoaLong/tests/test_rag_client.py::test_explain_does_not_write_a_second_observe_row PASSED [ 80%]
+2026-10-25T04:42:25.6474282Z LeHoaLong/tests/test_rag_client.py::test_explain_404s_for_a_goal_that_does_not_exist PASSED [ 80%]
+2026-10-25T04:42:25.6628319Z LeHoaLong/tests/test_rag_client.py::test_explain_accepts_top_k_from_a_body_or_a_query_string PASSED [ 80%]
+2026-10-25T04:42:25.6764801Z LeHoaLong/tests/test_rag_client.py::test_explain_rejects_a_bad_top_k PASSED [ 80%]
+2026-10-25T04:42:25.6900480Z LeHoaLong/tests/test_rag_client.py::test_the_audit_row_stores_the_question_the_chunks_the_answer_and_the_confidence PASSED [ 81%]
+2026-10-25T04:42:25.7046825Z LeHoaLong/tests/test_review_plan.py::test_disabled_returns_the_python_proposal_and_says_so PASSED [ 81%]
+2026-10-25T04:42:25.7323507Z LeHoaLong/tests/test_review_plan.py::test_unreachable_server_degrades_with_its_reason PASSED [ 81%]
+2026-10-25T04:42:25.7479317Z LeHoaLong/tests/test_review_plan.py::test_a_server_answer_outside_the_contract_degrades_too PASSED [ 81%]
+2026-10-25T04:42:25.7680160Z LeHoaLong/tests/test_review_plan.py::test_start_returns_202_with_a_run_id_and_sends_an_async_run PASSED [ 82%]
+2026-10-25T04:42:25.7872147Z LeHoaLong/tests/test_review_plan.py::test_starting_a_review_writes_nothing_to_the_goal PASSED [ 82%]
+2026-10-25T04:42:25.8062252Z LeHoaLong/tests/test_review_plan.py::test_the_proposal_is_pythons_schedule_and_closes_the_gap PASSED [ 82%]
+2026-10-25T04:42:25.8247831Z LeHoaLong/tests/test_review_plan.py::test_every_figure_in_the_evidence_is_one_python_computed PASSED [ 82%]
+2026-10-25T04:42:25.8389777Z LeHoaLong/tests/test_review_plan.py::test_goals_that_cannot_be_planned_are_refused_before_the_server[99999-404] PASSED [ 82%]
+2026-10-25T04:42:25.8546197Z LeHoaLong/tests/test_review_plan.py::test_goals_that_cannot_be_planned_are_refused_before_the_server[8-400] PASSED [ 83%]
+2026-10-25T04:42:25.8752275Z LeHoaLong/tests/test_review_plan.py::test_poll_shows_the_agents_output_and_whether_it_can_be_applied PASSED [ 83%]
+2026-10-25T04:42:25.8941264Z LeHoaLong/tests/test_review_plan.py::test_poll_shows_progress_while_the_agents_run PASSED [ 83%]
+2026-10-25T04:42:25.9109369Z LeHoaLong/tests/test_review_plan.py::test_a_run_this_backend_did_not_start_is_404 PASSED [ 83%]
+2026-10-25T04:42:25.9301871Z LeHoaLong/tests/test_review_plan.py::test_a_server_that_lost_its_history_is_404_saying_so PASSED [ 83%]
+2026-10-25T04:42:25.9506615Z LeHoaLong/tests/test_review_plan.py::test_polling_an_unreachable_server_is_503 PASSED [ 84%]
+2026-10-25T04:42:25.9727043Z LeHoaLong/tests/test_review_plan.py::test_approve_applies_exactly_the_frozen_proposal PASSED [ 84%]
+2026-10-25T04:42:25.9946405Z LeHoaLong/tests/test_review_plan.py::test_correct_applies_and_records_the_corrected_rationale PASSED [ 84%]
+2026-10-25T04:42:26.0267582Z LeHoaLong/tests/test_review_plan.py::test_partial_and_reject_apply_nothing[partial-extra0] PASSED [ 84%]
+2026-10-25T04:42:26.0502507Z LeHoaLong/tests/test_review_plan.py::test_partial_and_reject_apply_nothing[reject-extra1] PASSED [ 85%]
+2026-10-25T04:42:26.0687627Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body0-decision is required] PASSED [ 85%]
+2026-10-25T04:42:26.0873254Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body1-decision must be one of] PASSED [ 85%]
+2026-10-25T04:42:26.1061128Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body2-corrected is required] PASSED [ 85%]
+2026-10-25T04:42:26.1248258Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body3-note is required] PASSED [ 85%]
+2026-10-25T04:42:26.1457712Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body4-only accepted with decision 'correct'] PASSED [ 86%]
+2026-10-25T04:42:26.1645927Z LeHoaLong/tests/test_review_plan.py::test_bad_decisions_are_400_and_never_reach_the_server[body5-note must be a string] PASSED [ 86%]
+2026-10-25T04:42:26.1868440Z LeHoaLong/tests/test_review_plan.py::test_a_second_decision_is_409 PASSED [ 86%]
+2026-10-25T04:42:26.2102561Z LeHoaLong/tests/test_review_plan.py::test_a_decided_review_is_served_from_the_log_even_if_the_server_is_gone PASSED [ 86%]
+2026-10-25T04:42:26.2326372Z LeHoaLong/tests/test_review_plan.py::test_a_decided_review_reads_as_complete_matching_the_server PASSED [ 86%]
+2026-10-25T04:42:26.2700832Z LeHoaLong/tests/test_review_plan.py::test_a_contribution_after_the_review_started_makes_approve_409 PASSED [ 87%]
+2026-10-25T04:42:26.2898940Z LeHoaLong/tests/test_review_plan.py::test_a_first_instalment_now_in_the_past_makes_approve_409 PASSED [ 87%]
+2026-10-25T04:42:26.3239986Z LeHoaLong/tests/test_review_plan.py::test_a_deleted_goal_can_still_be_rejected PASSED [ 87%]
+2026-10-25T04:42:26.3429924Z LeHoaLong/tests/test_review_plan.py::test_deciding_while_the_agents_are_still_running_is_409 PASSED [ 87%]
+2026-10-25T04:42:26.3630605Z LeHoaLong/tests/test_review_plan.py::test_a_failed_run_cannot_be_decided_and_says_why PASSED [ 88%]
+2026-10-25T04:42:26.4103983Z LeHoaLong/tests/test_review_plan.py::test_a_server_refusal_rolls_the_plan_back PASSED [ 88%]
+2026-10-25T04:42:26.4308263Z LeHoaLong/tests/test_review_plan.py::test_an_unreachable_server_at_decision_time_is_503_and_changes_nothing PASSED [ 88%]
+2026-10-25T04:42:26.4497557Z LeHoaLong/tests/test_review_plan.py::test_deciding_while_switched_off_is_503 PASSED [ 88%]
+2026-10-25T04:42:26.4611280Z LeHoaLong/tests/test_review_plan.py::test_health_when_disabled PASSED    [ 88%]
+2026-10-25T04:42:26.4760554Z LeHoaLong/tests/test_review_plan.py::test_health_when_reachable PASSED   [ 89%]
+2026-10-25T04:42:26.4891605Z LeHoaLong/tests/test_review_plan.py::test_health_when_unreachable_is_still_200 PASSED [ 89%]
+2026-10-25T04:42:26.5038709Z LeHoaLong/tests/test_review_plan.py::test_ai_mode_off_plans_without_calling_the_model PASSED [ 89%]
+2026-10-25T04:42:26.5163171Z LeHoaLong/tests/test_review_plan.py::test_ai_mode_off_health_does_not_probe_ollama PASSED [ 89%]
+2026-10-25T04:42:26.5285573Z LeHoaLong/tests/test_steps_and_contributions.py::test_steps_are_returned_in_plan_order PASSED [ 89%]
+2026-10-25T04:42:26.5404363Z LeHoaLong/tests/test_steps_and_contributions.py::test_steps_of_a_goal_with_no_plan_are_an_empty_list PASSED [ 90%]
+2026-10-25T04:42:26.5542432Z LeHoaLong/tests/test_steps_and_contributions.py::test_steps_404_when_the_goal_does_not_exist PASSED [ 90%]
+2026-10-25T04:42:26.5681800Z LeHoaLong/tests/test_steps_and_contributions.py::test_marking_a_step_complete PASSED [ 90%]
+2026-10-25T04:42:26.5824626Z LeHoaLong/tests/test_steps_and_contributions.py::test_marking_complete_leaves_provenance_alone PASSED [ 90%]
+2026-10-25T04:42:26.5968226Z LeHoaLong/tests/test_steps_and_contributions.py::test_editing_the_substance_of_an_ai_step_makes_it_the_users PASSED [ 91%]
+2026-10-25T04:42:26.6096680Z LeHoaLong/tests/test_steps_and_contributions.py::test_rewriting_a_step_to_its_existing_value_does_not_change_provenance PASSED [ 91%]
+2026-10-25T04:42:26.6236200Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_step_can_be_edited_in_several_ways_at_once PASSED [ 91%]
+2026-10-25T04:42:26.6392111Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_step_amount_of_zero_is_allowed PASSED [ 91%]
+2026-10-25T04:42:26.6516639Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload0-step_amount must not be negative] PASSED [ 91%]
+2026-10-25T04:42:26.6639933Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload1-step_amount must be a number] PASSED [ 92%]
+2026-10-25T04:42:26.6765244Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload2-due_date must be an ISO-8601 date] PASSED [ 92%]
+2026-10-25T04:42:26.6891958Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload3-status must be one of] PASSED [ 92%]
+2026-10-25T04:42:26.7017339Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload4-description must not be empty] PASSED [ 92%]
+2026-10-25T04:42:26.7158881Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload5-step_order cannot be changed] PASSED [ 92%]
+2026-10-25T04:42:26.7283950Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload6-source cannot be changed] PASSED [ 93%]
+2026-10-25T04:42:26.7408616Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload7-goal_id cannot be changed] PASSED [ 93%]
+2026-10-25T04:42:26.7532527Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_rejects_invalid_payloads[payload8-no updatable fields supplied] PASSED [ 93%]
+2026-10-25T04:42:26.7662395Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_step_cannot_be_reached_through_the_wrong_goal PASSED [ 93%]
+2026-10-25T04:42:26.7782613Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_update_404s_for_an_unknown_step PASSED [ 94%]
+2026-10-25T04:42:26.7949547Z LeHoaLong/tests/test_steps_and_contributions.py::test_deleting_a_step_leaves_the_rest_of_the_plan_intact PASSED [ 94%]
+2026-10-25T04:42:26.8094223Z LeHoaLong/tests/test_steps_and_contributions.py::test_deleting_a_step_does_not_renumber_the_others PASSED [ 94%]
+2026-10-25T04:42:26.8239183Z LeHoaLong/tests/test_steps_and_contributions.py::test_deleting_a_step_does_not_touch_contributions PASSED [ 94%]
+2026-10-25T04:42:26.8384899Z LeHoaLong/tests/test_steps_and_contributions.py::test_step_delete_404s_twice PASSED [ 94%]
+2026-10-25T04:42:26.8505705Z LeHoaLong/tests/test_steps_and_contributions.py::test_contributions_are_listed_newest_first_with_a_total PASSED [ 95%]
+2026-10-25T04:42:26.8624769Z LeHoaLong/tests/test_steps_and_contributions.py::test_contributions_of_an_unfunded_goal_total_zero PASSED [ 95%]
+2026-10-25T04:42:26.8760496Z LeHoaLong/tests/test_steps_and_contributions.py::test_contributions_404_when_the_goal_does_not_exist PASSED [ 95%]
+2026-10-25T04:42:26.8897020Z LeHoaLong/tests/test_steps_and_contributions.py::test_recording_a_contribution_returns_201_and_the_recalculated_goal PASSED [ 95%]
+2026-10-25T04:42:26.9080746Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_defaults_to_today PASSED [ 95%]
+2026-10-25T04:42:26.9261079Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_that_completes_a_goal_is_flagged_not_auto_applied PASSED [ 96%]
+2026-10-25T04:42:26.9419472Z LeHoaLong/tests/test_steps_and_contributions.py::test_recording_a_contribution_does_not_mark_any_step_complete PASSED [ 96%]
+2026-10-25T04:42:26.9571168Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_shows_up_in_the_goal_detail_and_the_list PASSED [ 96%]
+2026-10-25T04:42:26.9706375Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload0-amount is required] PASSED [ 96%]
+2026-10-25T04:42:26.9824149Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload1-amount must be greater than 0] PASSED [ 97%]
+2026-10-25T04:42:26.9943116Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload2-amount must be greater than 0] PASSED [ 97%]
+2026-10-25T04:42:27.0061100Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload3-amount must be a number] PASSED [ 97%]
+2026-10-25T04:42:27.0178996Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload4-amount must be a number] PASSED [ 97%]
+2026-10-25T04:42:27.0297380Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload5-contribution_date must be an ISO-8601 date] PASSED [ 97%]
+2026-10-25T04:42:27.0433586Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_rejects_invalid_payloads[payload6-notes must be 500 characters or fewer] PASSED [ 98%]
+2026-10-25T04:42:27.0548042Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_future_dated_contribution_is_rejected PASSED [ 98%]
+2026-10-25T04:42:27.0689933Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_back_dated_contribution_is_allowed PASSED [ 98%]
+2026-10-25T04:42:27.0810796Z LeHoaLong/tests/test_steps_and_contributions.py::test_contribution_404s_for_a_goal_that_does_not_exist PASSED [ 98%]
+2026-10-25T04:42:27.0933911Z LeHoaLong/tests/test_steps_and_contributions.py::test_a_contribution_is_not_written_when_the_goal_is_missing PASSED [ 98%]
+2026-10-25T04:42:27.0944953Z LeHoaLong/tests/test_write_deployment_report.py::test_only_this_feature_s_env_is_read_including_the_shared_no_ai_list PASSED [ 99%]
+2026-10-25T04:42:27.0956237Z LeHoaLong/tests/test_write_deployment_report.py::test_switches_left_unset_fall_back_to_the_dockerfile_default PASSED [ 99%]
+2026-10-25T04:42:27.0963553Z LeHoaLong/tests/test_write_deployment_report.py::test_a_switch_the_deployed_code_does_not_have_is_recorded_as_null PASSED [ 99%]
+2026-10-25T04:42:27.0970604Z LeHoaLong/tests/test_write_deployment_report.py::test_the_deploy_script_wins_once_it_sets_the_switches PASSED [ 99%]
+2026-10-25T04:42:27.1523099Z LeHoaLong/tests/test_write_deployment_report.py::test_the_report_names_an_internal_backend_and_a_future_dated_smoke_goal PASSED [100%]
+2026-10-25T04:42:27.1523666Z 
+2026-10-25T04:42:27.1523844Z ============================= 467 passed in 6.21s ==============================
+2026-10-25T04:42:27.2125665Z ##[group]Run python LeHoaLong/tools/build_corpus.py --check
+2026-10-25T04:42:27.2126119Z [36;1mpython LeHoaLong/tools/build_corpus.py --check[0m
+2026-10-25T04:42:27.2195241Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:27.2195544Z env:
+2026-10-25T04:42:27.2195788Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:27.2196081Z   OLLAMA_MODEL: qwen2.5:0.5b
+2026-10-25T04:42:27.2196338Z   MCP_ENABLED: false
+2026-10-25T04:42:27.2196584Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:27.2196857Z   RAG_ENABLED: false
+2026-10-25T04:42:27.2197081Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:27.2197348Z   AI_MODE_ENABLED: false
+2026-10-25T04:42:27.2197581Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:27.2197831Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:27.2198154Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:27.2198574Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:27.2199033Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:27.2199411Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:27.2199785Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:27.2200161Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:27.2200495Z ##[endgroup]
+2026-10-25T04:42:27.2559924Z  160 words (2 chunk(s))  what a savings goal is
+2026-10-25T04:42:27.2560505Z  160 words (2 chunk(s))  the status of a savings goal
+2026-10-25T04:42:27.2560965Z   80 words (1 chunk(s))  prioritising competing goals
+2026-10-25T04:42:27.2561308Z   80 words (1 chunk(s))  emergency funds
+2026-10-25T04:42:27.2562185Z  160 words (2 chunk(s))  target date planning and instalments
+2026-10-25T04:42:27.2562581Z   80 words (1 chunk(s))  a goal that is on track
+2026-10-25T04:42:27.2562899Z   80 words (1 chunk(s))  a goal that is behind
+2026-10-25T04:42:27.2563199Z   80 words (1 chunk(s))  a goal that is ahead
+2026-10-25T04:42:27.2563569Z   80 words (1 chunk(s))  measuring progress and variance
+2026-10-25T04:42:27.2563943Z  160 words (2 chunk(s))  catching up and replanning
+2026-10-25T04:42:27.2564294Z  160 words (2 chunk(s))  the monthly budget and allocation
+2026-10-25T04:42:27.2564684Z   80 words (1 chunk(s))  recurring bills and what is left to save
+2026-10-25T04:42:27.2564931Z 
+2026-10-25T04:42:27.2565060Z total 1360 words -> 17.00 chunks, aligned: True
+2026-10-25T04:42:27.2565576Z LeHoaLong_goals_budgeting_knowledge.txt DIFFERS from this script -- run without --check to regenerate
+2026-10-25T04:42:27.2602712Z ##[error]Process completed with exit code 1.
+2026-10-25T04:42:27.2696357Z Post job cleanup.
+2026-10-25T04:42:27.3864240Z (node:2643) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:27.3864996Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:27.4058620Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Advanced-Software-Development/Advanced-Software-Development --files-from manifest.txt --use-compress-program zstdmt
+2026-10-25T04:42:27.5934208Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0s4jdagAAAAAyT5cMlxzKRKJ7bn4J7tmnU0xDMzFFREdFMDcxNQBFZGdl
+2026-10-25T04:42:27.6100711Z Post job cleanup.
+2026-10-25T04:42:27.6937602Z [command]/usr/bin/git version
+2026-10-25T04:42:27.6981871Z git version 2.55.0
+2026-10-25T04:42:27.7026245Z Temporarily overriding HOME='/home/runner/work/_temp/3902e813-f21c-4b1b-8a56-51a24693e084' before making global git config changes
+2026-10-25T04:42:27.7027278Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:42:27.7035738Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:27.7078979Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:42:27.7116718Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:42:27.7394789Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:42:27.7424930Z http.https://github.com/.extraheader
+2026-10-25T04:42:27.7436898Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:42:27.7473925Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:42:27.7906632Z Cleaning up orphan processes
+2026-10-25T04:42:27.8303206Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
