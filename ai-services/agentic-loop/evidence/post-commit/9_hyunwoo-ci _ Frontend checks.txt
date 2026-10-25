@@ -1,0 +1,161 @@
+﻿2026-10-25T04:41:47.7113260Z Current runner version: '2.338.0'
+2026-10-25T04:41:47.7131748Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:47.7132272Z Hosted Compute Agent
+2026-10-25T04:41:47.7132720Z Version: 20261021.618
+2026-10-25T04:41:47.7133124Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:47.7133660Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:47.7134056Z Worker ID: {5e5011ff-dc23-4f74-8993-1617034526ea}
+2026-10-25T04:41:47.7134450Z Region: centralus
+2026-10-25T04:41:47.7134830Z Cloud: Azure
+2026-10-25T04:41:47.7135185Z ##[endgroup]
+2026-10-25T04:41:47.7136189Z ##[group]Operating System
+2026-10-25T04:41:47.7136582Z Ubuntu
+2026-10-25T04:41:47.7136896Z 24.04.5
+2026-10-25T04:41:47.7137242Z LTS
+2026-10-25T04:41:47.7137580Z ##[endgroup]
+2026-10-25T04:41:47.7137958Z ##[group]Runner Image
+2026-10-25T04:41:47.7138331Z Image: ubuntu-24.04
+2026-10-25T04:41:47.7138669Z Version: 20261012.334.1
+2026-10-25T04:41:47.7139828Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:47.7140712Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:47.7141270Z ##[endgroup]
+2026-10-25T04:41:47.7141910Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:47.7143218Z Contents: read
+2026-10-25T04:41:47.7143557Z Metadata: read
+2026-10-25T04:41:47.7143940Z ##[endgroup]
+2026-10-25T04:41:47.7145557Z Secret source: Actions
+2026-10-25T04:41:47.7146278Z Cache mode: write
+2026-10-25T04:41:47.7146846Z Prepare workflow directory
+2026-10-25T04:41:47.7409352Z Prepare all required actions
+2026-10-25T04:41:47.7442008Z Getting action download info
+2026-10-25T04:41:47.9612698Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:48.0563795Z Download action repository 'actions/setup-node@v4.1.0' (SHA:39370e3970a6d050c480ffad4ff0ed4d3fdee5af)
+2026-10-25T04:41:48.2868007Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/hyunwoo-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:48.2871063Z Complete job name: hyunwoo-ci / Frontend checks
+2026-10-25T04:41:48.3400829Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:48.3401271Z with:
+2026-10-25T04:41:48.3401563Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.3403821Z   token: ***
+2026-10-25T04:41:48.3404056Z   ssh-strict: true
+2026-10-25T04:41:48.3404300Z   ssh-user: git
+2026-10-25T04:41:48.3404553Z   persist-credentials: true
+2026-10-25T04:41:48.3404830Z   clean: true
+2026-10-25T04:41:48.3405084Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:48.3405377Z   fetch-depth: 1
+2026-10-25T04:41:48.3405619Z   fetch-tags: false
+2026-10-25T04:41:48.3406041Z   show-progress: true
+2026-10-25T04:41:48.3406296Z   lfs: false
+2026-10-25T04:41:48.3406530Z   submodules: false
+2026-10-25T04:41:48.3406787Z   set-safe-directory: true
+2026-10-25T04:41:48.3407130Z env:
+2026-10-25T04:41:48.3407357Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:48.3407633Z   MCP_ENABLED: false
+2026-10-25T04:41:48.3407882Z   RAG_ENABLED: false
+2026-10-25T04:41:48.3408175Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.3408495Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:48.3408809Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:48.3409095Z ##[endgroup]
+2026-10-25T04:41:48.4108724Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.4110545Z ##[group]Getting Git version info
+2026-10-25T04:41:48.4111438Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.4112737Z [command]/usr/bin/git version
+2026-10-25T04:41:48.4154927Z git version 2.55.0
+2026-10-25T04:41:48.4179819Z ##[endgroup]
+2026-10-25T04:41:48.4193496Z Temporarily overriding HOME='/home/runner/work/_temp/7aaf7102-001b-4264-89f6-6bfb7eddf5dd' before making global git config changes
+2026-10-25T04:41:48.4194714Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:48.4196583Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.4243531Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:48.4247338Z ##[group]Initializing the repository
+2026-10-25T04:41:48.4251075Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:48.4333293Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:48.4334439Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:48.4335228Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:48.4336201Z hint: call:
+2026-10-25T04:41:48.4336708Z hint:
+2026-10-25T04:41:48.4337335Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:48.4338060Z hint:
+2026-10-25T04:41:48.4338758Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:48.4339712Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:48.4340535Z hint:
+2026-10-25T04:41:48.4341029Z hint: 	git branch -m <name>
+2026-10-25T04:41:48.4341577Z hint:
+2026-10-25T04:41:48.4342257Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:48.4343663Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:48.4346295Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:48.4404352Z ##[endgroup]
+2026-10-25T04:41:48.4405057Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:48.4408800Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:48.4442145Z ##[endgroup]
+2026-10-25T04:41:48.4442724Z ##[group]Setting up auth
+2026-10-25T04:41:48.4449307Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:48.4493872Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:48.4789813Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:48.4820229Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:48.5008975Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:48.5047985Z ##[endgroup]
+2026-10-25T04:41:48.5048514Z ##[group]Fetching the repository
+2026-10-25T04:41:48.5054708Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:49.1401627Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:49.1403154Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:49.1406286Z ##[endgroup]
+2026-10-25T04:41:49.1407417Z ##[group]Determining the checkout info
+2026-10-25T04:41:49.1408659Z ##[endgroup]
+2026-10-25T04:41:49.1410819Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:49.1459210Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:49.1487867Z ##[group]Checking out the ref
+2026-10-25T04:41:49.1491010Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:49.1795639Z Switched to a new branch 'main'
+2026-10-25T04:41:49.1797222Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:49.1804418Z ##[endgroup]
+2026-10-25T04:41:49.1845256Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:49.1872717Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:49.2147396Z ##[group]Run actions/setup-node@v4.1.0
+2026-10-25T04:41:49.2148177Z with:
+2026-10-25T04:41:49.2148749Z   node-version: 22
+2026-10-25T04:41:49.2149315Z   always-auth: false
+2026-10-25T04:41:49.2149903Z   check-latest: false
+2026-10-25T04:41:49.2156390Z   token: ***
+2026-10-25T04:41:49.2156985Z env:
+2026-10-25T04:41:49.2157513Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:49.2158174Z   MCP_ENABLED: false
+2026-10-25T04:41:49.2158741Z   RAG_ENABLED: false
+2026-10-25T04:41:49.2159429Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.2160242Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:49.2160998Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.2161740Z ##[endgroup]
+2026-10-25T04:41:49.3174556Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-25T04:41:49.3177615Z (node:2055) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.3179524Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.3181058Z ##[group]Environment details
+2026-10-25T04:41:49.5930720Z node: v22.23.3
+2026-10-25T04:41:49.5931559Z npm: 10.9.9
+2026-10-25T04:41:49.5932102Z yarn: 1.22.22
+2026-10-25T04:41:49.5933689Z ##[endgroup]
+2026-10-25T04:41:49.6074201Z ##[group]Run node --check hyunwoo/frontend/app.js
+2026-10-25T04:41:49.6075271Z [36;1mnode --check hyunwoo/frontend/app.js[0m
+2026-10-25T04:41:49.6285282Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:49.6286126Z env:
+2026-10-25T04:41:49.6286655Z   AI_MODE_ENABLED: false
+2026-10-25T04:41:49.6287264Z   MCP_ENABLED: false
+2026-10-25T04:41:49.6287845Z   RAG_ENABLED: false
+2026-10-25T04:41:49.6288481Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.6289267Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:49.6348693Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:49.6349464Z ##[endgroup]
+2026-10-25T04:41:49.6781575Z Post job cleanup.
+2026-10-25T04:41:49.7629190Z (node:2095) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:49.7632471Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:49.7863006Z Post job cleanup.
+2026-10-25T04:41:49.8496749Z [command]/usr/bin/git version
+2026-10-25T04:41:49.8534180Z git version 2.55.0
+2026-10-25T04:41:49.8563594Z Temporarily overriding HOME='/home/runner/work/_temp/99fbd973-8255-466a-905d-a8d4b587afdb' before making global git config changes
+2026-10-25T04:41:49.8565682Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:49.8568236Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:49.8608306Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:49.8644233Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:49.8860351Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:49.8885074Z http.https://github.com/.extraheader
+2026-10-25T04:41:49.8896815Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:41:49.8937089Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:49.9274696Z Cleaning up orphan processes
+2026-10-25T04:41:49.9627525Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-node@v4.1.0. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

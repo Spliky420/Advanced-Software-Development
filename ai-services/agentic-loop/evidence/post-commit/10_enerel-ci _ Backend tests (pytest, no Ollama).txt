@@ -1,0 +1,832 @@
+﻿2026-10-25T04:41:52.7731527Z Current runner version: '2.338.0'
+2026-10-25T04:41:52.7752918Z ##[group]Runner Image Provisioner
+2026-10-25T04:41:52.7754046Z Hosted Compute Agent
+2026-10-25T04:41:52.7754591Z Version: 20261021.618
+2026-10-25T04:41:52.7755103Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T04:41:52.7755703Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T04:41:52.7756526Z Worker ID: {40de256e-88c9-4b8f-a98c-d2b8e1f9bfe2}
+2026-10-25T04:41:52.7757086Z Region: centralus
+2026-10-25T04:41:52.7757533Z Cloud: Azure
+2026-10-25T04:41:52.7757959Z ##[endgroup]
+2026-10-25T04:41:52.7759167Z ##[group]Operating System
+2026-10-25T04:41:52.7759681Z Ubuntu
+2026-10-25T04:41:52.7760096Z 24.04.5
+2026-10-25T04:41:52.7760514Z LTS
+2026-10-25T04:41:52.7760975Z ##[endgroup]
+2026-10-25T04:41:52.7761421Z ##[group]Runner Image
+2026-10-25T04:41:52.7761894Z Image: ubuntu-24.04
+2026-10-25T04:41:52.7762317Z Version: 20261012.334.1
+2026-10-25T04:41:52.7763353Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-25T04:41:52.7764583Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-25T04:41:52.7765351Z ##[endgroup]
+2026-10-25T04:41:52.7766466Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T04:41:52.7768451Z Contents: read
+2026-10-25T04:41:52.7768894Z Metadata: read
+2026-10-25T04:41:52.7769391Z ##[endgroup]
+2026-10-25T04:41:52.7771141Z Secret source: Actions
+2026-10-25T04:41:52.7772041Z Cache mode: write
+2026-10-25T04:41:52.7772837Z Prepare workflow directory
+2026-10-25T04:41:52.8120648Z Prepare all required actions
+2026-10-25T04:41:52.8163916Z Getting action download info
+2026-10-25T04:41:53.0765606Z Download action repository 'actions/checkout@v4.2.2' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-25T04:41:53.1871886Z Download action repository 'actions/setup-python@v5.3.0' (SHA:0b93645e9fea7318ecaed2b359559ac225c90a2b)
+2026-10-25T04:41:53.3191408Z Download action repository 'actions/upload-artifact@v4.4.3' (SHA:b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882)
+2026-10-25T04:41:53.7260010Z Uses: Spliky420/Advanced-Software-Development/.github/workflows/enerel-ci.yml@refs/heads/main (7830901bcba08ce4f3d97c832677845eb23d0d56)
+2026-10-25T04:41:53.7265272Z Complete job name: enerel-ci / Backend tests (pytest, no Ollama)
+2026-10-25T04:41:53.8083149Z ##[group]Run actions/checkout@v4.2.2
+2026-10-25T04:41:53.8084555Z with:
+2026-10-25T04:41:53.8085459Z   repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:53.8092749Z   token: ***
+2026-10-25T04:41:53.8093527Z   ssh-strict: true
+2026-10-25T04:41:53.8094352Z   ssh-user: git
+2026-10-25T04:41:53.8095247Z   persist-credentials: true
+2026-10-25T04:41:53.8096234Z   clean: true
+2026-10-25T04:41:53.8097033Z   sparse-checkout-cone-mode: true
+2026-10-25T04:41:53.8098032Z   fetch-depth: 1
+2026-10-25T04:41:53.8098766Z   fetch-tags: false
+2026-10-25T04:41:53.8099593Z   show-progress: true
+2026-10-25T04:41:53.8100369Z   lfs: false
+2026-10-25T04:41:53.8101165Z   submodules: false
+2026-10-25T04:41:53.8102037Z   set-safe-directory: true
+2026-10-25T04:41:53.8103143Z env:
+2026-10-25T04:41:53.8103980Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:53.8104957Z   MCP_ENABLED: false
+2026-10-25T04:41:53.8105821Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:53.8107183Z   RAG_ENABLED: false
+2026-10-25T04:41:53.8107995Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:53.8109005Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:41:53.8109939Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:41:53.8110865Z ##[endgroup]
+2026-10-25T04:41:53.9036259Z Syncing repository: Spliky420/Advanced-Software-Development
+2026-10-25T04:41:53.9039188Z ##[group]Getting Git version info
+2026-10-25T04:41:53.9040930Z Working directory is '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:53.9043326Z [command]/usr/bin/git version
+2026-10-25T04:41:53.9097228Z git version 2.55.0
+2026-10-25T04:41:53.9130630Z ##[endgroup]
+2026-10-25T04:41:53.9139955Z Temporarily overriding HOME='/home/runner/work/_temp/21fea06c-ba84-45c9-8529-fc4557f909bb' before making global git config changes
+2026-10-25T04:41:53.9143325Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:41:53.9146916Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:53.9190675Z Deleting the contents of '/home/runner/work/Advanced-Software-Development/Advanced-Software-Development'
+2026-10-25T04:41:53.9202120Z ##[group]Initializing the repository
+2026-10-25T04:41:53.9205563Z [command]/usr/bin/git init /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:41:53.9304889Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T04:41:53.9309651Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T04:41:53.9325598Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T04:41:53.9328725Z hint: call:
+2026-10-25T04:41:53.9330440Z hint:
+2026-10-25T04:41:53.9332255Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T04:41:53.9334265Z hint:
+2026-10-25T04:41:53.9336412Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T04:41:53.9340097Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T04:41:53.9342463Z hint:
+2026-10-25T04:41:53.9343699Z hint: 	git branch -m <name>
+2026-10-25T04:41:53.9345168Z hint:
+2026-10-25T04:41:53.9347055Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T04:41:53.9350304Z Initialized empty Git repository in /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/.git/
+2026-10-25T04:41:53.9355514Z [command]/usr/bin/git remote add origin https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:53.9361124Z ##[endgroup]
+2026-10-25T04:41:53.9363831Z ##[group]Disabling automatic garbage collection
+2026-10-25T04:41:53.9365799Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T04:41:53.9386888Z ##[endgroup]
+2026-10-25T04:41:53.9388710Z ##[group]Setting up auth
+2026-10-25T04:41:53.9392674Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:41:53.9420176Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:41:53.9732510Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:41:53.9762345Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:41:53.9923470Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T04:41:53.9958553Z ##[endgroup]
+2026-10-25T04:41:53.9960011Z ##[group]Fetching the repository
+2026-10-25T04:41:53.9968182Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7830901bcba08ce4f3d97c832677845eb23d0d56:refs/remotes/origin/main
+2026-10-25T04:41:54.4361780Z From https://github.com/Spliky420/Advanced-Software-Development
+2026-10-25T04:41:54.4363635Z  * [new ref]         7830901bcba08ce4f3d97c832677845eb23d0d56 -> origin/main
+2026-10-25T04:41:54.4365743Z ##[endgroup]
+2026-10-25T04:41:54.4366709Z ##[group]Determining the checkout info
+2026-10-25T04:41:54.4367630Z ##[endgroup]
+2026-10-25T04:41:54.4373299Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T04:41:54.4422485Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T04:41:54.4451062Z ##[group]Checking out the ref
+2026-10-25T04:41:54.4455564Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-25T04:41:54.4701230Z Switched to a new branch 'main'
+2026-10-25T04:41:54.4703991Z branch 'main' set up to track 'origin/main'.
+2026-10-25T04:41:54.4708309Z ##[endgroup]
+2026-10-25T04:41:54.4752490Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T04:41:54.4773235Z 7830901bcba08ce4f3d97c832677845eb23d0d56
+2026-10-25T04:41:54.5014282Z ##[group]Run actions/setup-python@v5.3.0
+2026-10-25T04:41:54.5014855Z with:
+2026-10-25T04:41:54.5015276Z   python-version: 3.11
+2026-10-25T04:41:54.5015777Z   cache: pip
+2026-10-25T04:41:54.5016632Z   cache-dependency-path: Enerel/backend/requirements.txt
+Enerel/tests/requirements.txt
+
+2026-10-25T04:41:54.5017415Z   check-latest: false
+2026-10-25T04:41:54.5019947Z   token: ***
+2026-10-25T04:41:54.5020403Z   update-environment: true
+2026-10-25T04:41:54.5020925Z   allow-prereleases: false
+2026-10-25T04:41:54.5021436Z env:
+2026-10-25T04:41:54.5021877Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:54.5022411Z   MCP_ENABLED: false
+2026-10-25T04:41:54.5022872Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:54.5023413Z   RAG_ENABLED: false
+2026-10-25T04:41:54.5023864Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:54.5024339Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:41:54.5024798Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:41:54.5025411Z ##[endgroup]
+2026-10-25T04:41:54.6063591Z ##[group]Installed versions
+2026-10-25T04:41:54.6140205Z (node:2030) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:41:54.6141382Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:41:54.6142136Z Successfully set up CPython (3.11.17)
+2026-10-25T04:41:54.6143067Z ##[endgroup]
+2026-10-25T04:41:54.6399933Z [command]/opt/hostedtoolcache/Python/3.11.17/x64/bin/pip cache dir
+2026-10-25T04:41:54.8976610Z /home/runner/.cache/pip
+2026-10-25T04:41:54.9999030Z ##[warning]Failed to restore: Cache service responded with 400
+2026-10-25T04:41:55.0010763Z pip cache is not found
+2026-10-25T04:41:55.0130892Z ##[group]Run python -m pip install --upgrade pip
+2026-10-25T04:41:55.0131968Z [36;1mpython -m pip install --upgrade pip[0m
+2026-10-25T04:41:55.0132654Z [36;1mpip install -r Enerel/backend/requirements.txt[0m
+2026-10-25T04:41:55.0133261Z [36;1mpip install -r Enerel/tests/requirements.txt[0m
+2026-10-25T04:41:55.0310654Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:41:55.0311273Z env:
+2026-10-25T04:41:55.0311788Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:41:55.0312308Z   MCP_ENABLED: false
+2026-10-25T04:41:55.0312798Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:41:55.0313381Z   RAG_ENABLED: false
+2026-10-25T04:41:55.0313855Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:41:55.0314356Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:41:55.0314852Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:41:55.0315463Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:55.0316374Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:41:55.0317083Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:55.0317656Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:55.0318353Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:41:55.0318991Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:41:55.0319512Z ##[endgroup]
+2026-10-25T04:41:55.5122819Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (26.2.1)
+2026-10-25T04:41:55.6432496Z Collecting pip
+2026-10-25T04:41:55.7547035Z   Downloading pip-26.2.2-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:41:55.7840676Z Downloading pip-26.2.2-py3-none-any.whl (1.8 MB)
+2026-10-25T04:41:56.0197556Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 8.4 MB/s  0:00:00
+2026-10-25T04:41:56.0590951Z Installing collected packages: pip
+2026-10-25T04:41:56.0591828Z   Attempting uninstall: pip
+2026-10-25T04:41:56.0600987Z     Found existing installation: pip 26.2.1
+2026-10-25T04:41:56.0889552Z     Uninstalling pip-26.2.1:
+2026-10-25T04:41:56.0930053Z       Successfully uninstalled pip-26.2.1
+2026-10-25T04:41:56.9161122Z Successfully installed pip-26.2.2
+2026-10-25T04:41:57.3067146Z Collecting Flask==3.1.3 (from -r Enerel/backend/requirements.txt (line 1))
+2026-10-25T04:41:57.3752062Z   Downloading flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+2026-10-25T04:41:57.4074022Z Collecting Werkzeug==3.1.9 (from -r Enerel/backend/requirements.txt (line 2))
+2026-10-25T04:41:57.4204700Z   Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+2026-10-25T04:41:57.4533343Z Collecting mcp==1.30.0 (from -r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:57.4665336Z   Downloading mcp-1.30.0-py3-none-any.whl.metadata (9.3 kB)
+2026-10-25T04:41:57.4980543Z Collecting requests==2.34.2 (from -r Enerel/backend/requirements.txt (line 4))
+2026-10-25T04:41:57.5110517Z   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+2026-10-25T04:41:57.5370704Z Collecting gunicorn==22.0.0 (from -r Enerel/backend/requirements.txt (line 7))
+2026-10-25T04:41:57.5619310Z   Downloading gunicorn-22.0.0-py3-none-any.whl.metadata (4.4 kB)
+2026-10-25T04:41:57.5828889Z Collecting blinker>=1.9.0 (from Flask==3.1.3->-r Enerel/backend/requirements.txt (line 1))
+2026-10-25T04:41:57.5957531Z   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-10-25T04:41:57.6190088Z Collecting click>=8.1.3 (from Flask==3.1.3->-r Enerel/backend/requirements.txt (line 1))
+2026-10-25T04:41:57.6318676Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:57.6517369Z Collecting itsdangerous>=2.2.0 (from Flask==3.1.3->-r Enerel/backend/requirements.txt (line 1))
+2026-10-25T04:41:57.6649474Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-25T04:41:57.7074438Z Collecting jinja2>=3.1.2 (from Flask==3.1.3->-r Enerel/backend/requirements.txt (line 1))
+2026-10-25T04:41:57.7206291Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:57.7815948Z Collecting markupsafe>=2.1.1 (from Flask==3.1.3->-r Enerel/backend/requirements.txt (line 1))
+2026-10-25T04:41:57.7948370Z   Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-10-25T04:41:57.8224844Z Collecting anyio>=4.5 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:57.8354992Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+2026-10-25T04:41:57.8558817Z Collecting httpx-sse>=0.4 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:57.8687400Z   Downloading httpx_sse-0.4.3-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:57.8934453Z Collecting httpx<1.0.0,>=0.27.1 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:57.9063002Z   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-10-25T04:41:57.9518964Z Collecting jsonschema>=4.20.0 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:57.9647135Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:41:57.9884353Z Collecting pydantic-settings>=2.5.2 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.0012711Z   Downloading pydantic_settings-2.16.1-py3-none-any.whl.metadata (4.0 kB)
+2026-10-25T04:41:58.0912619Z Collecting pydantic<3.0.0,>=2.11.0 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.1049105Z   Downloading pydantic-2.14.1-py3-none-any.whl.metadata (133 kB)
+2026-10-25T04:41:58.1706242Z Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.1837168Z   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:58.2053612Z Collecting python-multipart>=0.0.9 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.2181731Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+2026-10-25T04:41:58.2423279Z Collecting sse-starlette>=1.6.1 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.2553279Z   Downloading sse_starlette-3.5.1-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:58.2869722Z Collecting starlette>=0.27 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.2999107Z   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:58.3236322Z Collecting typing-extensions>=4.9.0 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.3365069Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-10-25T04:41:58.3555359Z Collecting typing-inspection>=0.4.1 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.3683153Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+2026-10-25T04:41:58.4038496Z Collecting uvicorn>=0.31.1 (from mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.4167394Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-25T04:41:58.5140942Z Collecting charset_normalizer<4,>=2 (from requests==2.34.2->-r Enerel/backend/requirements.txt (line 4))
+2026-10-25T04:41:58.5277073Z   Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-25T04:41:58.5525306Z Collecting idna<4,>=2.5 (from requests==2.34.2->-r Enerel/backend/requirements.txt (line 4))
+2026-10-25T04:41:58.5653514Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-25T04:41:58.5920242Z Collecting urllib3<3,>=1.26 (from requests==2.34.2->-r Enerel/backend/requirements.txt (line 4))
+2026-10-25T04:41:58.6051059Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-25T04:41:58.6378606Z Collecting certifi>=2023.5.7 (from requests==2.34.2->-r Enerel/backend/requirements.txt (line 4))
+2026-10-25T04:41:58.6507737Z   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:41:58.6741764Z Collecting packaging (from gunicorn==22.0.0->-r Enerel/backend/requirements.txt (line 7))
+2026-10-25T04:41:58.6871499Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-25T04:41:58.7099518Z Collecting httpcore==1.* (from httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.7228057Z   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-10-25T04:41:58.7445610Z Collecting h11>=0.16 (from httpcore==1.*->httpx<1.0.0,>=0.27.1->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.7574216Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-10-25T04:41:58.7779213Z Collecting annotated-types>=0.6.0 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:58.7908122Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-10-25T04:41:59.2965146Z Collecting pydantic-core==2.50.1 (from pydantic<3.0.0,>=2.11.0->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.3099126Z   Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+2026-10-25T04:41:59.3378500Z Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.3508958Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-10-25T04:41:59.3718205Z Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.3884465Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-10-25T04:41:59.4140169Z Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.4270727Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:41:59.6324101Z Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.6455942Z   Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-10-25T04:41:59.6722952Z Collecting python-dotenv>=1.2.2 (from pydantic-settings>=2.5.2->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.6852254Z   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+2026-10-25T04:41:59.8221911Z Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.8353896Z   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+2026-10-25T04:41:59.9171465Z Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.9304431Z   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+2026-10-25T04:41:59.9512755Z Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp==1.30.0->-r Enerel/backend/requirements.txt (line 3))
+2026-10-25T04:41:59.9642567Z   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+2026-10-25T04:41:59.9914852Z Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+2026-10-25T04:42:00.0097295Z Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+2026-10-25T04:42:00.0383133Z Downloading mcp-1.30.0-py3-none-any.whl (234 kB)
+2026-10-25T04:42:00.0567185Z Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+2026-10-25T04:42:00.0724867Z Downloading gunicorn-22.0.0-py3-none-any.whl (84 kB)
+2026-10-25T04:42:00.0880757Z Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+2026-10-25T04:42:00.1063621Z Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-10-25T04:42:00.1219837Z Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-10-25T04:42:00.1568609Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-25T04:42:00.1723666Z Downloading pydantic-2.14.1-py3-none-any.whl (488 kB)
+2026-10-25T04:42:00.1940799Z Downloading pydantic_core-2.50.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+2026-10-25T04:42:00.2340649Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 50.7 MB/s  0:00:00
+2026-10-25T04:42:00.2473421Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-25T04:42:00.2632870Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-10-25T04:42:00.3375521Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+2026-10-25T04:42:00.3542234Z Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-10-25T04:42:00.3691414Z Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+2026-10-25T04:42:00.3983669Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-25T04:42:00.4145560Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-10-25T04:42:00.4296726Z Downloading httpx_sse-0.4.3-py3-none-any.whl (9.0 kB)
+2026-10-25T04:42:00.4447179Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-10-25T04:42:00.4593708Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-10-25T04:42:00.4755722Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+2026-10-25T04:42:00.4916724Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-10-25T04:42:00.5071344Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-10-25T04:42:00.5224749Z Downloading markupsafe-3.0.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-10-25T04:42:00.5370247Z Downloading pydantic_settings-2.16.1-py3-none-any.whl (80 kB)
+2026-10-25T04:42:00.5528384Z Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+2026-10-25T04:42:00.5678674Z Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+2026-10-25T04:42:00.6452832Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 59.9 MB/s  0:00:00
+2026-10-25T04:42:00.6589150Z Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+2026-10-25T04:42:00.6762930Z Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+2026-10-25T04:42:00.6917776Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+2026-10-25T04:42:00.7074501Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-10-25T04:42:00.7227264Z Downloading rpds_py-2026.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (375 kB)
+2026-10-25T04:42:00.7404314Z Downloading sse_starlette-3.5.1-py3-none-any.whl (17 kB)
+2026-10-25T04:42:00.7557742Z Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+2026-10-25T04:42:00.7710592Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-25T04:42:00.7863571Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+2026-10-25T04:42:00.8016574Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+2026-10-25T04:42:00.8179174Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-25T04:42:00.8340391Z Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+2026-10-25T04:42:00.9450320Z Installing collected packages: urllib3, typing-extensions, rpds-py, python-multipart, python-dotenv, pyjwt, pycparser, packaging, markupsafe, itsdangerous, idna, httpx-sse, h11, click, charset_normalizer, certifi, blinker, attrs, annotated-types, Werkzeug, uvicorn, typing-inspection, requests, referencing, pydantic-core, jinja2, httpcore, gunicorn, cffi, anyio, starlette, pydantic, jsonschema-specifications, httpx, Flask, cryptography, sse-starlette, pydantic-settings, jsonschema, mcp
+2026-10-25T04:42:02.4616787Z 
+2026-10-25T04:42:02.4633497Z Successfully installed Flask-3.1.3 Werkzeug-3.1.9 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 blinker-1.9.0 certifi-2026.10.23 cffi-2.1.1 charset_normalizer-3.5.2 click-8.5.0 cryptography-50.0.2 gunicorn-22.0.0 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 httpx-sse-0.4.3 idna-3.20 itsdangerous-2.2.0 jinja2-3.1.6 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 markupsafe-3.0.4 mcp-1.30.0 packaging-26.3 pycparser-3.12 pydantic-2.14.1 pydantic-core-2.50.1 pydantic-settings-2.16.1 pyjwt-2.15.1 python-dotenv-1.2.4 python-multipart-0.0.32 referencing-0.37.0 requests-2.34.2 rpds-py-2026.9.1 sse-starlette-3.5.1 starlette-1.10.0 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0
+2026-10-25T04:42:02.8917965Z Collecting pytest==9.1.1 (from -r Enerel/tests/requirements.txt (line 1))
+2026-10-25T04:42:02.9721018Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-25T04:42:02.9906539Z Collecting iniconfig>=1.0.1 (from pytest==9.1.1->-r Enerel/tests/requirements.txt (line 1))
+2026-10-25T04:42:03.0061047Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-10-25T04:42:03.0091970Z Requirement already satisfied: packaging>=22 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==9.1.1->-r Enerel/tests/requirements.txt (line 1)) (26.3)
+2026-10-25T04:42:03.0309071Z Collecting pluggy<2,>=1.5 (from pytest==9.1.1->-r Enerel/tests/requirements.txt (line 1))
+2026-10-25T04:42:03.0464836Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-10-25T04:42:03.0690464Z Collecting pygments>=2.7.2 (from pytest==9.1.1->-r Enerel/tests/requirements.txt (line 1))
+2026-10-25T04:42:03.0847264Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-10-25T04:42:03.1040195Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-25T04:42:03.1736267Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-10-25T04:42:03.1913211Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-10-25T04:42:03.2080782Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-10-25T04:42:03.2726406Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 20.1 MB/s  0:00:00
+2026-10-25T04:42:03.3246765Z Installing collected packages: pygments, pluggy, iniconfig, pytest
+2026-10-25T04:42:03.9448507Z 
+2026-10-25T04:42:03.9464453Z Successfully installed iniconfig-2.3.1 pluggy-1.7.0 pygments-2.21.0 pytest-9.1.1
+2026-10-25T04:42:04.0065157Z ##[group]Run pytest Enerel/tests -v
+2026-10-25T04:42:04.0065649Z [36;1mpytest Enerel/tests -v[0m
+2026-10-25T04:42:04.0106938Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:04.0107346Z env:
+2026-10-25T04:42:04.0107655Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:04.0108023Z   MCP_ENABLED: false
+2026-10-25T04:42:04.0108358Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:04.0108656Z   RAG_ENABLED: false
+2026-10-25T04:42:04.0109125Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:04.0109432Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:04.0109718Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:04.0110096Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.0110513Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:04.0110913Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.0111321Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.0111799Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:04.0112240Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:04.0112577Z ##[endgroup]
+2026-10-25T04:42:04.3622631Z ============================= test session starts ==============================
+2026-10-25T04:42:04.3623928Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:04.3625013Z cachedir: .pytest_cache
+2026-10-25T04:42:04.3626262Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:04.3626857Z plugins: anyio-4.15.1
+2026-10-25T04:42:04.6700219Z collecting ... collected 190 items
+2026-10-25T04:42:04.6700527Z 
+2026-10-25T04:42:04.8461549Z Enerel/tests/test_app.py::test_health_reports_ok_when_database_reachable PASSED [  0%]
+2026-10-25T04:42:04.8663918Z Enerel/tests/test_app.py::test_list_documents_starts_empty PASSED        [  1%]
+2026-10-25T04:42:04.8917048Z Enerel/tests/test_app.py::test_create_document_returns_201_and_the_stored_row PASSED [  1%]
+2026-10-25T04:42:04.9118264Z Enerel/tests/test_app.py::test_create_document_rejects_invalid_payload PASSED [  2%]
+2026-10-25T04:42:04.9328696Z Enerel/tests/test_app.py::test_create_document_succeeds_even_when_embedding_model_unavailable PASSED [  2%]
+2026-10-25T04:42:04.9566332Z Enerel/tests/test_app.py::test_get_document_returns_full_body_text PASSED [  3%]
+2026-10-25T04:42:04.9766530Z Enerel/tests/test_app.py::test_get_document_404_when_missing PASSED      [  3%]
+2026-10-25T04:42:05.0017803Z Enerel/tests/test_app.py::test_update_document_replaces_metadata_and_body PASSED [  4%]
+2026-10-25T04:42:05.0204920Z Enerel/tests/test_app.py::test_update_document_404_when_missing PASSED   [  4%]
+2026-10-25T04:42:05.0679404Z Enerel/tests/test_app.py::test_delete_document_removes_it PASSED         [  5%]
+2026-10-25T04:42:05.0880291Z Enerel/tests/test_app.py::test_delete_document_404_when_missing PASSED   [  5%]
+2026-10-25T04:42:05.1172298Z Enerel/tests/test_app.py::test_list_documents_filters_by_doc_type PASSED [  6%]
+2026-10-25T04:42:05.1424762Z Enerel/tests/test_app.py::test_list_documents_filters_by_title_substring PASSED [  6%]
+2026-10-25T04:42:05.1670386Z Enerel/tests/test_app.py::test_summarize_stores_and_returns_summary PASSED [  7%]
+2026-10-25T04:42:05.1860655Z Enerel/tests/test_app.py::test_summarize_404_when_document_missing PASSED [  7%]
+2026-10-25T04:42:05.2081005Z Enerel/tests/test_app.py::test_summarize_503_when_model_unavailable PASSED [  8%]
+2026-10-25T04:42:05.2307726Z Enerel/tests/test_app.py::test_get_summary_before_summarizing_reports_not_summarized PASSED [  8%]
+2026-10-25T04:42:05.2572308Z Enerel/tests/test_app.py::test_get_summary_after_summarizing_returns_stored_result PASSED [  9%]
+2026-10-25T04:42:05.2815269Z Enerel/tests/test_app.py::test_search_returns_indexed_chunks_ranked_by_relevance PASSED [ 10%]
+2026-10-25T04:42:05.3453613Z Enerel/tests/test_app.py::test_search_returns_empty_results_when_nothing_indexed PASSED [ 10%]
+2026-10-25T04:42:05.3649166Z Enerel/tests/test_app.py::test_search_rejects_empty_query PASSED         [ 11%]
+2026-10-25T04:42:05.3846549Z Enerel/tests/test_app.py::test_search_503_when_embedding_model_unavailable PASSED [ 11%]
+2026-10-25T04:42:05.3850650Z Enerel/tests/test_embeddings.py::test_short_text_is_a_single_chunk PASSED [ 12%]
+2026-10-25T04:42:05.3855172Z Enerel/tests/test_embeddings.py::test_empty_text_produces_no_chunks PASSED [ 12%]
+2026-10-25T04:42:05.3859981Z Enerel/tests/test_embeddings.py::test_long_text_is_split_into_multiple_chunks PASSED [ 13%]
+2026-10-25T04:42:05.3865044Z Enerel/tests/test_embeddings.py::test_chunks_do_not_split_words_mid_way PASSED [ 13%]
+2026-10-25T04:42:05.3870830Z Enerel/tests/test_embeddings.py::test_concatenated_chunks_cover_the_whole_text_with_overlap PASSED [ 14%]
+2026-10-25T04:42:05.3875495Z Enerel/tests/test_embeddings.py::test_index_document_stores_one_embedding_per_chunk PASSED [ 14%]
+2026-10-25T04:42:05.3897021Z Enerel/tests/test_embeddings.py::test_index_document_handles_empty_body_text PASSED [ 15%]
+2026-10-25T04:42:05.3898104Z Enerel/tests/test_embeddings.py::test_index_document_soft_fails_when_ollama_unavailable PASSED [ 15%]
+2026-10-25T04:42:05.3899174Z Enerel/tests/test_library_qa.py::test_content_terms_drops_stopwords_short_words_and_duplicates PASSED [ 16%]
+2026-10-25T04:42:05.3900098Z Enerel/tests/test_library_qa.py::test_plan_rejects_missing_question[None] PASSED [ 16%]
+2026-10-25T04:42:05.3906493Z Enerel/tests/test_library_qa.py::test_plan_rejects_missing_question[] PASSED [ 17%]
+2026-10-25T04:42:05.3912383Z Enerel/tests/test_library_qa.py::test_plan_rejects_missing_question[   ] PASSED [ 17%]
+2026-10-25T04:42:05.3917262Z Enerel/tests/test_library_qa.py::test_plan_rejects_missing_question[42] PASSED [ 18%]
+2026-10-25T04:42:05.3922171Z Enerel/tests/test_library_qa.py::test_plan_rejects_overlong_question PASSED [ 18%]
+2026-10-25T04:42:05.3927190Z Enerel/tests/test_library_qa.py::test_plan_rejects_question_with_only_stopwords PASSED [ 19%]
+2026-10-25T04:42:05.3932261Z Enerel/tests/test_library_qa.py::test_plan_reads_top_k_from_env PASSED   [ 20%]
+2026-10-25T04:42:05.3937957Z Enerel/tests/test_library_qa.py::test_plan_ignores_invalid_top_k[0] PASSED [ 20%]
+2026-10-25T04:42:05.3943478Z Enerel/tests/test_library_qa.py::test_plan_ignores_invalid_top_k[99] PASSED [ 21%]
+2026-10-25T04:42:05.3948943Z Enerel/tests/test_library_qa.py::test_plan_ignores_invalid_top_k[abc] PASSED [ 21%]
+2026-10-25T04:42:05.3953853Z Enerel/tests/test_library_qa.py::test_plan_ignores_invalid_top_k[] PASSED [ 22%]
+2026-10-25T04:42:05.3959705Z Enerel/tests/test_library_qa.py::test_observe_full_coverage_is_high_and_cites_only_supporting_chunks PASSED [ 22%]
+2026-10-25T04:42:05.3964363Z Enerel/tests/test_library_qa.py::test_observe_prefix_match_counts_word_variants PASSED [ 23%]
+2026-10-25T04:42:05.3969145Z Enerel/tests/test_library_qa.py::test_observe_plurals_match_singulars_both_ways PASSED [ 23%]
+2026-10-25T04:42:05.3976129Z Enerel/tests/test_library_qa.py::test_citations_need_half_the_terms_and_are_capped PASSED [ 24%]
+2026-10-25T04:42:05.3980590Z Enerel/tests/test_library_qa.py::test_thin_coverage_still_cites_the_best_chunk PASSED [ 24%]
+2026-10-25T04:42:05.3984923Z Enerel/tests/test_library_qa.py::test_chunk_about_the_term_outranks_one_that_mentions_it_once PASSED [ 25%]
+2026-10-25T04:42:05.3989360Z Enerel/tests/test_library_qa.py::test_observe_no_overlap_is_insufficient PASSED [ 25%]
+2026-10-25T04:42:05.3993457Z Enerel/tests/test_library_qa.py::test_observe_with_no_chunks_is_insufficient PASSED [ 26%]
+2026-10-25T04:42:05.4018075Z Enerel/tests/test_library_qa.py::test_confidence_bands[1.0-High] PASSED  [ 26%]
+2026-10-25T04:42:05.4023124Z Enerel/tests/test_library_qa.py::test_confidence_bands[0.75-High] PASSED [ 27%]
+2026-10-25T04:42:05.4028274Z Enerel/tests/test_library_qa.py::test_confidence_bands[0.74-Medium] PASSED [ 27%]
+2026-10-25T04:42:05.4033080Z Enerel/tests/test_library_qa.py::test_confidence_bands[0.5-Medium] PASSED [ 28%]
+2026-10-25T04:42:05.4038305Z Enerel/tests/test_library_qa.py::test_confidence_bands[0.34-Low] PASSED  [ 28%]
+2026-10-25T04:42:05.4042852Z Enerel/tests/test_library_qa.py::test_confidence_bands[0.33-Insufficient] PASSED [ 29%]
+2026-10-25T04:42:05.4047763Z Enerel/tests/test_library_qa.py::test_confidence_bands[0.0-Insufficient] PASSED [ 30%]
+2026-10-25T04:42:05.4052708Z Enerel/tests/test_library_qa.py::test_most_matched_chunk_is_cited_first PASSED [ 30%]
+2026-10-25T04:42:05.4057607Z Enerel/tests/test_library_qa.py::test_ask_answers_when_grounded PASSED   [ 31%]
+2026-10-25T04:42:05.4061875Z Enerel/tests/test_library_qa.py::test_ask_never_calls_the_model_when_context_is_insufficient PASSED [ 31%]
+2026-10-25T04:42:05.4067807Z Enerel/tests/test_library_qa.py::test_model_reporting_no_evidence_becomes_insufficient_context[Insufficient evidence.] PASSED [ 32%]
+2026-10-25T04:42:05.4073484Z Enerel/tests/test_library_qa.py::test_model_reporting_no_evidence_becomes_insufficient_context[  insufficient EVIDENCE  ] PASSED [ 32%]
+2026-10-25T04:42:05.4079343Z Enerel/tests/test_library_qa.py::test_model_reporting_no_evidence_becomes_insufficient_context[] PASSED [ 33%]
+2026-10-25T04:42:05.4084392Z Enerel/tests/test_library_qa.py::test_retrieve_posts_query_k_and_caller PASSED [ 33%]
+2026-10-25T04:42:05.4089294Z Enerel/tests/test_library_qa.py::test_disabled_rag_never_posts PASSED    [ 34%]
+2026-10-25T04:42:05.4095587Z Enerel/tests/test_library_qa.py::test_connection_error_becomes_unavailable PASSED [ 34%]
+2026-10-25T04:42:05.4103092Z Enerel/tests/test_library_qa.py::test_bad_rag_responses_become_unavailable[500-payload0-chroma exploded] PASSED [ 35%]
+2026-10-25T04:42:05.4110223Z Enerel/tests/test_library_qa.py::test_bad_rag_responses_become_unavailable[200-payload1-non-JSON] PASSED [ 35%]
+2026-10-25T04:42:05.4118472Z Enerel/tests/test_library_qa.py::test_bad_rag_responses_become_unavailable[200-payload2-no answer text] PASSED [ 36%]
+2026-10-25T04:42:05.4123376Z Enerel/tests/test_llm.py::test_generate_connection_failure_reports_that_ollama_was_unreachable PASSED [ 36%]
+2026-10-25T04:42:05.4128350Z Enerel/tests/test_llm.py::test_generate_timeout_reports_that_ollama_was_unreachable PASSED [ 37%]
+2026-10-25T04:42:05.4133581Z Enerel/tests/test_llm.py::test_generate_404_reports_that_the_model_is_not_pulled PASSED [ 37%]
+2026-10-25T04:42:05.4138471Z Enerel/tests/test_llm.py::test_generate_returns_text_and_model_on_success PASSED [ 38%]
+2026-10-25T04:42:05.4143324Z Enerel/tests/test_llm.py::test_generate_raises_when_response_has_no_usable_text PASSED [ 38%]
+2026-10-25T04:42:05.4148208Z Enerel/tests/test_llm.py::test_embed_connection_failure_reports_that_ollama_was_unreachable PASSED [ 39%]
+2026-10-25T04:42:05.4316109Z Enerel/tests/test_llm.py::test_embed_404_reports_that_the_embedding_model_is_not_pulled PASSED [ 40%]
+2026-10-25T04:42:05.4321299Z Enerel/tests/test_llm.py::test_embed_returns_vector_and_model_on_success PASSED [ 40%]
+2026-10-25T04:42:05.4326259Z Enerel/tests/test_llm.py::test_embed_raises_when_response_has_no_vector PASSED [ 41%]
+2026-10-25T04:42:05.4330865Z Enerel/tests/test_llm.py::test_embed_model_defaults_to_a_dedicated_embedding_tag PASSED [ 41%]
+2026-10-25T04:42:05.4336556Z Enerel/tests/test_mcp_client.py::test_call_tool_returns_the_tools_dict PASSED [ 42%]
+2026-10-25T04:42:05.4342235Z Enerel/tests/test_mcp_client.py::test_disabled_mode_never_opens_a_connection PASSED [ 42%]
+2026-10-25T04:42:05.4349091Z Enerel/tests/test_mcp_client.py::test_tools_outside_the_boundary_are_refused_before_connecting[portfolio_snapshot] PASSED [ 43%]
+2026-10-25T04:42:05.4355219Z Enerel/tests/test_mcp_client.py::test_tools_outside_the_boundary_are_refused_before_connecting[transaction_summary] PASSED [ 43%]
+2026-10-25T04:42:05.4360577Z Enerel/tests/test_mcp_client.py::test_tools_outside_the_boundary_are_refused_before_connecting[document_search] PASSED [ 44%]
+2026-10-25T04:42:05.4365811Z Enerel/tests/test_mcp_client.py::test_tools_outside_the_boundary_are_refused_before_connecting[anything] PASSED [ 44%]
+2026-10-25T04:42:05.4371646Z Enerel/tests/test_mcp_client.py::test_connection_failure_becomes_unavailable PASSED [ 45%]
+2026-10-25T04:42:05.8121834Z Enerel/tests/test_mcp_client.py::test_unreachable_server_fails_fast_against_a_closed_port PASSED [ 45%]
+2026-10-25T04:42:05.8128029Z Enerel/tests/test_mcp_client.py::test_parse_prefers_structured_content_and_unwraps_result PASSED [ 46%]
+2026-10-25T04:42:05.8134612Z Enerel/tests/test_mcp_client.py::test_parse_tool_error_raises PASSED     [ 46%]
+2026-10-25T04:42:05.8140707Z Enerel/tests/test_mcp_client.py::test_parse_non_json_text_raises PASSED  [ 47%]
+2026-10-25T04:42:05.8147500Z Enerel/tests/test_mcp_client.py::test_parse_empty_content_raises PASSED  [ 47%]
+2026-10-25T04:42:05.8369634Z Enerel/tests/test_release1_api.py::test_integrations_reports_modes_and_boundary PASSED [ 48%]
+2026-10-25T04:42:05.8606924Z Enerel/tests/test_release1_api.py::test_glossary_lookup_calls_mcp_tool_with_normalised_term PASSED [ 48%]
+2026-10-25T04:42:05.8885929Z Enerel/tests/test_release1_api.py::test_glossary_lookup_keeps_acronyms_and_is_logged PASSED [ 49%]
+2026-10-25T04:42:05.9321547Z Enerel/tests/test_release1_api.py::test_hyphenated_multi_word_term_is_title_cased PASSED [ 50%]
+2026-10-25T04:42:05.9561422Z Enerel/tests/test_release1_api.py::test_term_not_in_glossary_is_a_valid_result_not_an_error PASSED [ 50%]
+2026-10-25T04:42:05.9829491Z Enerel/tests/test_release1_api.py::test_glossary_backend_down_behind_mcp_is_502 PASSED [ 51%]
+2026-10-25T04:42:06.0291226Z Enerel/tests/test_release1_api.py::test_term_must_appear_in_the_document PASSED [ 51%]
+2026-10-25T04:42:06.0561591Z Enerel/tests/test_release1_api.py::test_partial_word_does_not_count_as_appearing PASSED [ 52%]
+2026-10-25T04:42:06.0774491Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[None] PASSED [ 52%]
+2026-10-25T04:42:06.1065503Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[] PASSED [ 53%]
+2026-10-25T04:42:06.2915361Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[ ] PASSED [ 53%]
+2026-10-25T04:42:06.3155886Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[x] PASSED [ 54%]
+2026-10-25T04:42:06.3388062Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] PASSED [ 54%]
+2026-10-25T04:42:06.3624303Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[ETF; DROP TABLE] PASSED [ 55%]
+2026-10-25T04:42:06.3868325Z Enerel/tests/test_release1_api.py::test_invalid_terms_are_rejected_before_mcp[<script>] PASSED [ 55%]
+2026-10-25T04:42:06.4079387Z Enerel/tests/test_release1_api.py::test_glossary_on_missing_document_is_404 PASSED [ 56%]
+2026-10-25T04:42:06.5281730Z Enerel/tests/test_release1_api.py::test_glossary_with_mcp_disabled_is_503 PASSED [ 56%]
+2026-10-25T04:42:06.5512201Z Enerel/tests/test_release1_api.py::test_glossary_with_mcp_unreachable_is_503 PASSED [ 57%]
+2026-10-25T04:42:06.5727507Z Enerel/tests/test_release1_api.py::test_ask_returns_grounded_answer_with_citations_and_confidence PASSED [ 57%]
+2026-10-25T04:42:06.5941418Z Enerel/tests/test_release1_api.py::test_ask_unrelated_question_is_insufficient_context_without_a_model_call PASSED [ 58%]
+2026-10-25T04:42:06.6323648Z Enerel/tests/test_release1_api.py::test_ask_model_insufficient_evidence_has_no_citations PASSED [ 58%]
+2026-10-25T04:42:06.6523297Z Enerel/tests/test_release1_api.py::test_ask_bad_question_is_400[None] PASSED [ 59%]
+2026-10-25T04:42:06.6718040Z Enerel/tests/test_release1_api.py::test_ask_bad_question_is_400[payload1] PASSED [ 60%]
+2026-10-25T04:42:06.6917987Z Enerel/tests/test_release1_api.py::test_ask_bad_question_is_400[payload2] PASSED [ 60%]
+2026-10-25T04:42:06.7114304Z Enerel/tests/test_release1_api.py::test_ask_bad_question_is_400[payload3] PASSED [ 61%]
+2026-10-25T04:42:06.7332055Z Enerel/tests/test_release1_api.py::test_ask_bad_question_is_400[payload4] PASSED [ 61%]
+2026-10-25T04:42:06.7732242Z Enerel/tests/test_release1_api.py::test_ask_with_rag_disabled_is_503 PASSED [ 62%]
+2026-10-25T04:42:06.7937316Z Enerel/tests/test_release1_api.py::test_ask_with_rag_unreachable_is_503 PASSED [ 62%]
+2026-10-25T04:42:06.7943866Z Enerel/tests/test_release2_multi_agent.py::test_text_statistics_are_computed_in_python PASSED [ 63%]
+2026-10-25T04:42:06.7951138Z Enerel/tests/test_release2_multi_agent.py::test_evidence_truncates_long_documents_and_says_so PASSED [ 63%]
+2026-10-25T04:42:06.7956705Z Enerel/tests/test_release2_multi_agent.py::test_evidence_includes_existing_summary_only_when_there_is_one PASSED [ 64%]
+2026-10-25T04:42:06.8187687Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_sends_python_evidence_and_logs_the_run PASSED [ 64%]
+2026-10-25T04:42:06.8395676Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_unknown_document_is_404_without_a_call PASSED [ 65%]
+2026-10-25T04:42:06.8653037Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_disabled_is_503_without_a_call PASSED [ 65%]
+2026-10-25T04:42:06.8863489Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_server_down_is_503 PASSED [ 66%]
+2026-10-25T04:42:06.9080605Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_timeout_is_504 PASSED [ 66%]
+2026-10-25T04:42:06.9282359Z Enerel/tests/test_release2_multi_agent.py::test_agents_unavailable_keeps_the_servers_code PASSED [ 67%]
+2026-10-25T04:42:06.9487809Z Enerel/tests/test_release2_multi_agent.py::test_server_rejecting_our_own_request_is_502_not_400 PASSED [ 67%]
+2026-10-25T04:42:06.9729996Z Enerel/tests/test_release2_multi_agent.py::test_get_run_returns_agent_output PASSED [ 68%]
+2026-10-25T04:42:07.0139482Z Enerel/tests/test_release2_multi_agent.py::test_get_run_hides_repeated_lines PASSED [ 68%]
+2026-10-25T04:42:07.0330966Z Enerel/tests/test_release2_multi_agent.py::test_get_run_refuses_runs_this_backend_did_not_start PASSED [ 69%]
+2026-10-25T04:42:07.0584868Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review0] PASSED [ 70%]
+2026-10-25T04:42:07.0882679Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review1] PASSED [ 70%]
+2026-10-25T04:42:07.1134162Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review2] PASSED [ 71%]
+2026-10-25T04:42:07.1382180Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review3] PASSED [ 71%]
+2026-10-25T04:42:07.1654013Z Enerel/tests/test_release2_multi_agent.py::test_brief_is_404_until_one_is_accepted PASSED [ 72%]
+2026-10-25T04:42:07.3762299Z Enerel/tests/test_release2_multi_agent.py::test_approved_brief_is_shown_with_its_takeaways PASSED [ 72%]
+2026-10-25T04:42:07.5208373Z Enerel/tests/test_release2_multi_agent.py::test_latest_accepted_brief_wins_and_a_later_reject_keeps_it PASSED [ 73%]
+2026-10-25T04:42:07.5215513Z Enerel/tests/test_release2_multi_agent.py::test_takeaways_are_list_items_only PASSED [ 73%]
+2026-10-25T04:42:07.5451693Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review0-decision must be one of] PASSED [ 74%]
+2026-10-25T04:42:07.5960559Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review1-corrected is required] PASSED [ 74%]
+2026-10-25T04:42:07.6265033Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review2-note is required] PASSED [ 75%]
+2026-10-25T04:42:07.6764821Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review3-corrected is only allowed] PASSED [ 75%]
+2026-10-25T04:42:07.7085512Z Enerel/tests/test_release2_multi_agent.py::test_second_review_is_409_from_the_server PASSED [ 76%]
+2026-10-25T04:42:07.7530381Z Enerel/tests/test_release2_multi_agent.py::test_integrations_reports_multi_agent_mode PASSED [ 76%]
+2026-10-25T04:42:07.7538092Z Enerel/tests/test_retrieval.py::test_cosine_similarity_of_identical_vectors_is_one PASSED [ 77%]
+2026-10-25T04:42:07.7543641Z Enerel/tests/test_retrieval.py::test_cosine_similarity_of_orthogonal_vectors_is_zero PASSED [ 77%]
+2026-10-25T04:42:07.7549447Z Enerel/tests/test_retrieval.py::test_cosine_similarity_of_opposite_vectors_is_negative_one PASSED [ 78%]
+2026-10-25T04:42:07.7554204Z Enerel/tests/test_retrieval.py::test_cosine_similarity_handles_zero_vector_without_dividing_by_zero PASSED [ 78%]
+2026-10-25T04:42:07.7559092Z Enerel/tests/test_retrieval.py::test_cosine_similarity_mismatched_length_returns_zero PASSED [ 79%]
+2026-10-25T04:42:07.7563709Z Enerel/tests/test_retrieval.py::test_plan_defaults_top_k_to_5 PASSED     [ 80%]
+2026-10-25T04:42:07.7568450Z Enerel/tests/test_retrieval.py::test_plan_honours_explicit_top_k PASSED  [ 80%]
+2026-10-25T04:42:07.7573531Z Enerel/tests/test_retrieval.py::test_act_scores_every_candidate_against_the_query_vector PASSED [ 81%]
+2026-10-25T04:42:07.7578767Z Enerel/tests/test_retrieval.py::test_observe_ranks_by_score_and_respects_top_k PASSED [ 81%]
+2026-10-25T04:42:07.7583346Z Enerel/tests/test_retrieval.py::test_observe_drops_non_positive_scores PASSED [ 82%]
+2026-10-25T04:42:07.7588603Z Enerel/tests/test_retrieval.py::test_search_runs_the_full_plan_act_observe_loop PASSED [ 82%]
+2026-10-25T04:42:07.7593105Z Enerel/tests/test_summarize.py::test_parses_well_formed_response PASSED  [ 83%]
+2026-10-25T04:42:07.7597815Z Enerel/tests/test_summarize.py::test_parses_response_with_numbered_key_points PASSED [ 83%]
+2026-10-25T04:42:07.7602332Z Enerel/tests/test_summarize.py::test_falls_back_gracefully_when_format_is_ignored PASSED [ 84%]
+2026-10-25T04:42:07.7606818Z Enerel/tests/test_summarize.py::test_empty_response_yields_empty_summary_and_no_key_points PASSED [ 84%]
+2026-10-25T04:42:07.7611341Z Enerel/tests/test_summarize.py::test_plan_chooses_direct_strategy_for_short_documents PASSED [ 85%]
+2026-10-25T04:42:07.7615883Z Enerel/tests/test_summarize.py::test_plan_chooses_map_reduce_strategy_for_long_documents PASSED [ 85%]
+2026-10-25T04:42:07.7621569Z Enerel/tests/test_summarize.py::test_plan_reads_thresholds_from_environment PASSED [ 86%]
+2026-10-25T04:42:07.7626184Z Enerel/tests/test_summarize.py::test_act_direct_strategy_produces_one_segment PASSED [ 86%]
+2026-10-25T04:42:07.7630549Z Enerel/tests/test_summarize.py::test_act_map_reduce_strategy_produces_multiple_segments PASSED [ 87%]
+2026-10-25T04:42:07.7634890Z Enerel/tests/test_summarize.py::test_act_truncates_when_more_chunks_than_max_chunks PASSED [ 87%]
+2026-10-25T04:42:07.7640138Z Enerel/tests/test_summarize.py::test_observe_flags_needs_reduce_only_for_multi_segment_map_reduce PASSED [ 88%]
+2026-10-25T04:42:07.7644740Z Enerel/tests/test_summarize.py::test_adapt_direct_strategy_makes_exactly_one_llm_call PASSED [ 88%]
+2026-10-25T04:42:07.7650131Z Enerel/tests/test_summarize.py::test_adapt_map_reduce_calls_once_per_segment_plus_one_reduce_call PASSED [ 89%]
+2026-10-25T04:42:07.7654790Z Enerel/tests/test_summarize.py::test_adapt_never_calls_the_model_for_empty_segments PASSED [ 90%]
+2026-10-25T04:42:07.7660919Z Enerel/tests/test_summarize.py::test_summarize_document_runs_the_full_loop PASSED [ 90%]
+2026-10-25T04:42:07.7666295Z Enerel/tests/test_validation.py::test_valid_payload_is_accepted_and_trimmed PASSED [ 91%]
+2026-10-25T04:42:07.7671458Z Enerel/tests/test_validation.py::test_missing_title_is_rejected PASSED   [ 91%]
+2026-10-25T04:42:07.7676395Z Enerel/tests/test_validation.py::test_invalid_doc_type_is_rejected PASSED [ 92%]
+2026-10-25T04:42:07.7681215Z Enerel/tests/test_validation.py::test_empty_body_text_is_rejected PASSED [ 92%]
+2026-10-25T04:42:07.7686743Z Enerel/tests/test_validation.py::test_malformed_published_on_is_rejected PASSED [ 93%]
+2026-10-25T04:42:07.7690688Z Enerel/tests/test_validation.py::test_published_on_is_optional PASSED    [ 93%]
+2026-10-25T04:42:07.7694762Z Enerel/tests/test_validation.py::test_source_is_optional PASSED          [ 94%]
+2026-10-25T04:42:07.7699460Z Enerel/tests/test_validation.py::test_non_dict_payload_is_rejected PASSED [ 94%]
+2026-10-25T04:42:07.7704074Z Enerel/tests/test_validation.py::test_all_doc_types_are_individually_valid PASSED [ 95%]
+2026-10-25T04:42:07.7708856Z Enerel/tests/test_validation.py::test_search_payload_defaults_top_k_to_5 PASSED [ 95%]
+2026-10-25T04:42:07.7713032Z Enerel/tests/test_validation.py::test_search_payload_accepts_custom_top_k PASSED [ 96%]
+2026-10-25T04:42:07.7719271Z Enerel/tests/test_validation.py::test_search_payload_rejects_empty_query PASSED [ 96%]
+2026-10-25T04:42:07.7725354Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[0] PASSED [ 97%]
+2026-10-25T04:42:07.7731185Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[21] PASSED [ 97%]
+2026-10-25T04:42:07.7736603Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[-1] PASSED [ 98%]
+2026-10-25T04:42:07.7742426Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[5] PASSED [ 98%]
+2026-10-25T04:42:07.7747306Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[3.5] PASSED [ 99%]
+2026-10-25T04:42:07.8275724Z Enerel/tests/test_validation.py::test_search_payload_rejects_out_of_range_top_k[True] PASSED [100%]
+2026-10-25T04:42:07.8276959Z 
+2026-10-25T04:42:07.8277245Z ============================= 190 passed in 3.42s ==============================
+2026-10-25T04:42:07.9322092Z ##[group]Run mkdir -p test-reports
+2026-10-25T04:42:07.9322496Z [36;1mmkdir -p test-reports[0m
+2026-10-25T04:42:07.9322852Z [36;1mpytest Enerel/tests/test_release2_multi_agent.py -v \[0m
+2026-10-25T04:42:07.9323326Z [36;1m  -k "start_workflow or human_decision or invalid_review or second_review" \[0m
+2026-10-25T04:42:07.9323795Z [36;1m  --junitxml=test-reports/enerel-endpoint-tests.xml[0m
+2026-10-25T04:42:07.9324159Z [36;1mpython - <<'PY' >> "$GITHUB_STEP_SUMMARY"[0m
+2026-10-25T04:42:07.9324530Z [36;1mimport xml.etree.ElementTree as ET[0m
+2026-10-25T04:42:07.9325008Z [36;1msuite = ET.parse("test-reports/enerel-endpoint-tests.xml").getroot().find("testsuite")[0m
+2026-10-25T04:42:07.9325491Z [36;1mprint("## Enerel -- post-commit endpoint tests\n")[0m
+2026-10-25T04:42:07.9325872Z [36;1mprint("| Endpoint function | Route |\n| --- | --- |")[0m
+2026-10-25T04:42:07.9326553Z [36;1mprint("| `start_multi_agent_workflow` | `POST /api/documents/<id>/multi-agent` |")[0m
+2026-10-25T04:42:07.9327188Z [36;1mprint("| `review_multi_agent_run` | `POST /api/multi-agent/runs/<run_id>/review` |\n")[0m
+2026-10-25T04:42:07.9327817Z [36;1mprint(f"**{suite.get('tests')} tests, {suite.get('failures')} failures, {suite.get('errors')} errors**\n")[0m
+2026-10-25T04:42:07.9328269Z [36;1mfor case in suite.iter("testcase"):[0m
+2026-10-25T04:42:07.9328707Z [36;1m    ok = case.find("failure") is None and case.find("error") is None[0m
+2026-10-25T04:42:07.9329130Z [36;1m    print(f"- {'PASS' if ok else 'FAIL'} `{case.get('name')}`")[0m
+2026-10-25T04:42:07.9329525Z [36;1mPY[0m
+2026-10-25T04:42:07.9367641Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:07.9367982Z env:
+2026-10-25T04:42:07.9368272Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:07.9368623Z   MCP_ENABLED: false
+2026-10-25T04:42:07.9368900Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:07.9369225Z   RAG_ENABLED: false
+2026-10-25T04:42:07.9369555Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:07.9369865Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:07.9370179Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:07.9370526Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:07.9370925Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:07.9371370Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:07.9371752Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:07.9372189Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:07.9372563Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:07.9372873Z ##[endgroup]
+2026-10-25T04:42:08.1129375Z ============================= test session starts ==============================
+2026-10-25T04:42:08.1130081Z platform linux -- Python 3.11.17, pytest-9.1.1, pluggy-1.7.0 -- /opt/hostedtoolcache/Python/3.11.17/x64/bin/python
+2026-10-25T04:42:08.1131060Z cachedir: .pytest_cache
+2026-10-25T04:42:08.1131697Z rootdir: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:08.1132293Z plugins: anyio-4.15.1
+2026-10-25T04:42:08.2275508Z collecting ... collected 27 items / 13 deselected / 14 selected
+2026-10-25T04:42:08.2275841Z 
+2026-10-25T04:42:08.2574368Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_sends_python_evidence_and_logs_the_run PASSED [  7%]
+2026-10-25T04:42:08.2977412Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_unknown_document_is_404_without_a_call PASSED [ 14%]
+2026-10-25T04:42:08.3188903Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_disabled_is_503_without_a_call PASSED [ 21%]
+2026-10-25T04:42:08.3397489Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_server_down_is_503 PASSED [ 28%]
+2026-10-25T04:42:08.3633260Z Enerel/tests/test_release2_multi_agent.py::test_start_workflow_timeout_is_504 PASSED [ 35%]
+2026-10-25T04:42:08.3920586Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review0] PASSED [ 42%]
+2026-10-25T04:42:08.4170533Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review1] PASSED [ 50%]
+2026-10-25T04:42:08.4417472Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review2] PASSED [ 57%]
+2026-10-25T04:42:08.4676569Z Enerel/tests/test_release2_multi_agent.py::test_each_human_decision_completes_the_run_and_is_logged[review3] PASSED [ 64%]
+2026-10-25T04:42:08.4917726Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review0-decision must be one of] PASSED [ 71%]
+2026-10-25T04:42:08.5313947Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review1-corrected is required] PASSED [ 78%]
+2026-10-25T04:42:08.5623639Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review2-note is required] PASSED [ 85%]
+2026-10-25T04:42:08.5856366Z Enerel/tests/test_release2_multi_agent.py::test_invalid_review_is_400_and_not_forwarded[review3-corrected is only allowed] PASSED [ 92%]
+2026-10-25T04:42:08.6458526Z Enerel/tests/test_release2_multi_agent.py::test_second_review_is_409_from_the_server PASSED [100%]
+2026-10-25T04:42:08.6459227Z 
+2026-10-25T04:42:08.6459789Z - generated xml file: /home/runner/work/Advanced-Software-Development/Advanced-Software-Development/test-reports/enerel-endpoint-tests.xml -
+2026-10-25T04:42:08.6460508Z ====================== 14 passed, 13 deselected in 0.51s =======================
+2026-10-25T04:42:08.7258290Z ##[group]Run actions/upload-artifact@v4.4.3
+2026-10-25T04:42:08.7258622Z with:
+2026-10-25T04:42:08.7258884Z   name: enerel-endpoint-tests
+2026-10-25T04:42:08.7259235Z   path: test-reports/
+2026-10-25T04:42:08.7259473Z   if-no-files-found: warn
+2026-10-25T04:42:08.7259777Z   compression-level: 6
+2026-10-25T04:42:08.7260074Z   overwrite: false
+2026-10-25T04:42:08.7260333Z   include-hidden-files: false
+2026-10-25T04:42:08.7260643Z env:
+2026-10-25T04:42:08.7260880Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:08.7261196Z   MCP_ENABLED: false
+2026-10-25T04:42:08.7261460Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:08.7261797Z   RAG_ENABLED: false
+2026-10-25T04:42:08.7262073Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:08.7262357Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:08.7262647Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:08.7262979Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:08.7263549Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:08.7263975Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:08.7264376Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:08.7264777Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:08.7265331Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:08.7265707Z ##[endgroup]
+2026-10-25T04:42:08.8635007Z (node:2147) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:08.8635800Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:08.8717109Z With the provided path, there will be 1 file uploaded
+2026-10-25T04:42:08.8728055Z Artifact name is valid!
+2026-10-25T04:42:08.8728740Z Root directory input is valid!
+2026-10-25T04:42:09.1330333Z Beginning upload of artifact content to blob storage
+2026-10-25T04:42:09.1466839Z (node:2147) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-25T04:42:10.2218680Z Uploaded bytes 657
+2026-10-25T04:42:10.3490457Z Finished uploading artifact content to blob storage!
+2026-10-25T04:42:10.3491213Z SHA256 hash of uploaded artifact zip is ff22bfe7a8c159016346a3b4acfbcc51b1d6e3312ad743ca1dc9fec221db25ed
+2026-10-25T04:42:10.3492106Z Finalizing artifact upload
+2026-10-25T04:42:10.8027813Z Artifact enerel-endpoint-tests.zip successfully finalized. Artifact ID 12587490889
+2026-10-25T04:42:10.8028955Z Artifact enerel-endpoint-tests has been successfully uploaded! Final size is 657 bytes. Artifact ID is 12587490889
+2026-10-25T04:42:10.8034638Z Artifact download URL: https://github.com/Spliky420/Advanced-Software-Development/actions/runs/40162817445/artifacts/12587490889
+2026-10-25T04:42:10.8158536Z ##[group]Run pip install -r ../../multi-agent-server/requirements.txt
+2026-10-25T04:42:10.8159134Z [36;1mpip install -r ../../multi-agent-server/requirements.txt[0m
+2026-10-25T04:42:10.8159551Z [36;1m(cd ../../multi-agent-server && STUB_AGENTS=true \[0m
+2026-10-25T04:42:10.8160014Z [36;1m  WORKFLOW_HISTORY_PATH="$RUNNER_TEMP/workflow_history.jsonl" \[0m
+2026-10-25T04:42:10.8160509Z [36;1m  nohup python server.py < /dev/null > "$RUNNER_TEMP/multi-agent.log" 2>&1 &)[0m
+2026-10-25T04:42:10.8161013Z [36;1mfor i in $(seq 1 30); do curl -sf http://127.0.0.1:5004/health && break; sleep 1; done[0m
+2026-10-25T04:42:10.8161422Z [36;1mpython - <<'PY'[0m
+2026-10-25T04:42:10.8161737Z [36;1mimport json, os, sqlite3, tempfile, time[0m
+2026-10-25T04:42:10.8162093Z [36;1mimport db, embeddings[0m
+2026-10-25T04:42:10.8162448Z [36;1membeddings.index_document = lambda *a: {"indexed": False}[0m
+2026-10-25T04:42:10.8162951Z [36;1mpath = os.path.join(tempfile.mkdtemp(), "library.db")[0m
+2026-10-25T04:42:10.8163366Z [36;1mconn = sqlite3.connect(path)[0m
+2026-10-25T04:42:10.8163746Z [36;1mconn.executescript(open("../database/init.sql").read())[0m
+2026-10-25T04:42:10.8164123Z [36;1mconn.commit(); conn.close()[0m
+2026-10-25T04:42:10.8164409Z [36;1mdb.DB_PATH = path[0m
+2026-10-25T04:42:10.8164684Z [36;1mfrom app import create_app[0m
+2026-10-25T04:42:10.8165021Z [36;1mclient = create_app().test_client()[0m
+2026-10-25T04:42:10.8165427Z [36;1m[0m
+2026-10-25T04:42:10.8165789Z [36;1mdoc = client.post("/api/documents", json={[0m
+2026-10-25T04:42:10.8166345Z [36;1m    "title": "CI brief", "doc_type": "report",[0m
+2026-10-25T04:42:10.8166797Z [36;1m    "body_text": "ETF fees fell to 0.15% in 2025. Compare them before buying.",[0m
+2026-10-25T04:42:10.8167220Z [36;1m}).get_json()[0m
+2026-10-25T04:42:10.8167500Z [36;1m[0m
+2026-10-25T04:42:10.8167886Z [36;1mstarted = client.post(f"/api/documents/{doc['id']}/multi-agent")[0m
+2026-10-25T04:42:10.8168416Z [36;1mprint("start_multi_agent_workflow ->", started.status_code, started.get_json()["status"])[0m
+2026-10-25T04:42:10.8168877Z [36;1massert started.status_code == 202[0m
+2026-10-25T04:42:10.8169245Z [36;1mrun_id = started.get_json()["run_id"][0m
+2026-10-25T04:42:10.8169545Z [36;1m[0m
+2026-10-25T04:42:10.8169803Z [36;1mfor _ in range(50):[0m
+2026-10-25T04:42:10.8170156Z [36;1m    run = client.get(f"/api/multi-agent/runs/{run_id}").get_json()[0m
+2026-10-25T04:42:10.8170720Z [36;1m    if run["status"] in ("awaiting_human", "failed"):[0m
+2026-10-25T04:42:10.8171131Z [36;1m        break[0m
+2026-10-25T04:42:10.8171536Z [36;1m    time.sleep(0.2)[0m
+2026-10-25T04:42:10.8171946Z [36;1mprint("agents finished       ->", run["status"], f"{len(run['plan'])} plan steps")[0m
+2026-10-25T04:42:10.8172375Z [36;1massert run["status"] == "awaiting_human"[0m
+2026-10-25T04:42:10.8172673Z [36;1m[0m
+2026-10-25T04:42:10.8173028Z [36;1mreview = client.post(f"/api/multi-agent/runs/{run_id}/review",[0m
+2026-10-25T04:42:10.8173438Z [36;1m                     json={"decision": "approve", "note": "CI"})[0m
+2026-10-25T04:42:10.8173849Z [36;1mprint("review_multi_agent_run ->", review.status_code, review.get_json())[0m
+2026-10-25T04:42:10.8174372Z [36;1massert review.status_code == 200 and review.get_json()["status"] == "complete"[0m
+2026-10-25T04:42:10.8174834Z [36;1m[0m
+2026-10-25T04:42:10.8175254Z [36;1magain = client.post(f"/api/multi-agent/runs/{run_id}/review", json={"decision": "reject"})[0m
+2026-10-25T04:42:10.8175729Z [36;1mprint("second review          ->", again.status_code)[0m
+2026-10-25T04:42:10.8176205Z [36;1massert again.status_code == 409[0m
+2026-10-25T04:42:10.8176577Z [36;1mPY[0m
+2026-10-25T04:42:10.8176834Z [36;1mecho "--- workflow history ---"[0m
+2026-10-25T04:42:10.8177199Z [36;1mcat "$RUNNER_TEMP/workflow_history.jsonl" | cut -c1-200[0m
+2026-10-25T04:42:10.8214922Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:10.8215266Z env:
+2026-10-25T04:42:10.8215548Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:10.8216241Z   MCP_ENABLED: false
+2026-10-25T04:42:10.8216534Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:10.8216811Z   RAG_ENABLED: false
+2026-10-25T04:42:10.8217103Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:10.8217418Z   MULTI_AGENT_ENABLED: true
+2026-10-25T04:42:10.8217699Z   MULTI_AGENT_URL: http://127.0.0.1:5004
+2026-10-25T04:42:10.8218104Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:10.8218502Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:10.8218930Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:10.8219324Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:10.8219693Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:10.8220080Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:10.8220414Z ##[endgroup]
+2026-10-25T04:42:11.0779737Z Collecting flask==3.0.3 (from -r ../../multi-agent-server/requirements.txt (line 1))
+2026-10-25T04:42:11.1540414Z   Downloading flask-3.0.3-py3-none-any.whl.metadata (3.2 kB)
+2026-10-25T04:42:11.4449977Z Collecting requests==2.32.3 (from -r ../../multi-agent-server/requirements.txt (line 2))
+2026-10-25T04:42:11.4582561Z   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+2026-10-25T04:42:11.6206679Z Requirement already satisfied: gunicorn==22.0.0 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from -r ../../multi-agent-server/requirements.txt (line 5)) (22.0.0)
+2026-10-25T04:42:11.6321488Z Collecting pytest==8.3.3 (from -r ../../multi-agent-server/requirements.txt (line 6))
+2026-10-25T04:42:11.6454935Z   Downloading pytest-8.3.3-py3-none-any.whl.metadata (7.5 kB)
+2026-10-25T04:42:11.7394382Z Requirement already satisfied: Werkzeug>=3.0.0 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from flask==3.0.3->-r ../../multi-agent-server/requirements.txt (line 1)) (3.1.9)
+2026-10-25T04:42:11.7396590Z Requirement already satisfied: Jinja2>=3.1.2 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from flask==3.0.3->-r ../../multi-agent-server/requirements.txt (line 1)) (3.1.6)
+2026-10-25T04:42:11.7400613Z Requirement already satisfied: itsdangerous>=2.1.2 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from flask==3.0.3->-r ../../multi-agent-server/requirements.txt (line 1)) (2.2.0)
+2026-10-25T04:42:11.7403029Z Requirement already satisfied: click>=8.1.3 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from flask==3.0.3->-r ../../multi-agent-server/requirements.txt (line 1)) (8.5.0)
+2026-10-25T04:42:11.7405672Z Requirement already satisfied: blinker>=1.6.2 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from flask==3.0.3->-r ../../multi-agent-server/requirements.txt (line 1)) (1.9.0)
+2026-10-25T04:42:11.7412446Z Requirement already satisfied: charset-normalizer<4,>=2 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests==2.32.3->-r ../../multi-agent-server/requirements.txt (line 2)) (3.5.2)
+2026-10-25T04:42:11.7415657Z Requirement already satisfied: idna<4,>=2.5 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests==2.32.3->-r ../../multi-agent-server/requirements.txt (line 2)) (3.20)
+2026-10-25T04:42:11.7419160Z Requirement already satisfied: urllib3<3,>=1.21.1 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests==2.32.3->-r ../../multi-agent-server/requirements.txt (line 2)) (2.8.0)
+2026-10-25T04:42:11.7421767Z Requirement already satisfied: certifi>=2017.4.17 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from requests==2.32.3->-r ../../multi-agent-server/requirements.txt (line 2)) (2026.10.23)
+2026-10-25T04:42:11.7428414Z Requirement already satisfied: packaging in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from gunicorn==22.0.0->-r ../../multi-agent-server/requirements.txt (line 5)) (26.3)
+2026-10-25T04:42:11.7436336Z Requirement already satisfied: iniconfig in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==8.3.3->-r ../../multi-agent-server/requirements.txt (line 6)) (2.3.1)
+2026-10-25T04:42:11.7445866Z Requirement already satisfied: pluggy<2,>=1.5 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from pytest==8.3.3->-r ../../multi-agent-server/requirements.txt (line 6)) (1.7.0)
+2026-10-25T04:42:11.7614319Z Requirement already satisfied: MarkupSafe>=2.0 in /opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages (from Jinja2>=3.1.2->flask==3.0.3->-r ../../multi-agent-server/requirements.txt (line 1)) (3.0.4)
+2026-10-25T04:42:11.7762169Z Downloading flask-3.0.3-py3-none-any.whl (101 kB)
+2026-10-25T04:42:12.0326239Z Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+2026-10-25T04:42:12.4157662Z Downloading pytest-8.3.3-py3-none-any.whl (342 kB)
+2026-10-25T04:42:12.6816513Z Installing collected packages: requests, pytest, flask
+2026-10-25T04:42:12.6821792Z   Attempting uninstall: requests
+2026-10-25T04:42:12.6833329Z     Found existing installation: requests 2.34.2
+2026-10-25T04:42:12.6853337Z     Uninstalling requests-2.34.2:
+2026-10-25T04:42:12.6874119Z       Successfully uninstalled requests-2.34.2
+2026-10-25T04:42:12.9814372Z   Attempting uninstall: pytest
+2026-10-25T04:42:12.9828360Z     Found existing installation: pytest 9.1.1
+2026-10-25T04:42:12.9872035Z     Uninstalling pytest-9.1.1:
+2026-10-25T04:42:13.0530357Z       Successfully uninstalled pytest-9.1.1
+2026-10-25T04:42:13.3507744Z   Attempting uninstall: flask
+2026-10-25T04:42:13.3522564Z     Found existing installation: Flask 3.1.3
+2026-10-25T04:42:13.3544806Z     Uninstalling Flask-3.1.3:
+2026-10-25T04:42:13.3553076Z       Successfully uninstalled Flask-3.1.3
+2026-10-25T04:42:13.5534675Z 
+2026-10-25T04:42:13.5549803Z Successfully installed flask-3.0.3 pytest-8.3.3 requests-2.32.3
+2026-10-25T04:42:14.6335414Z {"model":"qwen2.5:0.5b","ollama_reachable":false,"status":"ok","stub":true}
+2026-10-25T04:42:14.8362167Z start_multi_agent_workflow -> 202 planning
+2026-10-25T04:42:14.8362700Z agents finished       -> awaiting_human 3 plan steps
+2026-10-25T04:42:14.8363994Z review_multi_agent_run -> 200 {'ai_log_id': 2, 'brief_text': "Step 1: Examine the 'document_metadata' evidence. [stub output -- no model was called]\nStep 2: Examine the 'document_text' evidence. [stub output -- no model was called]\nStep 3: Summarise what the evidence shows about the task. [stub output -- no model was called]", 'decided_at': '2026-10-25T04:42:14+00:00', 'decision': 'approve', 'document_id': 1, 'run_id': '0783db604de84956898b3e14ca0874b0', 'status': 'complete'}
+2026-10-25T04:42:14.8365607Z second review          -> 409
+2026-10-25T04:42:14.8735595Z --- workflow history ---
+2026-10-25T04:42:14.8747926Z {"at": "2026-10-25T04:42:14+00:00", "event": "created", "run_id": "0783db604de84956898b3e14ca0874b0", "run": {"run_id": "0783db604de84956898b3e14ca0874b0", "status": "planning", "caller": "Enerel", "t
+2026-10-25T04:42:14.8749004Z {"at": "2026-10-25T04:42:14+00:00", "event": "phase", "run_id": "0783db604de84956898b3e14ca0874b0", "phase": "plan", "field": "plan", "output": [{"step": 1, "action": "Examine the 'document_metadata' 
+2026-10-25T04:42:14.8749743Z {"at": "2026-10-25T04:42:14+00:00", "event": "status", "run_id": "0783db604de84956898b3e14ca0874b0", "status": "working"}
+2026-10-25T04:42:14.8750612Z {"at": "2026-10-25T04:42:14+00:00", "event": "phase", "run_id": "0783db604de84956898b3e14ca0874b0", "phase": "work", "field": "work", "output": "Step 1: Examine the 'document_metadata' evidence. [stub
+2026-10-25T04:42:14.8751361Z {"at": "2026-10-25T04:42:14+00:00", "event": "status", "run_id": "0783db604de84956898b3e14ca0874b0", "status": "reviewing"}
+2026-10-25T04:42:14.8752159Z {"at": "2026-10-25T04:42:14+00:00", "event": "phase", "run_id": "0783db604de84956898b3e14ca0874b0", "phase": "review", "field": "review", "output": {"risks": ["No model reviewed this work. [stub outpu
+2026-10-25T04:42:14.8753279Z {"at": "2026-10-25T04:42:14+00:00", "event": "awaiting_human", "run_id": "0783db604de84956898b3e14ca0874b0"}
+2026-10-25T04:42:14.8754045Z {"at": "2026-10-25T04:42:14+00:00", "event": "decided", "run_id": "0783db604de84956898b3e14ca0874b0", "human_review": {"decision": "approve", "note": "CI", "corrected": null, "reviewer": "Enerel"}}
+2026-10-25T04:42:19.9562126Z ##[group]Run python - <<'PY'
+2026-10-25T04:42:19.9562592Z [36;1mpython - <<'PY'[0m
+2026-10-25T04:42:19.9562919Z [36;1mimport json, os, sqlite3, tempfile[0m
+2026-10-25T04:42:19.9563225Z [36;1mimport db[0m
+2026-10-25T04:42:19.9563523Z [36;1mpath = os.path.join(tempfile.mkdtemp(), "library.db")[0m
+2026-10-25T04:42:19.9563908Z [36;1mconn = sqlite3.connect(path)[0m
+2026-10-25T04:42:19.9564264Z [36;1mconn.executescript(open("../database/init.sql").read())[0m
+2026-10-25T04:42:19.9564611Z [36;1mconn.execute([0m
+2026-10-25T04:42:19.9565027Z [36;1m    "INSERT INTO documents (user_id, title, doc_type, body_text, created_at, updated_at) "[0m
+2026-10-25T04:42:19.9565523Z [36;1m    "VALUES (1, 'CI', 'other', 'ETF volatility', 'now', 'now')"[0m
+2026-10-25T04:42:19.9565879Z [36;1m)[0m
+2026-10-25T04:42:19.9566284Z [36;1mconn.commit(); conn.close()[0m
+2026-10-25T04:42:19.9566614Z [36;1mdb.DB_PATH = path[0m
+2026-10-25T04:42:19.9566908Z [36;1mfrom app import create_app[0m
+2026-10-25T04:42:19.9567353Z [36;1mclient = create_app().test_client()[0m
+2026-10-25T04:42:19.9567648Z [36;1m[0m
+2026-10-25T04:42:19.9567950Z [36;1mstatus = client.get("/api/library/integrations").get_json()[0m
+2026-10-25T04:42:19.9568361Z [36;1mprint(json.dumps(status, indent=2))[0m
+2026-10-25T04:42:19.9568788Z [36;1massert status["mcp"]["enabled"] is False, "MCP must be disabled in CI"[0m
+2026-10-25T04:42:19.9569230Z [36;1massert status["rag"]["enabled"] is False, "RAG must be disabled in CI"[0m
+2026-10-25T04:42:19.9569721Z [36;1massert status["multi_agent"]["enabled"] is False, "Multi-Agent must be disabled in CI"[0m
+2026-10-25T04:42:19.9570121Z [36;1m[0m
+2026-10-25T04:42:19.9570471Z [36;1mmcp = client.post("/api/documents/1/glossary", json={"term": "ETF"})[0m
+2026-10-25T04:42:19.9570924Z [36;1mrag = client.post("/api/library/ask", json={"question": "what is an ETF"})[0m
+2026-10-25T04:42:19.9571370Z [36;1mprint("MCP glossary lookup ->", mcp.status_code, mcp.get_json())[0m
+2026-10-25T04:42:19.9572001Z [36;1mprint("RAG ask             ->", rag.status_code, rag.get_json())[0m
+2026-10-25T04:42:19.9572456Z [36;1massert mcp.status_code == 503 and mcp.get_json()["mcp_enabled"] is False[0m
+2026-10-25T04:42:19.9572928Z [36;1massert rag.status_code == 503 and rag.get_json()["rag_enabled"] is False[0m
+2026-10-25T04:42:19.9573354Z [36;1magents = client.post("/api/documents/1/multi-agent")[0m
+2026-10-25T04:42:19.9573777Z [36;1mprint("Multi-Agent workflow ->", agents.status_code, agents.get_json())[0m
+2026-10-25T04:42:19.9574303Z [36;1massert agents.status_code == 503 and agents.get_json()["multi_agent_enabled"] is False[0m
+2026-10-25T04:42:19.9574857Z [36;1mprint("MCP, RAG and Multi-Agent integration present and disabled for CI/CD.")[0m
+2026-10-25T04:42:19.9575258Z [36;1mPY[0m
+2026-10-25T04:42:19.9612807Z shell: /usr/bin/bash -e {0}
+2026-10-25T04:42:19.9613145Z env:
+2026-10-25T04:42:19.9613477Z   OLLAMA_BASE_URL: http://127.0.0.1:1
+2026-10-25T04:42:19.9613800Z   MCP_ENABLED: false
+2026-10-25T04:42:19.9614107Z   MCP_SERVER_URL: http://127.0.0.1:1/mcp
+2026-10-25T04:42:19.9614394Z   RAG_ENABLED: false
+2026-10-25T04:42:19.9614720Z   RAG_SERVER_URL: http://127.0.0.1:1
+2026-10-25T04:42:19.9615066Z   MULTI_AGENT_ENABLED: false
+2026-10-25T04:42:19.9615361Z   MULTI_AGENT_URL: http://127.0.0.1:1
+2026-10-25T04:42:19.9615697Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:19.9616196Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib/pkgconfig
+2026-10-25T04:42:19.9616646Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:19.9617037Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:19.9617408Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.17/x64
+2026-10-25T04:42:19.9617829Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.17/x64/lib
+2026-10-25T04:42:19.9618141Z ##[endgroup]
+2026-10-25T04:42:20.1521663Z {
+2026-10-25T04:42:20.1521953Z   "mcp": {
+2026-10-25T04:42:20.1522207Z     "allowed_tools": [
+2026-10-25T04:42:20.1523098Z       "glossary_lookup"
+2026-10-25T04:42:20.1523398Z     ],
+2026-10-25T04:42:20.1523729Z     "enabled": false,
+2026-10-25T04:42:20.1524144Z     "server_url": "http://127.0.0.1:1/mcp"
+2026-10-25T04:42:20.1524579Z   },
+2026-10-25T04:42:20.1524876Z   "multi_agent": {
+2026-10-25T04:42:20.1525129Z     "enabled": false,
+2026-10-25T04:42:20.1525445Z     "server_url": "http://127.0.0.1:1"
+2026-10-25T04:42:20.1525722Z   },
+2026-10-25T04:42:20.1525926Z   "rag": {
+2026-10-25T04:42:20.1526462Z     "enabled": false,
+2026-10-25T04:42:20.1526773Z     "server_url": "http://127.0.0.1:1"
+2026-10-25T04:42:20.1527060Z   }
+2026-10-25T04:42:20.1527293Z }
+2026-10-25T04:42:20.1527693Z MCP glossary lookup -> 503 {'error': 'MCP mode is disabled (MCP_ENABLED=false)', 'mcp_enabled': False}
+2026-10-25T04:42:20.1528280Z RAG ask             -> 503 {'error': 'RAG mode is disabled (RAG_ENABLED=false)', 'rag_enabled': False}
+2026-10-25T04:42:20.1529223Z Multi-Agent workflow -> 503 {'code': 'disabled', 'detail': 'multi-agent mode is disabled (MULTI_AGENT_ENABLED=false)', 'error': 'Multi-agent mode is switched off on this server, so the research brief cannot run. The rest of the library still works.', 'multi_agent_enabled': False}
+2026-10-25T04:42:20.1530138Z MCP, RAG and Multi-Agent integration present and disabled for CI/CD.
+2026-10-25T04:42:20.1951503Z Post job cleanup.
+2026-10-25T04:42:20.2898239Z (node:2207) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T04:42:20.2898882Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T04:42:20.3043517Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Advanced-Software-Development/Advanced-Software-Development --files-from manifest.txt --use-compress-program zstdmt
+2026-10-25T04:42:20.4483546Z ##[warning]Failed to save: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0rIjdagAAAAA3a1YJHSv6TbDaiTN/Nd2oQ0gxQUEyMDMwODEzMDM0AEVkZ2U=
+2026-10-25T04:42:20.4604526Z Post job cleanup.
+2026-10-25T04:42:20.5308534Z [command]/usr/bin/git version
+2026-10-25T04:42:20.5344819Z git version 2.55.0
+2026-10-25T04:42:20.5372739Z Temporarily overriding HOME='/home/runner/work/_temp/76418280-4fb5-4443-8d94-1a8a3963054d' before making global git config changes
+2026-10-25T04:42:20.5373855Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T04:42:20.5376744Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Advanced-Software-Development/Advanced-Software-Development
+2026-10-25T04:42:20.5409944Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T04:42:20.5436210Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T04:42:20.5635341Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T04:42:20.5655703Z http.https://github.com/.extraheader
+2026-10-25T04:42:20.5664560Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T04:42:20.5692269Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T04:42:20.6170320Z Cleaning up orphan processes
+2026-10-25T04:42:20.6385001Z Terminate orphan process: pid (2187) (bash)
+2026-10-25T04:42:20.6410726Z Terminate orphan process: pid (2189) (python)
+2026-10-25T04:42:20.6484377Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4.2.2, actions/setup-python@v5.3.0, actions/upload-artifact@v4.4.3. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
