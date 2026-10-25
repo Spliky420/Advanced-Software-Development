@@ -355,6 +355,8 @@ services:
       RAG_ENABLED: ${RAG_ENABLED:-true}
       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://host.docker.internal:5002/mcp}
       RAG_SERVER_URL: ${RAG_SERVER_URL:-http://host.docker.internal:5003}
+      MULTI_AGENT_URL: ${MULTI_AGENT_URL:-http://host.docker.internal:5004}
+      MULTI_AGENT_ENABLED: ${MULTI_AGENT_ENABLED:-true}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

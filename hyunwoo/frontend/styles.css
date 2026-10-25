@@ -572,6 +572,101 @@ tbody tr:hover {
     color: var(--color-muted);
 }
 
+/* Multi-Agent results and the human decision. */
+.workflow-panel {
+    margin-top: 20px;
+}
+
+.workflow-panel [hidden] {
+    display: none;
+}
+
+.workflow-controls {
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.workflow-phases {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 18px 0;
+}
+
+.workflow-phase {
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    background: #fbfcfe;
+}
+
+.workflow-phase h3 {
+    margin-top: 0;
+}
+
+.workflow-phase h4 {
+    margin-bottom: 8px;
+}
+
+.workflow-phase ol,
+.workflow-phase ul {
+    padding-left: 20px;
+}
+
+.workflow-phase li + li {
+    margin-top: 10px;
+}
+
+.workflow-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.workflow-warning,
+.workflow-decision-result {
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+}
+
+.workflow-decision-result {
+    background: var(--color-primary-soft);
+    color: var(--color-ink);
+}
+
+.workflow-review {
+    display: grid;
+    gap: 14px;
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+}
+
+.workflow-review h3,
+.workflow-review p {
+    margin: 0;
+}
+
+.workflow-review .button {
+    justify-self: start;
+}
+
+.workflow-history {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.workflow-history label {
+    flex: 1;
+    min-width: 180px;
+}
+
 /* Tablet and mobile layouts. */
 @media (max-width: 1120px) {
     .summary-grid {
@@ -579,6 +674,10 @@ tbody tr:hover {
     }
 
     .workspace-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-phases {
         grid-template-columns: 1fr;
     }
 }

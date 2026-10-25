@@ -228,6 +228,63 @@
             </div>
         </section>
 
+        <!-- Review the agents' work before making a decision. -->
+        <section class="panel workflow-panel" aria-labelledby="workflow-heading">
+            <div class="panel-heading">
+                <p class="section-kicker">Multi-Agent review</p>
+                <h2 id="workflow-heading">Review bills with a human decision</h2>
+                <p>The Planner sets the steps, the Worker drafts a review and the Reviewer flags risks. You make the final decision.</p>
+            </div>
+            <form id="workflow-form" class="review-controls workflow-controls">
+                <label>
+                    Review date
+                    <input type="date" id="workflow-date" required>
+                </label>
+                <label>
+                    Days
+                    <input type="number" id="workflow-days" min="1" max="90" step="1" value="30" required>
+                </label>
+                <button class="button button-primary" id="run-workflow" type="submit">Start Multi-Agent review</button>
+            </form>
+            <p class="assistant-note">This reviews a snapshot of your saved bills. It does not pay, cancel or change them. Check the evidence before accepting AI-written advice.</p>
+            <p id="workflow-status" role="status">Start a review or reopen a saved one.</p>
+            <div id="workflow-result" class="assistant-result"></div>
+
+            <form id="human-review-form" class="workflow-review" hidden>
+                <h3>Your decision</h3>
+                <label>
+                    Decision
+                    <select id="workflow-decision" required>
+                        <option value="">Choose a decision</option>
+                        <option value="approve">Approve</option>
+                        <option value="correct">Correct the review</option>
+                        <option value="partial">Accept part of the review</option>
+                        <option value="reject">Reject</option>
+                    </select>
+                </label>
+                <label>
+                    Notes <span id="workflow-note-hint">(optional, unless accepting part)</span>
+                    <textarea id="workflow-note" rows="3" maxlength="2000"></textarea>
+                </label>
+                <label id="workflow-correction-label" hidden>
+                    Corrected review
+                    <textarea id="workflow-correction" rows="5" maxlength="10000"></textarea>
+                </label>
+                <button class="button button-primary" id="submit-workflow-review" type="submit">Save human decision</button>
+                <p class="assistant-note">Saving a decision only completes this review. No bill records are changed.</p>
+            </form>
+
+            <div class="workflow-history">
+                <label>
+                    Saved reviews
+                    <select id="workflow-history"><option value="">No saved reviews</option></select>
+                </label>
+                <button class="button button-secondary" id="open-workflow" type="button" disabled>Open review</button>
+                <button class="button button-secondary" id="refresh-workflows" type="button">Refresh list</button>
+            </div>
+            <p id="workflow-history-note" class="assistant-note">The latest 20 reviews are listed. The shared server keeps the workflow history and audit log.</p>
+        </section>
+
         <!-- Saved bill records. -->
         <section class="panel bills-panel" aria-labelledby="bills-heading">
             <div class="panel-heading bills-heading-row">

@@ -1,0 +1,32 @@
+Bills security tests and regression validation
+Recorded run: 25 October 2026, 20:04 AEDT
+Environment: macOS, Python 3.14.7, pytest 9.0.3
+
+This is a summary of an executed manual pytest run, not commit-time hook
+output or a hosted CI result. The matching JUnit file contains all 148
+individual test outcomes.
+
+Command run from the repository root:
+PYTHONDONTWRITEBYTECODE=1 PIP_CACHE_DIR=/Users/dannycho/Advanced-Software-Development/hyunwoo/.security-cache/pip AI_MODE_ENABLED=false MCP_ENABLED=false RAG_ENABLED=false MULTI_AGENT_ENABLED=false hyunwoo/.security-venv/bin/python -m pytest hyunwoo/tests -v -p no:cacheprovider --junitxml=hyunwoo/tests/pre_commit/test-results.xml
+
+Selected actual pytest output:
+hyunwoo/tests/pre_commit/test_dependency_audit.py::test_pip_audit_passes PASSED [  0%]
+hyunwoo/tests/pre_commit/test_ruff_scan.py::test_ruff_scan_passes PASSED [  1%]
+hyunwoo/tests/pre_commit/test_secrets_scan.py::test_detect_secrets_scan_passes PASSED [  2%]
+============================= 148 passed in 13.27s =============================
+
+Process exit code: 0
+JUnit evidence: hyunwoo/tests/pre_commit/test-results.xml
+JUnit totals: 148 tests, 0 failures, 0 errors, 0 skipped.
+
+Ruff checked the Bills backend with security rules enabled.
+detect-secrets checked the Bills backend, frontend and tests. The test
+requires both a successful scanner exit and an empty findings list.
+pip-audit checked the backend and test requirements, including the nested
+security-tool requirements, without ignoring vulnerability findings.
+
+The new files were also checked directly with detect-secrets-hook
+--no-verify before staging; that check returned exit code 0. The hook's
+--no-verify flag disables online credential verification, not detection.
+No live AI services, Docker containers or saved bill records were changed.
+No files were staged, committed or pushed during this validation.

@@ -50,4 +50,12 @@ CREATE TABLE IF NOT EXISTS bills (
 CREATE INDEX IF NOT EXISTS idx_bills_user_due
 ON bills (user_id, next_due_date, name);
 
+-- Keeps each user's review links and original evidence.
+CREATE TABLE IF NOT EXISTS bill_workflows (
+    run_id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    evidence_json TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 PRAGMA optimize;

@@ -1,0 +1,6 @@
+# Local security tools and downloaded audit data.
+.security-venv/
+.security-cache/
+
+# Keep the security test evidence.
+!tests/pre_commit/security-tests.log
