@@ -9,6 +9,9 @@ from core import (
     mcp_collector,
     rag_collector,
     mcp_pipeline,
+    multi_agent_collector,
+    testing_collector,
+    cloud_deployment_collector,
 )
 from core.mode_config import build_mode_config
 
@@ -25,6 +28,9 @@ COLLECTORS = {
     "devops": devops_collector.collect,
     "mcp": mcp_collector.collect,
     "rag": rag_collector.collect,
+    "multi_agent": multi_agent_collector.collect,
+    "testing": testing_collector.collect,
+    "cloud_deployment": cloud_deployment_collector.collect,
 }
 
 
@@ -283,7 +289,19 @@ def _write_review_report(
     implementation_output: str,
     review_output: str,
 ) -> None:
-    report_path = app_dir / "reports" / f"{config.key}-review.md"
+    reports_dir = app_dir / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+    target = "".join(
+        char.lower() if char.isalnum() else "-"
+        for char in student_label
+    ).strip("-")
+
+    report_path = reports_dir / (
+        f"{config.key}-{target}-{timestamp}-review.md"
+    )
+
     report_path.write_text(
         f"""# {config.label} Review
 

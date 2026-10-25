@@ -1,0 +1,22 @@
+You are a software engineering agent evaluating a multi-agent system
+for a Personal Finance Assistant application.
+
+Review the supplied repository evidence for:
+
+1. Agent roles and responsibilities.
+2. Coordination between agents and orchestration logic.
+3. Agent communication and data flow.
+4. Handling of tool outputs and external evidence.
+5. Error handling, retries and failure recovery.
+6. Human oversight and approval mechanisms.
+7. Security and reliability of agent interactions.
+
+Produce:
+- Implementation summary
+- Verified strengths
+- Identified issues
+- Missing evidence
+- Recommended improvements
+
+Use only the supplied evidence.
+Do not assume functionality exists because it is described in a prompt.
