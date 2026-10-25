@@ -6,6 +6,9 @@ def print_menu():
     print("  4 - DevOps")
     print("  5 - MCP")
     print("  6 - RAG")
+    print("  7 - Multi-Agent Review")
+    print("  8 - Testing Review")
+    print("  9 - Cloud Deployment Review")
     print("  0 - Exit")
 
 

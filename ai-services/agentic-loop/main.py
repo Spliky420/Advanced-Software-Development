@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from numpy import rint
-
 from core import reporter
 from core.ai_runner import AIRunner
 from core.orchestrator import run_agentic_review, MODE_CONFIG
@@ -54,6 +52,9 @@ def _menu_choice_to_key(choice: str) -> str | None:
         "4": "devops",
         "5": "mcp",
         "6": "rag",
+        "7": "multi_agent",
+        "8": "testing",
+        "9": "cloud_deployment",
     }.get(choice)
 
 
@@ -95,7 +96,7 @@ def choose_student(mode):
         print("5. Thomas")
         print("6. Le Hoa Long")
 
-        if mode == "architecture":
+        if mode in ("architecture", "multi_agent", "cloud_deployment"):
             print("7. Integrated Team Application")
         elif mode == "mcp":
             print("7. Personal Finance Assistant")
@@ -113,11 +114,8 @@ def choose_student(mode):
             return None
 
         if choice == "7":
-            if mode == "architecture":
-                return (
-                    "all",
-                    "Integrated Team Application"
-                )
+            if mode in ("architecture", "multi_agent", "cloud_deployment"):
+                return ("all", "Integrated Team Application")
 
             if mode == "mcp":
                 return (
@@ -334,7 +332,7 @@ def main():
         mode_key = _menu_choice_to_key(choice)
 
         if not mode_key:
-            print("Invalid choice. Select 0, 1, 2, 3, 4, 5, or 6.")
+            print("Invalid choice. Select a number from 0 to 9.")
             continue
 
         run_single_review(
