@@ -15,6 +15,7 @@ Older reports are never edited; a new run gets a new file.
 | Date | Static analysis | Dependencies | Secrets |
 | ---- | --------------- | ------------ | ------- |
 | 2026-10-22 | [825 → 0](2026-10-22-ruff-security.md) | [4 advisories → 0](2026-10-22-pip-audit.md) | [0 findings](2026-10-22-detect-secrets.md) |
+| 2026-10-25 (rerun, raw logs) | [0](logs/2026-10-25-ruff-security.txt) | [0](logs/2026-10-25-pip-audit.txt) | [0, canary caught](logs/2026-10-25-detect-secrets.txt) |
 
 ## Re-running
 

@@ -1,0 +1,15 @@
+# pip-audit dependency scan
+# Run: 2026-10-25 14:19:17 AUSEDT
+# Commit: 14c6f5b on LeHoaLong-Goals&Budgeting-Release-2
+# Working directory: repository root
+
+$ pip-audit --version
+pip-audit 2.10.1
+
+$ pip-audit -r LeHoaLong/backend/requirements.txt
+No known vulnerabilities found
+exit code: 0
+
+$ pip-audit -r LeHoaLong/tests/requirements.txt
+No known vulnerabilities found
+exit code: 0

@@ -1,0 +1,14 @@
+# ruff security scan (S rules)
+# Run: 2026-10-25 14:19:16 AUSEDT
+# Commit: 14c6f5b on LeHoaLong-Goals&Budgeting-Release-2
+# Working directory: repository root
+
+$ ruff --version
+ruff 0.16.6
+
+$ ruff check LeHoaLong --extend-select S --statistics
+exit code: 0
+
+$ ruff check LeHoaLong --extend-select S
+All checks passed!
+exit code: 0
