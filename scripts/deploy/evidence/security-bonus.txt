@@ -1,0 +1,323 @@
+Cloud security evidence -- ASD 2026, Azure Container Apps
+Collected: 2026-10-27 04:44:12 UTC
+Subscription: Azure for Students   Resource group: rg-asd2026
+Repo commit: 7e51071 (Merge pull request #57 from Spliky420/enerel-ruff)
+All commands below are read-only.
+
+======================================================================
+1. Ingress per container app (external = public; allowInsecure = plain HTTP accepted)
+======================================================================
+$ az containerapp list -g rg-asd2026 --query sort_by([].{app:name, external:properties.configuration.ingress.external, allowInsecure:properties.configuration.ingress.allowInsecure, targetPort:properties.configuration.ingress.targetPort, fqdn:properties.configuration.ingress.fqdn}, &app) -o table
+App                 External    AllowInsecure    TargetPort    Fqdn
+------------------  ----------  ---------------  ------------  ----------------------------------------------------------------------------------
+enerel-backend      False       True             5000          enerel-backend.internal.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+enerel-frontend     True        False            80            enerel-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+hyunwoo-backend     True        False            5000          hyunwoo-backend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+hyunwoo-frontend    True        False            80            hyunwoo-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+joshua-backend      False       True             5000          joshua-backend.internal.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+joshua-frontend     True        False            80            joshua-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+lehoalong-backend   False       True             5000          lehoalong-backend.internal.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+lehoalong-frontend  True        False            80            lehoalong-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+maxwell-backend     True        False            5000          maxwell-backend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+maxwell-frontend    True        False            80            maxwell-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+shared-frontend     True        False            80            shared-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+thomas-backend      False       True             5001          thomas-backend.internal.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+thomas-frontend     True        False            5000          thomas-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io
+
+Registry credentials and stored secrets per app (identity = managed identity pull, no password):
+$ az containerapp list -g rg-asd2026 --query sort_by([].{app:name, registryServer:properties.configuration.registries[0].server, pullIdentity:properties.configuration.registries[0].identity, passwordSecretRef:properties.configuration.registries[0].passwordSecretRef, appSecrets:length(properties.configuration.secrets || `[]`)}, &app) -o table
+App                 RegistryServer            PullIdentity                                                                                                                                                 PasswordSecretRef    AppSecrets
+------------------  ------------------------  -----------------------------------------------------------------------------------------------------------------------------------------------------------  -------------------  ------------
+enerel-backend      asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+enerel-frontend     asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+hyunwoo-backend     asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+hyunwoo-frontend    asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+joshua-backend      asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+joshua-frontend     asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+lehoalong-backend   asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+lehoalong-frontend  asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+maxwell-backend     asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+maxwell-frontend    asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+shared-frontend     asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+thomas-backend      asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+thomas-frontend     asd20265eb8c6.azurecr.io  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourcegroups/rg-asd2026/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-asd2026-acrpull                       0
+
+======================================================================
+2. Network checks from the public internet
+======================================================================
+2a. Internal backend (joshua-backend) over HTTPS -- expect 404, not reachable publicly:
+$ curl -sS -i --max-time 30 https://joshua-backend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/health
+HTTP/1.1 404 Not Found
+content-type: text/html; charset=utf-8
+content-length: 1946
+date: Tue, 27 Oct 2026 04:44:20 GMT
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Azure Container App - Unavailable</title>
+    <style type="text/css">
+        html {
+            height: 100%;
+            width: 100%;
+        }
+
+        #feature {
+            width: 960px;
+            margin: 95px auto 0 auto;
+            overflow: auto;
+        }
+
+        #content {
+            font-family: "Segoe UI";
+            font-weight: normal;
+            font-size: 22px;
+            color: #ffffff;
+            float: left;
+            width: 460px;
+            margin-top: 68px;
+            margin-left: 0px;
+            vertical-align: middle;
+        }
+
+        #content h1 {
+            font-family: "Segoe UI Light";
+            color: #ffffff;
+            font-weight: normal;
+            font-size: 60px;
+            line-height: 48pt;
+            width: 800px;
+        }
+
+        p a, p a:visited, p a:active, p a:hover {
+            color: #ffffff;
+        }
+
+        #content a.button {
+            background: #0DBCF2;
+            border: 1px solid #FFFFFF;
+            color: #FFFFFF;
+            display: inline-block;
+            font-family: Segoe UI;
+            font-size: 24px;
+            line-height: 46px;
+            margin-top: 10px;
+            padding: 0 15px 3px;
+            text-decoration: none;
+        }
+
+        #content a.button img {
+            float: right;
+            padding: 10px 0 0 15px;
+        }
+
+        #content a.button:hover {
+            background: #1C75BC;
+        }
+    </style>
+</head>
+<body bgcolor="#00abec">
+<div id="feature">
+    <div id="content">
+        <h1 id="unavailable">Error 404 - This Container App is stopped or does not exist.</h1>
+        <p id="tryAgain">The Container App you have attempted to reach is currently stopped or does not exist.</p>
+        <p id="toAdmin">If you are the Container App administrator, please visit <a href="https://portal.azure.com/">Azure Portal</a>.</p>
+    </div>
+</div>
+</body>
+</html>
+
+2b. Internal backend over plain HTTP:
+$ curl -sS -i --max-time 30 http://joshua-backend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/health
+HTTP/1.1 404 Not Found
+content-type: text/html; charset=utf-8
+content-length: 1946
+date: Tue, 27 Oct 2026 04:44:19 GMT
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Azure Container App - Unavailable</title>
+    <style type="text/css">
+        html {
+            height: 100%;
+            width: 100%;
+        }
+
+        #feature {
+            width: 960px;
+            margin: 95px auto 0 auto;
+            overflow: auto;
+        }
+
+        #content {
+            font-family: "Segoe UI";
+            font-weight: normal;
+            font-size: 22px;
+            color: #ffffff;
+            float: left;
+            width: 460px;
+            margin-top: 68px;
+            margin-left: 0px;
+            vertical-align: middle;
+        }
+
+        #content h1 {
+            font-family: "Segoe UI Light";
+            color: #ffffff;
+            font-weight: normal;
+            font-size: 60px;
+            line-height: 48pt;
+            width: 800px;
+        }
+
+        p a, p a:visited, p a:active, p a:hover {
+            color: #ffffff;
+        }
+
+        #content a.button {
+            background: #0DBCF2;
+            border: 1px solid #FFFFFF;
+            color: #FFFFFF;
+            display: inline-block;
+            font-family: Segoe UI;
+            font-size: 24px;
+            line-height: 46px;
+            margin-top: 10px;
+            padding: 0 15px 3px;
+            text-decoration: none;
+        }
+
+        #content a.button img {
+            float: right;
+            padding: 10px 0 0 15px;
+        }
+
+        #content a.button:hover {
+            background: #1C75BC;
+        }
+    </style>
+</head>
+<body bgcolor="#00abec">
+<div id="feature">
+    <div id="content">
+        <h1 id="unavailable">Error 404 - This Container App is stopped or does not exist.</h1>
+        <p id="tryAgain">The Container App you have attempted to reach is currently stopped or does not exist.</p>
+        <p id="toAdmin">If you are the Container App administrator, please visit <a href="https://portal.azure.com/">Azure Portal</a>.</p>
+    </div>
+</div>
+</body>
+</html>
+
+2c. Public frontend over plain HTTP -- expect a redirect to HTTPS:
+$ curl -sS -I --max-time 30 http://joshua-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/
+HTTP/1.1 301 Moved Permanently
+location: https://joshua-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/
+date: Tue, 27 Oct 2026 04:44:20 GMT
+transfer-encoding: chunked
+
+
+2d. Same frontend over HTTPS:
+$ curl -sS -I --max-time 30 https://joshua-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/
+HTTP/1.1 200 OK
+accept-ranges: bytes
+cache-control: no-cache
+content-length: 401
+content-type: text/html
+date: Tue, 27 Oct 2026 04:44:40 GMT
+etag: "6ade127b-191"
+last-modified: Sun, 25 Oct 2026 14:30:19 GMT
+server: nginx/1.27.5
+
+
+2e. Home page over plain HTTP:
+$ curl -sS -I --max-time 30 http://shared-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/
+HTTP/1.1 301 Moved Permanently
+location: https://shared-frontend.wittywater-a7b31e13.australiaeast.azurecontainerapps.io/
+date: Tue, 27 Oct 2026 04:44:39 GMT
+transfer-encoding: chunked
+
+
+======================================================================
+3. Role assignments of the two managed identities (all scopes)
+======================================================================
+--- id-asd2026-github (principalId 5a3f347b-4a6c-4d68-8ec9-d472a39826ae)
+$ az role assignment list --assignee 5a3f347b-4a6c-4d68-8ec9-d472a39826ae --all --query [].{role:roleDefinitionName, scope:scope} -o table
+Role         Scope
+-----------  -----------------------------------------------------------------------------
+Contributor  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourceGroups/rg-asd2026
+
+--- id-asd2026-acrpull (principalId b537927d-7cee-4508-8723-93a7aa4de417)
+$ az role assignment list --assignee b537927d-7cee-4508-8723-93a7aa4de417 --all --query [].{role:roleDefinitionName, scope:scope} -o table
+Role     Scope
+-------  --------------------------------------------------------------------------------------------------------------------------------------------
+AcrPull  /subscriptions/5eb8c6d1-17b0-4be4-b078-0e15c8e4bcd1/resourceGroups/rg-asd2026/providers/Microsoft.ContainerRegistry/registries/asd20265eb8c6
+
+Federated credentials on id-asd2026-github (GitHub OIDC, no client secret):
+$ az identity federated-credential list --identity-name id-asd2026-github -g rg-asd2026 --query [].{name:name, issuer:issuer, subject:subject, audiences:join(',', audiences)} -o table
+Name                     Issuer                                       Subject                                                                                            Audiences
+-----------------------  -------------------------------------------  -------------------------------------------------------------------------------------------------  --------------------------
+github-main              https://token.actions.githubusercontent.com  repo:Spliky420@200171683/Advanced-Software-Development@1343397534:ref:refs/heads/main              api://AzureADTokenExchange
+github-cloud-deployment  https://token.actions.githubusercontent.com  repo:Spliky420@200171683/Advanced-Software-Development@1343397534:ref:refs/heads/cloud-deployment  api://AzureADTokenExchange
+
+======================================================================
+4. Container registry admin user
+======================================================================
+$ az acr show -n asd20265eb8c6 -g rg-asd2026 --query {name:name, sku:sku.name, adminUserEnabled:adminUserEnabled, anonymousPullEnabled:anonymousPullEnabled, publicNetworkAccess:publicNetworkAccess} -o table
+Name           Sku    AdminUserEnabled    AnonymousPullEnabled    PublicNetworkAccess
+-------------  -----  ------------------  ----------------------  ---------------------
+asd20265eb8c6  Basic  False               False                   Enabled
+
+======================================================================
+5. Secrets in the GitHub repository
+======================================================================
+5a. GitHub secrets referenced by any workflow (${{ secrets.* }}):
+$ git grep -n secrets\. -- .github/workflows
+.github/workflows/cloud-deployment.yml:12:# secrets. Infrastructure (scripts/deploy/01-infra.sh) is created once by
+
+5b. GitHub variables referenced by the deploy workflow (${{ vars.* }}):
+$ git grep -n vars\. -- .github/workflows/cloud-deployment.yml
+.github/workflows/cloud-deployment.yml:64:          client-id: ${{ vars.AZURE_CLIENT_ID }}
+.github/workflows/cloud-deployment.yml:65:          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+.github/workflows/cloud-deployment.yml:66:          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+5c. OIDC permission in the deploy workflow:
+$ git grep -n id-token -- .github/workflows/cloud-deployment.yml
+.github/workflows/cloud-deployment.yml:24:# Default for every job; the deploy job adds id-token: write for OIDC.
+.github/workflows/cloud-deployment.yml:54:      id-token: write   # lets azure/login request GitHub's OIDC token
+
+5d. Committed files matching common secret patterns (keys, passwords, connection strings), tracked files only:
+$ git grep -nIE (AccountKey=|SharedAccessKey=|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|client_secret\s*[:=]\s*['"][^'"]+|password\s*[:=]\s*['"][^'"]{6,}) -- . :!*.lock :!*package-lock.json
+LeHoaLong/docs/security/2026-10-22-detect-secrets.md:22:| `aws_access_key_id = "AKIAIOSFODNN7EXAMPLE"` | AWS Access Key | <!-- pragma: allowlist secret -->
+LeHoaLong/docs/security/2026-10-22-detect-secrets.md:23:| `password = "hunter2-Sup3rS3cret!"` | Secret Keyword | <!-- pragma: allowlist secret -->
+
+5e. .env files tracked by git (should be none; .env is gitignored):
+$ git ls-files -- *.env .env **/.env
+
+5f. Repository Actions secrets/variables list: requires an authenticated admin API call,
+    which this machine does not have (no gh CLI). Confirm in GitHub: Settings > Secrets and
+    variables > Actions: Secrets tab empty; Variables tab has AZURE_CLIENT_ID, AZURE_TENANT_ID,
+    AZURE_SUBSCRIPTION_ID. The deploy run's successful OIDC login (run 39780035512) shows the
+    three variables are set.
+
+======================================================================
+Notes on reading the output above
+======================================================================
+- Section 1: "AllowInsecure: True" appears only on the four internal backends
+  (External: False). They have no public address -- their FQDN is under
+  ".internal." -- so plain HTTP is only possible between apps inside the
+  Container Apps environment (frontend nginx -> backend). Every external app
+  has AllowInsecure: False.
+- Section 1: maxwell-backend and hyunwoo-backend are external by design:
+  those two frontends call their backend from the browser, so the browser
+  needs a public HTTPS address (see scripts/deploy/cloud-rewrites.sh).
+- Section 1: every app pulls images with the id-asd2026-acrpull managed
+  identity; no app has a registry password or any stored secret (AppSecrets 0).
+- Section 2: the 404 body is Azure's own "stopped or does not exist" page --
+  the public ingress has no route to an internal app.
+- Section 5d: the two matches are in LeHoaLong's detect-secrets report. They
+  are AWS's published documentation example key (AKIAIOSFODNN7EXAMPLE) and a
+  dummy password, quoted as test fixtures and marked
+  "pragma: allowlist secret". They are not credentials.
+- Section 5a: the only "secrets." match is a comment stating the workflow
+  uses no secrets.
